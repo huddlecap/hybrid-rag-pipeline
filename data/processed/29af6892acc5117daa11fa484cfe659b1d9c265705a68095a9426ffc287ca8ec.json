@@ -1,0 +1,85 @@
+{
+  "doc_id": "29af6892acc5117daa11fa484cfe659b1d9c265705a68095a9426ffc287ca8ec",
+  "content_hash": "29af6892acc5117daa11fa484cfe659b1d9c265705a68095a9426ffc287ca8ec",
+  "source_file": "advanced/security/http-basic-auth.md",
+  "source_files": [
+    "advanced/security/http-basic-auth.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 8,
+  "char_count": 7148,
+  "sections": [
+    {
+      "heading_path": [
+        "HTTP Basic Auth"
+      ],
+      "page_number": null,
+      "text": "For the simplest cases, you can use HTTP Basic Auth.\nIn HTTP Basic Auth, the application expects a header that contains a username and a password.\nIf it doesn't receive it, it returns an HTTP 401 \"Unauthorized\" error.\nAnd returns a header `WWW-Authenticate` with a value of `Basic` , and an optional `realm` parameter.\nThat tells the browser to show the integrated prompt for a username and password.\nThen, when you type that username and password, the browser sends them in the header automatically."
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Simple HTTP Basic Auth"
+      ],
+      "page_number": null,
+      "text": "- Import HTTPBasic and HTTPBasicCredentials .\n- Create a \" security scheme\" using HTTPBasic .\n- Use that security with a dependency in your path operation .\n- It returns an object of type HTTPBasicCredentials : It contains the username and password sent.\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n from fastapi.security import HTTPBasic, HTTPBasicCredentials\n \n app = FastAPI()\n \n security = HTTPBasic()\n \n \n @app.get(\"/users/me\")\n def read_current_user(credentials: Annotated[HTTPBasicCredentials, Depends(security)]):\n     return {\"username\": credentials.username, \"password\": credentials.password}\n```\nWhen you try to open the URL for the first time (or click the \"Execute\" button in the docs) the browser will ask you for your username and password:"
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Check the username"
+      ],
+      "page_number": null,
+      "text": "Here's a more complete example.\nUse a dependency to check if the username and password are correct.\nFor this, use the Python standard module secrets to check the username and password.\n`secrets.compare_digest()` needs to take `bytes` or a `str` that only contains ASCII characters (the ones in English), this means it wouldn't work with characters like `á` , as in `Sebastián` .\nTo handle that, we first convert the `username` and `password` to `bytes` encoding them with UTF-8.\nThen we can use `secrets.compare_digest()` to ensure that `credentials.username` is `\"stanleyjobson\"` , and that `credentials.password` is `\"swordfish\"` .\n```python\n import secrets\n from typing import Annotated\n \n from fastapi import Depends, FastAPI, HTTPException, status\n from fastapi.security import HTTPBasic, HTTPBasicCredentials\n \n app = FastAPI()\n \n security = HTTPBasic()\n \n \n def get_current_username(\n     credentials: Annotated[HTTPBasicCredentials, Depends(security)],\n ):\n     current_username_bytes = credentials.username.encode(\"utf8\")\n     correct_username_bytes = b\"stanleyjobson\"\n     is_correct_username = secrets.compare_digest(\n         current_username_bytes, correct_username_bytes\n     )\n     current_password_bytes = credentials.password.encode(\"utf8\")\n     correct_password_bytes = b\"swordfish\"\n     is_correct_password = secrets.compare_digest(\n         current_password_bytes, correct_password_bytes\n     )\n     if not (is_correct_username and is_correct_password):\n         raise HTTPException(\n             status_code=status.HTTP_401_UNAUTHORIZED,\n             detail=\"Incorrect username or password\",\n             headers={\"WWW-Authenticate\": \"Basic\"},\n         )\n     return credentials.username\n \n \n @app.get(\"/users/me\")\n def read_current_user(username: Annotated[str, Depends(get_current_username)]):\n     return {\"username\": username}\n```\nThis would be similar to:\n```Python\nif not (credentials.username == \"stanleyjobson\") or not (\n    credentials.password == \"swordfish\"\n):\n    # Return some error\n    ...\n```\nBut by using the `secrets.compare_digest()` it will be secure against a type of attacks called \"timing attacks\"."
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Check the username",
+        "Timing Attacks"
+      ],
+      "page_number": null,
+      "text": "But what's a \"timing attack\"?\nLet's imagine some attackers are trying to guess the username and password.\nAnd they send a request with a username `johndoe` and a password `love123` .\nThen the Python code in your application would be equivalent to something like:\n```Python\nif \"johndoe\" == \"stanleyjobson\" and \"love123\" == \"swordfish\":\n    ...\n```\nBut right at the moment Python compares the first `j` in `johndoe` to the first `s` in `stanleyjobson` , it will return `False` , because it already knows that those two strings are not the same, thinking that \"there's no need to waste more computation comparing the rest of the letters\". And your application will say \"Incorrect username or password\".\nBut then the attackers try with username `stanleyjobsox` and password `love123` .\nAnd your application code does something like:\n```Python\nif \"stanleyjobsox\" == \"stanleyjobson\" and \"love123\" == \"swordfish\":\n    ...\n```\nPython will have to compare the whole `stanleyjobso` in both `stanleyjobsox` and `stanleyjobson` before realizing that both strings are not the same. So it will take some extra microseconds to reply back \"Incorrect username or password\"."
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Check the username",
+        "Timing Attacks",
+        "The time to answer helps the attackers"
+      ],
+      "page_number": null,
+      "text": "At that point, by noticing that the server took some microseconds longer to send the \"Incorrect username or password\" response, the attackers will know that they got something right, some of the initial letters were right.\nAnd then they can try again knowing that it's probably something more similar to `stanleyjobsox` than to `johndoe` ."
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Check the username",
+        "Timing Attacks",
+        "A \"professional\" attack"
+      ],
+      "page_number": null,
+      "text": "Of course, the attackers would not try all this by hand, they would write a program to do it, possibly with thousands or millions of tests per second. And they would get just one extra correct letter at a time.\nBut doing that, in some minutes or hours the attackers would have guessed the correct username and password, with the \"help\" of our application, just using the time taken to answer."
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Check the username",
+        "Timing Attacks",
+        "Fix it with secrets.compare_digest()"
+      ],
+      "page_number": null,
+      "text": "But in our code we are actually using `secrets.compare_digest()` .\nIn short, it will take the same time to compare `stanleyjobsox` to `stanleyjobson` than it takes to compare `johndoe` to `stanleyjobson` . And the same for the password.\nThat way, using `secrets.compare_digest()` in your application code, it will be safe against this whole range of security attacks."
+    },
+    {
+      "heading_path": [
+        "HTTP Basic Auth",
+        "Check the username",
+        "Return the error"
+      ],
+      "page_number": null,
+      "text": "After detecting that the credentials are incorrect, return an `HTTPException` with a status code 401 (the same returned when no credentials are provided) and add the header `WWW-Authenticate` to make the browser show the login prompt again:\n```python\n import secrets\n from typing import Annotated\n \n from fastapi import Depends, FastAPI, HTTPException, status\n from fastapi.security import HTTPBasic, HTTPBasicCredentials\n \n app = FastAPI()\n \n security = HTTPBasic()\n \n \n def get_current_username(\n     credentials: Annotated[HTTPBasicCredentials, Depends(security)],\n ):\n     current_username_bytes = credentials.username.encode(\"utf8\")\n     correct_username_bytes = b\"stanleyjobson\"\n     is_correct_username = secrets.compare_digest(\n         current_username_bytes, correct_username_bytes\n     )\n     current_password_bytes = credentials.password.encode(\"utf8\")\n     correct_password_bytes = b\"swordfish\"\n     is_correct_password = secrets.compare_digest(\n         current_password_bytes, correct_password_bytes\n     )\n     if not (is_correct_username and is_correct_password):\n         raise HTTPException(\n             status_code=status.HTTP_401_UNAUTHORIZED,\n             detail=\"Incorrect username or password\",\n             headers={\"WWW-Authenticate\": \"Basic\"},\n         )\n     return credentials.username\n \n \n @app.get(\"/users/me\")\n def read_current_user(username: Annotated[str, Depends(get_current_username)]):\n     return {\"username\": username}\n```"
+    }
+  ]
+}

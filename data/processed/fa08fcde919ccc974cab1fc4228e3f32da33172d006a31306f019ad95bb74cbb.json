@@ -1,0 +1,21 @@
+{
+  "doc_id": "fa08fcde919ccc974cab1fc4228e3f32da33172d006a31306f019ad95bb74cbb",
+  "content_hash": "fa08fcde919ccc974cab1fc4228e3f32da33172d006a31306f019ad95bb74cbb",
+  "source_file": "reference/httpconnection.md",
+  "source_files": [
+    "reference/httpconnection.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 331,
+  "sections": [
+    {
+      "heading_path": [
+        "HTTPConnection class"
+      ],
+      "page_number": null,
+      "text": "When you want to define dependencies that should be compatible with both HTTP and WebSockets, you can define a parameter that takes an `HTTPConnection` instead of a `Request` or a `WebSocket` .\nYou can import it from `fastapi.requests` :\n```python\nfrom fastapi.requests import HTTPConnection\n```\n::: fastapi.requests.HTTPConnection"
+    }
+  ]
+}

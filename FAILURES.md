@@ -1,0 +1,1 @@
+“API reference pages are mostly stubs, since their content comes from source code docstrings that aren’t in the docs repo.” If those pages hurt retrieval later, the eval will show it, and you’ll have a real failure story.

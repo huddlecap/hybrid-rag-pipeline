@@ -1,0 +1,69 @@
+{
+  "doc_id": "be8df903354461511052ae4bb75665268747039ab64d3fe872124870f7f09280",
+  "content_hash": "be8df903354461511052ae4bb75665268747039ab64d3fe872124870f7f09280",
+  "source_file": "tutorial/body-multiple-params.md",
+  "source_files": [
+    "tutorial/body-multiple-params.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 7,
+  "char_count": 6825,
+  "sections": [
+    {
+      "heading_path": [
+        "Body - Multiple Parameters"
+      ],
+      "page_number": null,
+      "text": "Now that we have seen how to use `Path` and `Query` , let's see more advanced uses of request body declarations."
+    },
+    {
+      "heading_path": [
+        "Body - Multiple Parameters",
+        "Mix Path , Query and body parameters"
+      ],
+      "page_number": null,
+      "text": "First, of course, you can mix `Path` , `Query` and request body parameter declarations freely and FastAPI will know what to do.\nAnd you can also declare body parameters as optional, by setting the default to `None` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\", ge=0, le=1000)],\n     q: str | None = None,\n     item: Item | None = None,\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     if item:\n         results.update({\"item\": item})\n     return results\n```\nNotice that, in this case, the `item` that would be taken from the body is optional. As it has a `None` default value."
+    },
+    {
+      "heading_path": [
+        "Body - Multiple Parameters",
+        "Multiple body parameters"
+      ],
+      "page_number": null,
+      "text": "In the previous example, the path operations would expect a JSON body with the attributes of an `Item` , like:\n```JSON\n{\n    \"name\": \"Foo\",\n    \"description\": \"The pretender\",\n    \"price\": 42.0,\n    \"tax\": 3.2\n}\n```\nBut you can also declare multiple body parameters, e.g. `item` and `user` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n class User(BaseModel):\n     username: str\n     full_name: str | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item, user: User):\n     results = {\"item_id\": item_id, \"item\": item, \"user\": user}\n     return results\n```\nIn this case, FastAPI will notice that there is more than one body parameter in the function (there are two parameters that are Pydantic models).\nSo, it will then use the parameter names as keys (field names) in the body, and expect a body like:\n```JSON\n{\n    \"item\": {\n        \"name\": \"Foo\",\n        \"description\": \"The pretender\",\n        \"price\": 42.0,\n        \"tax\": 3.2\n    },\n    \"user\": {\n        \"username\": \"dave\",\n        \"full_name\": \"Dave Grohl\"\n    }\n}\n```\nNotice that even though the `item` was declared the same way as before, it is now expected to be inside of the body with a key `item` .\nFastAPI will do the automatic conversion from the request, so that the parameter `item` receives its specific content and the same for `user` .\nIt will perform the validation of the compound data, and will document it like that for the OpenAPI schema and automatic docs."
+    },
+    {
+      "heading_path": [
+        "Body - Multiple Parameters",
+        "Singular values in body"
+      ],
+      "page_number": null,
+      "text": "The same way there is a `Query` and `Path` to define extra data for query and path parameters, FastAPI provides an equivalent `Body` .\nFor example, extending the previous model, you could decide that you want to have another key `importance` in the same body, besides the `item` and `user` .\nIf you declare it as is, because it is a singular value, FastAPI will assume that it is a query parameter.\nBut you can instruct FastAPI to treat it as another body key using `Body` :\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n class User(BaseModel):\n     username: str\n     full_name: str | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     item_id: int, item: Item, user: User, importance: Annotated[int, Body()]\n ):\n     results = {\"item_id\": item_id, \"item\": item, \"user\": user, \"importance\": importance}\n     return results\n```\nIn this case, FastAPI will expect a body like:\n```JSON\n{\n    \"item\": {\n        \"name\": \"Foo\",\n        \"description\": \"The pretender\",\n        \"price\": 42.0,\n        \"tax\": 3.2\n    },\n    \"user\": {\n        \"username\": \"dave\",\n        \"full_name\": \"Dave Grohl\"\n    },\n    \"importance\": 5\n}\n```\nAgain, it will convert the data types, validate, document, etc."
+    },
+    {
+      "heading_path": [
+        "Body - Multiple Parameters",
+        "Multiple body params and query"
+      ],
+      "page_number": null,
+      "text": "Of course, you can also declare additional query parameters whenever you need, additional to any body parameters.\nAs, by default, singular values are interpreted as query parameters, you don't have to explicitly add a `Query` , you can just do:\n```Python\nq: str | None = None\n```\nFor example:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n class User(BaseModel):\n     username: str\n     full_name: str | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     *,\n     item_id: int,\n     item: Item,\n     user: User,\n     importance: Annotated[int, Body(gt=0)],\n     q: str | None = None,\n ):\n     results = {\"item_id\": item_id, \"item\": item, \"user\": user, \"importance\": importance}\n     if q:\n         results.update({\"q\": q})\n     return results\n```\n`Body` also has all the same extra validation and metadata parameters as `Query` , `Path` and others you will see later."
+    },
+    {
+      "heading_path": [
+        "Body - Multiple Parameters",
+        "Embed a single body parameter"
+      ],
+      "page_number": null,
+      "text": "Let's say you only have a single `item` body parameter from a Pydantic model `Item` .\nBy default, FastAPI will then expect its body directly.\nBut if you want it to expect a JSON with a key `item` and inside of it the model contents, as it does when you declare extra body parameters, you can use the special `Body` parameter `embed` :\n```Python\nitem: Annotated[Item, Body(embed=True)]\n```\nas in:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Annotated[Item, Body(embed=True)]):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nIn this case FastAPI will expect a body like:\n```JSON\n{\n    \"item\": {\n        \"name\": \"Foo\",\n        \"description\": \"The pretender\",\n        \"price\": 42.0,\n        \"tax\": 3.2\n    }\n}\n```\ninstead of:\n```JSON\n{\n    \"name\": \"Foo\",\n    \"description\": \"The pretender\",\n    \"price\": 42.0,\n    \"tax\": 3.2\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Body - Multiple Parameters",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "You can add multiple body parameters to your path operation function , even though a request can only have a single body.\nBut FastAPI will handle it, give you the correct data in your function, and validate and document the correct schema in the path operation .\nYou can also declare singular values to be received as part of the body.\nAnd you can instruct FastAPI to embed the body in a key even when there is only a single parameter declared."
+    }
+  ]
+}

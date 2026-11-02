@@ -1,0 +1,21 @@
+{
+  "doc_id": "af265f1e25f10028ba5593e8e5c430e4c3aae4be5f101d762bd3377eda70ee56",
+  "content_hash": "af265f1e25f10028ba5593e8e5c430e4c3aae4be5f101d762bd3377eda70ee56",
+  "source_file": "how-to/authentication-error-status-code.md",
+  "source_files": [
+    "how-to/authentication-error-status-code.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 1510,
+  "sections": [
+    {
+      "heading_path": [
+        "Use Old 403 Authentication Error Status Codes"
+      ],
+      "page_number": null,
+      "text": "Before FastAPI version `0.122.0` , when the integrated security utilities returned an error to the client after a failed authentication, they used the HTTP status code `403 Forbidden` .\nStarting with FastAPI version `0.122.0` , they use the more appropriate HTTP status code `401 Unauthorized` , and return a sensible `WWW-Authenticate` header in the response, following the HTTP specifications, RFC 7235 , RFC 9110 .\nBut if for some reason your clients depend on the old behavior, you can revert to it by overriding the method `make_not_authenticated_error` in your security classes.\nFor example, you can create a subclass of `HTTPBearer` that returns a `403 Forbidden` error instead of the default `401 Unauthorized` error:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI, HTTPException, status\n from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer\n \n app = FastAPI()\n \n \n class HTTPBearer403(HTTPBearer):\n     def make_not_authenticated_error(self) -> HTTPException:\n         return HTTPException(\n             status_code=status.HTTP_403_FORBIDDEN, detail=\"Not authenticated\"\n         )\n \n \n CredentialsDep = Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer403())]\n \n \n @app.get(\"/me\")\n def read_me(credentials: CredentialsDep):\n     return {\"message\": \"You are authenticated\", \"token\": credentials.credentials}\n```\nNotice that the function returns the exception instance, it doesn't raise it. The raising is done in the rest of the internal code."
+    }
+  ]
+}

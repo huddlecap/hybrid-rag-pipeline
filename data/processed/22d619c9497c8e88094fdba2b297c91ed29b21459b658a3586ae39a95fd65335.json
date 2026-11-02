@@ -1,0 +1,53 @@
+{
+  "doc_id": "22d619c9497c8e88094fdba2b297c91ed29b21459b658a3586ae39a95fd65335",
+  "content_hash": "22d619c9497c8e88094fdba2b297c91ed29b21459b658a3586ae39a95fd65335",
+  "source_file": "tutorial/index.md",
+  "source_files": [
+    "tutorial/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 5121,
+  "sections": [
+    {
+      "heading_path": [
+        "Tutorial - User Guide"
+      ],
+      "page_number": null,
+      "text": "This tutorial shows you how to use FastAPI with most of its features, step by step.\nEach section gradually builds on the previous ones, but it's structured to separate topics, so that you can go directly to any specific one to solve your specific API needs.\nIt is also built to work as a future reference so you can come back and see exactly what you need."
+    },
+    {
+      "heading_path": [
+        "Tutorial - User Guide",
+        "Run the code"
+      ],
+      "page_number": null,
+      "text": "All the code blocks can be copied and used directly (they are actually tested Python files).\nTo run any of the examples, copy the code to a file `main.py` , and start `fastapi dev` with `uv run` :\n```console\n$ uv run fastapi dev\n\n   FastAPI   Starting development server 🚀\n\n             Searching for package file structure from directories\n             with __init__.py files\n             Importing from /home/user/code/awesomeapp\n\n    module   🐍 main.py\n\n      code   Importing the FastAPI app object from the module with\n             the following code:\n\n             from main import app\n\n       app   Using import string: main:app\n\n    server   Server started at http://127.0.0.1:8000\n    server   Documentation at http://127.0.0.1:8000/docs\n\n       tip   Running in development mode, for production use:\n             fastapi run\n\n             Logs:\n\n      INFO   Will watch for changes in these directories:\n             ['/home/user/code/awesomeapp']\n      INFO   Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C\n             to quit)\n      INFO   Started reloader process [383138] using WatchFiles\n      INFO   Started server process [383153]\n      INFO   Waiting for application startup.\n      INFO   Application startup complete.\n```\nIt is HIGHLY encouraged that you write or copy the code, edit it and run it locally.\nUsing it in your editor is what really shows you the benefits of FastAPI, seeing how little code you have to write, all the type checks, autocompletion, etc.\n---"
+    },
+    {
+      "heading_path": [
+        "Tutorial - User Guide",
+        "Install FastAPI"
+      ],
+      "page_number": null,
+      "text": "The first step is to set up your project and add FastAPI.\nInstall uv , then create a project and add FastAPI:\n```console\n$ uv init awesome-project --bare\n$ cd awesome-project\n$ uv add \"fastapi[standard]\"\n\n---> 100%\n```\n`uv add` creates the project's virtual environment in `.venv` , adds FastAPI to `pyproject.toml` , and creates `uv.lock` so the same package versions can be installed later.\nWhat these commands do:\n- uv init : create a new Python project.\n- awesome-project : create the project in a new directory with this name.\n- --bare : create only the minimal pyproject.toml file, without generating a sample main.py , README.md , or other files. You will create the application files yourself in the next steps of this tutorial.\nThen `cd awesome-project` enters the new project directory before adding FastAPI.\n`uv` will use a compatible Python version already installed on your system, or download one if needed.\nWhen you run `uv add` , it selects compatible versions of FastAPI and all the packages FastAPI depends on. It records the exact versions in `uv.lock` , making it possible to install the same package versions later on another computer or when deploying the application.\nCreating or updating this file is called locking the project dependencies . `uv` does this automatically when you add a package.\nFastAPI installation options:\nWhen you install with `uv add \"fastapi[standard]\"` it comes with some default optional standard dependencies, including `fastapi-cloud-cli` , which allows you to deploy to FastAPI Cloud .\nIf you don't want to have those optional dependencies, you can instead install `uv add fastapi` .\nIf you want to install the standard dependencies but without the `fastapi-cloud-cli` , you can install with `uv add \"fastapi[standard-no-fastapi-cloud-cli]\"` .\nUsing `pip` instead:\nIf you prefer to manage a virtual environment and packages manually, create and activate a virtual environment and then install FastAPI with `pip install \"fastapi[standard]\"` .\nRead the Virtual Environments guide for the detailed steps."
+    },
+    {
+      "heading_path": [
+        "Tutorial - User Guide",
+        "AI Agent Skills"
+      ],
+      "page_number": null,
+      "text": "FastAPI includes an official skill for AI coding agents. It is bundled with the package, so its guidance stays aligned with the version of FastAPI installed in your project and updates when you update FastAPI.\nAfter installing FastAPI in your project, you can install the skill with Library Skills :\n```bash\nuvx library-skills\n```\n`uvx` is an alias for `uv tool run` . It runs Library Skills in a temporary, isolated environment while Library Skills scans the packages installed in your project.\nThe skill is compatible with Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Pi, OpenCode, and most other coding agents. For Claude Code, select `.claude/skills` when asked where to install the skill."
+    },
+    {
+      "heading_path": [
+        "Tutorial - User Guide",
+        "Advanced User Guide"
+      ],
+      "page_number": null,
+      "text": "There is also an Advanced User Guide that you can read later after this Tutorial - User Guide .\nThe Advanced User Guide builds on this one, uses the same concepts, and teaches you some extra features.\nBut you should first read the Tutorial - User Guide (what you are reading right now).\nIt's designed so that you can build a complete application with just the Tutorial - User Guide , and then extend it in different ways, depending on your needs, using some of the additional ideas from the Advanced User Guide ."
+    }
+  ]
+}

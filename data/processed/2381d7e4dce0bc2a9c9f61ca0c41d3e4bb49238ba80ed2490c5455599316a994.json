@@ -1,0 +1,77 @@
+{
+  "doc_id": "2381d7e4dce0bc2a9c9f61ca0c41d3e4bb49238ba80ed2490c5455599316a994",
+  "content_hash": "2381d7e4dce0bc2a9c9f61ca0c41d3e4bb49238ba80ed2490c5455599316a994",
+  "source_file": "fastapi-people.md",
+  "source_files": [
+    "fastapi-people.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 8,
+  "char_count": 2535,
+  "sections": [
+    {
+      "heading_path": [
+        "FastAPI People"
+      ],
+      "page_number": null,
+      "text": "FastAPI has an amazing community that welcomes people from all backgrounds."
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "Creator"
+      ],
+      "page_number": null,
+      "text": "Hey! 👋\nThis is me:\nI'm the creator of FastAPI . You can read more about that in Help FastAPI - Follow the author ."
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "Team"
+      ],
+      "page_number": null,
+      "text": "This is the current list of team members. 😎\nThey have different levels of involvement and permissions, they can perform repository management tasks and together we manage the FastAPI repository ."
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "FastAPI Experts"
+      ],
+      "page_number": null,
+      "text": "For a long time, answering questions from the community in GitHub Discussions was done by other community volunteers.\nThey proved they are FastAPI Experts by helping many others. ✨\nHere's the hall of fame of the first FastAPI Experts:"
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "Top Contributors"
+      ],
+      "page_number": null,
+      "text": "Currently, most of the code changes in FastAPI are done by the team.\nBut over the years, there have also been many contributions made by others.\nThey contributed source code, documentation, etc. 📦\nHere's the hall of fame of the first Top Contributors . 👷\nThere are hundreds of other contributors, you can see them all in the FastAPI GitHub Contributors page . 👷"
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "Top Translation Reviewers"
+      ],
+      "page_number": null,
+      "text": "Currently, translations are done using AI tools, steered by the FastAPI team and native speakers.\nAt some point, FastAPI had some documentation pages that community members translated into other languages by hand.\nHere's the hall of fame of the first Top Translation Reviewers . 🕵️"
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "Sponsors"
+      ],
+      "page_number": null,
+      "text": "Sponsors support FastAPI and friends, mainly through GitHub Sponsors . ✨"
+    },
+    {
+      "heading_path": [
+        "FastAPI People",
+        "About the data - technical details"
+      ],
+      "page_number": null,
+      "text": "The main intention of this page has been to highlight the effort of the community to help others, especially efforts that were normally less visible and, in many cases, more arduous, like helping others with questions and reviewing Pull Requests with translations.\nIt also highlights contributions from sponsors.\nThe data used to be calculated continuously, each month.\nAs of July 2026, most of the work has been done by (paid) team members for quite some time.\nGitHub Discussions are answered mostly by team members.\nMost of the code changes are done by team members.\nAnd translations are continuously done for the entire documentation in multiple languages, using AI tools, managed by team members.\nAdditionally, in recent months, there's been an overwhelming amount of AI spam, mainly to cheat the FastAPI Experts system or to get a PR merged by any means and thereby be considered a contributor. You can read more about the point of view in Automated Code and AI .\nBecause of this, the data for the FastAPI Experts, Top Contributors, and Top Translation Reviewers is no longer continuously updated.\nThis section is currently kept as a tribute to the humans that helped shape what FastAPI is today. 🙌"
+    }
+  ]
+}

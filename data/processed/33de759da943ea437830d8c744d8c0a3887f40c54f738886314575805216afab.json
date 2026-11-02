@@ -1,0 +1,106 @@
+{
+  "doc_id": "33de759da943ea437830d8c744d8c0a3887f40c54f738886314575805216afab",
+  "content_hash": "33de759da943ea437830d8c744d8c0a3887f40c54f738886314575805216afab",
+  "source_file": "advanced/events.md",
+  "source_files": [
+    "advanced/events.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 11,
+  "char_count": 9786,
+  "sections": [
+    {
+      "heading_path": [
+        "Lifespan Events"
+      ],
+      "page_number": null,
+      "text": "You can define logic (code) that should be executed before the application starts up . This means that this code will be executed once , before the application starts receiving requests .\nThe same way, you can define logic (code) that should be executed when the application is shutting down . In this case, this code will be executed once , after having handled possibly many requests .\nBecause this code is executed before the application starts taking requests, and right after it finishes handling requests, it covers the whole application lifespan (the word \"lifespan\" will be important in a second 😉).\nThis can be very useful for setting up resources that you need to use for the whole app, and that are shared among requests, and/or that you need to clean up afterwards. For example, a database connection pool, or loading a shared machine learning model."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Use Case"
+      ],
+      "page_number": null,
+      "text": "Let's start with an example use case and then see how to solve it with this.\nLet's imagine that you have some machine learning models that you want to use to handle requests. 🤖\nThe same models are shared among requests, so, it's not one model per request, or one per user or something similar.\nLet's imagine that loading the model can take quite some time , because it has to read a lot of data from disk . So you don't want to do it for every request.\nYou could load it at the top level of the module/file, but that would also mean that it would load the model even if you are just running a simple automated test, then that test would be slow because it would have to wait for the model to load before being able to run an independent part of the code.\nThat's what we'll solve, let's load the model before the requests are handled, but only right before the application starts receiving requests, not while  the code is being loaded."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Lifespan"
+      ],
+      "page_number": null,
+      "text": "You can define this startup and shutdown logic using the `lifespan` parameter of the `FastAPI` app, and a \"context manager\" (I'll show you what that is in a second).\nLet's start with an example and then see it in detail.\nWe create an async function `lifespan()` with `yield` like this:\n```python\n from contextlib import asynccontextmanager\n \n from fastapi import FastAPI\n \n \n def fake_answer_to_everything_ml_model(x: float):\n     return x * 42\n \n \n ml_models = {}\n \n \n @asynccontextmanager\n async def lifespan(app: FastAPI):\n     # Load the ML model\n     ml_models[\"answer_to_everything\"] = fake_answer_to_everything_ml_model\n     yield\n     # Clean up the ML models and release the resources\n     ml_models.clear()\n \n \n app = FastAPI(lifespan=lifespan)\n \n \n @app.get(\"/predict\")\n async def predict(x: float):\n     result = ml_models[\"answer_to_everything\"](x)\n     return {\"result\": result}\n```\nHere we are simulating the expensive startup operation of loading the model by putting the (fake) model function in the dictionary with machine learning models before the `yield` . This code will be executed before the application starts taking requests , during the startup .\nAnd then, right after the `yield` , we unload the model. This code will be executed after the application finishes handling requests , right before the shutdown . This could, for example, release resources like memory or a GPU.\nThe `shutdown` would happen when you are stopping the application.\nMaybe you need to start a new version, or you just got tired of running it. 🤷"
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Lifespan",
+        "Lifespan function"
+      ],
+      "page_number": null,
+      "text": "The first thing to notice, is that we are defining an async function with `yield` . This is very similar to Dependencies with `yield` .\n```python\n from contextlib import asynccontextmanager\n \n from fastapi import FastAPI\n \n \n def fake_answer_to_everything_ml_model(x: float):\n     return x * 42\n \n \n ml_models = {}\n \n \n @asynccontextmanager\n async def lifespan(app: FastAPI):\n     # Load the ML model\n     ml_models[\"answer_to_everything\"] = fake_answer_to_everything_ml_model\n     yield\n     # Clean up the ML models and release the resources\n     ml_models.clear()\n \n \n app = FastAPI(lifespan=lifespan)\n \n \n @app.get(\"/predict\")\n async def predict(x: float):\n     result = ml_models[\"answer_to_everything\"](x)\n     return {\"result\": result}\n```\nThe first part of the function, before the `yield` , will be executed before the application starts.\nAnd the part after the `yield` will be executed after the application has finished."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Lifespan",
+        "Async Context Manager"
+      ],
+      "page_number": null,
+      "text": "If you check, the function is decorated with an `@asynccontextmanager` .\nThat converts the function into something called an \" async context manager \".\n```python\n from contextlib import asynccontextmanager\n \n from fastapi import FastAPI\n \n \n def fake_answer_to_everything_ml_model(x: float):\n     return x * 42\n \n \n ml_models = {}\n \n \n @asynccontextmanager\n async def lifespan(app: FastAPI):\n     # Load the ML model\n     ml_models[\"answer_to_everything\"] = fake_answer_to_everything_ml_model\n     yield\n     # Clean up the ML models and release the resources\n     ml_models.clear()\n \n \n app = FastAPI(lifespan=lifespan)\n \n \n @app.get(\"/predict\")\n async def predict(x: float):\n     result = ml_models[\"answer_to_everything\"](x)\n     return {\"result\": result}\n```\nA context manager in Python is something that you can use in a `with` statement, for example, `open()` can be used as a context manager:\n```Python\nwith open(\"file.txt\") as file:\n    file.read()\n```\nIn recent versions of Python, there's also an async context manager . You would use it with `async with` :\n```Python\nasync with lifespan(app):\n    await do_stuff()\n```\nWhen you create a context manager or an async context manager like above, what it does is that, before entering the `with` block, it will execute the code before the `yield` , and after exiting the `with` block, it will execute the code after the `yield` .\nIn our code example above, we don't use it directly, but we pass it to FastAPI for it to use it.\nThe `lifespan` parameter of the `FastAPI` app takes an async context manager , so we can pass our new `lifespan` async context manager to it.\n```python\n from contextlib import asynccontextmanager\n \n from fastapi import FastAPI\n \n \n def fake_answer_to_everything_ml_model(x: float):\n     return x * 42\n \n \n ml_models = {}\n \n \n @asynccontextmanager\n async def lifespan(app: FastAPI):\n     # Load the ML model\n     ml_models[\"answer_to_everything\"] = fake_answer_to_everything_ml_model\n     yield\n     # Clean up the ML models and release the resources\n     ml_models.clear()\n \n \n app = FastAPI(lifespan=lifespan)\n \n \n @app.get(\"/predict\")\n async def predict(x: float):\n     result = ml_models[\"answer_to_everything\"](x)\n     return {\"result\": result}\n```"
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Alternative Events (deprecated)"
+      ],
+      "page_number": null,
+      "text": "The recommended way to handle the startup and shutdown is using the `lifespan` parameter of the `FastAPI` app as described above. If you provide a `lifespan` parameter, `startup` and `shutdown` event handlers will no longer be called. It's all `lifespan` or all events, not both.\nYou can probably skip this part.\nThere's an alternative way to define this logic to be executed during startup and during shutdown .\nYou can define event handlers (functions) that need to be executed before the application starts up, or when the application is shutting down.\nThese functions can be declared with `async def` or normal `def` ."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Alternative Events (deprecated)",
+        "startup event"
+      ],
+      "page_number": null,
+      "text": "To add a function that should be run before the application starts, declare it with the event `\"startup\"` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n items = {}\n \n \n @app.on_event(\"startup\")\n async def startup_event():\n     items[\"foo\"] = {\"name\": \"Fighters\"}\n     items[\"bar\"] = {\"name\": \"Tenders\"}\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(item_id: str):\n     return items[item_id]\n```\nIn this case, the `startup` event handler function will initialize the items \"database\" (just a `dict` ) with some values.\nYou can add more than one event handler function.\nAnd your application won't start receiving requests until all the `startup` event handlers have completed."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Alternative Events (deprecated)",
+        "shutdown event"
+      ],
+      "page_number": null,
+      "text": "To add a function that should be run when the application is shutting down, declare it with the event `\"shutdown\"` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.on_event(\"shutdown\")\n def shutdown_event():\n     with open(\"log.txt\", mode=\"a\") as log:\n         log.write(\"Application shutdown\")\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n```\nHere, the `shutdown` event handler function will write a text line `\"Application shutdown\"` to a file `log.txt` .\nIn the `open()` function, the `mode=\"a\"` means \"append\", so, the line will be added after whatever is on that file, without overwriting the previous contents.\nNotice that in this case we are using a standard Python `open()` function that interacts with a file.\nSo, it involves I/O (input/output), that requires \"waiting\" for things to be written to disk.\nBut `open()` doesn't use `async` and `await` .\nSo, we declare the event handler function with standard `def` instead of `async def` ."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Alternative Events (deprecated)",
+        "startup and shutdown together"
+      ],
+      "page_number": null,
+      "text": "There's a high chance that the logic for your startup and shutdown is connected, you might want to start something and then finish it, acquire a resource and then release it, etc.\nDoing that in separate functions that don't share logic or variables together is more difficult as you would need to store values in global variables or similar tricks.\nBecause of that, it's now recommended to instead use the `lifespan` as explained above."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Technical Details"
+      ],
+      "page_number": null,
+      "text": "Just a technical detail for the curious nerds. 🤓\nUnderneath, in the ASGI technical specification, this is part of the Lifespan Protocol , and it defines events called `startup` and `shutdown` .\nYou can read more about the Starlette `lifespan` handlers in Starlette's  Lifespan' docs .\nIncluding how to handle lifespan state that can be used in other areas of your code."
+    },
+    {
+      "heading_path": [
+        "Lifespan Events",
+        "Sub Applications"
+      ],
+      "page_number": null,
+      "text": "🚨 Keep in mind that these lifespan events (startup and shutdown) will only be executed for the main application, not for Sub Applications - Mounts ."
+    }
+  ]
+}

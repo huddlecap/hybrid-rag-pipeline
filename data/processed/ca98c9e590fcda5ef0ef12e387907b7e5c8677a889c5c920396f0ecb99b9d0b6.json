@@ -1,0 +1,141 @@
+{
+  "doc_id": "ca98c9e590fcda5ef0ef12e387907b7e5c8677a889c5c920396f0ecb99b9d0b6",
+  "content_hash": "ca98c9e590fcda5ef0ef12e387907b7e5c8677a889c5c920396f0ecb99b9d0b6",
+  "source_file": "advanced/behind-a-proxy.md",
+  "source_files": [
+    "advanced/behind-a-proxy.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 15,
+  "char_count": 13744,
+  "sections": [
+    {
+      "heading_path": [
+        "Behind a Proxy"
+      ],
+      "page_number": null,
+      "text": "In many situations, you would use a proxy like Traefik or Nginx in front of your FastAPI app.\nThese proxies could handle HTTPS certificates and other things."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy Forwarded Headers"
+      ],
+      "page_number": null,
+      "text": "A proxy in front of your application would normally set some headers on the fly before sending the requests to your server to let the server know that the request was forwarded by the proxy, letting it know the original (public) URL, including the domain, that it is using HTTPS, etc.\nThe server started by `fastapi run` is capable of interpreting these headers, and then passing that information to your application.\nBut for security, as the server doesn't know it is behind a trusted proxy, it won't interpret those headers.\nTechnical Details:\nThe proxy headers are:\n- X-Forwarded-For\n- X-Forwarded-Proto\n- X-Forwarded-Host"
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy Forwarded Headers",
+        "Enable Proxy Forwarded Headers"
+      ],
+      "page_number": null,
+      "text": "You can start FastAPI CLI with the CLI Option `--forwarded-allow-ips` and pass the IP addresses that should be trusted to read those forwarded headers.\nIf you set it to `--forwarded-allow-ips=\"*\"` it would trust all the incoming IPs.\nIf your server is behind a trusted proxy and only the proxy talks to it, this would make it accept whatever is the IP of that proxy .\n```console\n$ uv run fastapi run --forwarded-allow-ips=\"*\"\n```"
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy Forwarded Headers",
+        "Redirects with HTTPS"
+      ],
+      "page_number": null,
+      "text": "For example, let's say you define a path operation `/items/` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n def read_items():\n     return [\"plumbus\", \"portal gun\"]\n```\nIf the client tries to go to `/items` , by default, it would be redirected to `/items/` .\nBut before setting the CLI Option `--forwarded-allow-ips` it could redirect to `http://localhost:8000/items/` .\nBut maybe your application is hosted at `https://mysuperapp.com` , and the redirection should be to `https://mysuperapp.com/items/` .\nBy setting `--proxy-headers` now FastAPI would be able to redirect to the right location. 😎\n```text\nhttps://mysuperapp.com/items/\n```\nIf you want to learn more about HTTPS, check the guide About HTTPS ."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy Forwarded Headers",
+        "How Proxy Forwarded Headers Work"
+      ],
+      "page_number": null,
+      "text": "Here's a visual representation of how the proxy adds forwarded headers between the client and the application server :\n```mermaid\nsequenceDiagram\n    participant Client\n    participant Proxy as Proxy/Load Balancer\n    participant Server as FastAPI Server\n\n    Client->>Proxy: HTTPS Request<br/>Host: mysuperapp.com<br/>Path: /items\n\n    Note over Proxy: Proxy adds forwarded headers\n\n    Proxy->>Server: HTTP Request<br/>X-Forwarded-For: [client IP]<br/>X-Forwarded-Proto: https<br/>X-Forwarded-Host: mysuperapp.com<br/>Path: /items\n\n    Note over Server: Server interprets headers<br/>(if --forwarded-allow-ips is set)\n\n    Server->>Proxy: HTTP Response<br/>with correct HTTPS URLs\n\n    Proxy->>Client: HTTPS Response\n```\nThe proxy intercepts the original client request and adds the special forwarded headers ( `X-Forwarded-*` ) before passing the request to the application server .\nThese headers preserve information about the original request that would otherwise be lost:\n- X-Forwarded-For : The original client's IP address\n- X-Forwarded-Proto : The original protocol ( https )\n- X-Forwarded-Host : The original host ( mysuperapp.com )\nWhen FastAPI CLI is configured with `--forwarded-allow-ips` , it trusts these headers and uses them, for example to generate the correct URLs in redirects."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy with a stripped path prefix"
+      ],
+      "page_number": null,
+      "text": "You could have a proxy that adds a path prefix to your application.\nIn these cases you can configure the server with `fastapi run --root-path` .\nThe `root_path` is a mechanism provided by the ASGI specification (that FastAPI is built on, through Starlette).\nThe `root_path` is used to handle these specific cases.\nAnd it's also used internally when mounting sub-applications.\nHaving a proxy with a stripped path prefix, in this case, means that you could declare a path at `/app` in your code, but then, you add a layer on top (the proxy) that would put your FastAPI application under a path like `/api/v1` .\nIn this case, the original path `/app` would actually be served at `/api/v1/app` .\nEven though all your code is written assuming there's just `/app` .\n```python\n from fastapi import FastAPI, Request\n \n app = FastAPI()\n \n \n @app.get(\"/app\")\n def read_main(request: Request):\n     return {\"message\": \"Hello World\", \"root_path\": request.scope.get(\"root_path\")}\n```\nAnd the proxy would be \"stripping\" the path prefix on the fly before transmitting the request to the server, keeping your application convinced that it is being served at `/app` , so that you don't have to update all your code to include the prefix `/api/v1` .\nUp to here, everything would work as normally.\nBut then, when you open the integrated docs UI (the frontend), it would expect to get the OpenAPI schema at `/openapi.json` , instead of `/api/v1/openapi.json` .\nSo, the frontend (that runs in the browser) would try to reach `/openapi.json` and wouldn't be able to get the OpenAPI schema.\nBecause we have a proxy with a path prefix of `/api/v1` for our app, the frontend needs to fetch the OpenAPI schema at `/api/v1/openapi.json` .\n```mermaid\ngraph LR\n\nbrowser(\"Browser\")\nproxy[\"Proxy on http://0.0.0.0:9999/api/v1/app\"]\nserver[\"Server on http://127.0.0.1:8000/app\"]\n\nbrowser --> proxy\nproxy --> server\n```\nThe IP `0.0.0.0` is commonly used to mean that the program listens on all the IPs available in that machine/server.\nThe docs UI would also need the OpenAPI schema to declare that this API `server` is located at `/api/v1` (behind the proxy). For example:\n```JSON\n{\n    \"openapi\": \"3.1.0\",\n    // More stuff here\n    \"servers\": [\n        {\n            \"url\": \"/api/v1\"\n        }\n    ],\n    \"paths\": {\n            // More stuff here\n    }\n}\n```\nIn this example, the \"Proxy\" could be something like Traefik . And `fastapi run` would start the server running your FastAPI application."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy with a stripped path prefix",
+        "Providing the root_path"
+      ],
+      "page_number": null,
+      "text": "To achieve this, you can use the command line option `--root-path` like:\n```console\n$ uv run fastapi run main.py --forwarded-allow-ips=\"*\" --root-path /api/v1\n```\nTechnical Details:\nThe ASGI specification defines a `root_path` for this use case.\nAnd the `--root-path` command line option provides that `root_path` ."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Proxy with a stripped path prefix",
+        "Checking the current root_path"
+      ],
+      "page_number": null,
+      "text": "You can get the current `root_path` used by your application for each request, it is part of the `scope` dictionary (that's part of the ASGI spec).\nHere we are including it in the message just for demonstration purposes.\n```python\n from fastapi import FastAPI, Request\n \n app = FastAPI()\n \n \n @app.get(\"/app\")\n def read_main(request: Request):\n     return {\"message\": \"Hello World\", \"root_path\": request.scope.get(\"root_path\")}\n```\nThen, if you start the server with:\n```console\n$ uv run fastapi run main.py --forwarded-allow-ips=\"*\" --root-path /api/v1\n```\nThe response would be something like:\n```JSON\n{\n    \"message\": \"Hello World\",\n    \"root_path\": \"/api/v1\"\n}\n```\nDeprecated `root_path` parameter:\nIn FastAPI 0.145.0 and earlier, `root_path` could also be configured in `FastAPI()` . This parameter is now deprecated because its behavior was not consistent with the server configuration. Use `fastapi run --root-path /api/v1` instead."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "About proxies with a stripped path prefix"
+      ],
+      "page_number": null,
+      "text": "Keep in mind that a proxy with stripped path prefix is only one of the ways to configure it.\nProbably in many cases the default will be that the proxy doesn't have a stripped path prefix.\nIn a case like that (without a stripped path prefix), the proxy would listen on something like `https://myawesomeapp.com` , and then if the browser goes to `https://myawesomeapp.com/api/v1/app` and your server listens on `http://127.0.0.1:8000` the proxy (without a stripped path prefix) would access the server at the same path: `http://127.0.0.1:8000/api/v1/app` ."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Testing locally with Traefik"
+      ],
+      "page_number": null,
+      "text": "You can easily run the experiment locally with a stripped path prefix using Traefik .\nDownload Traefik , it's a single binary, you can extract the compressed file and run it directly from the terminal.\nThen create a file `traefik.toml` with:\n```TOML\n[entryPoints]\n  [entryPoints.http]\n    address = \":9999\"\n\n[providers]\n  [providers.file]\n    filename = \"routes.toml\"\n```\nThis tells Traefik to listen on port 9999 and to use another file `routes.toml` .\nWe are using port 9999 instead of the standard HTTP port 80 so that you don't have to run it with admin ( `sudo` ) privileges.\nNow create that other file `routes.toml` :\n```TOML\n[http]\n  [http.middlewares]\n\n    [http.middlewares.api-stripprefix.stripPrefix]\n      prefixes = [\"/api/v1\"]\n\n  [http.routers]\n\n    [http.routers.app-http]\n      entryPoints = [\"http\"]\n      service = \"app\"\n      rule = \"PathPrefix(`/api/v1`)\"\n      middlewares = [\"api-stripprefix\"]\n\n  [http.services]\n\n    [http.services.app]\n      [http.services.app.loadBalancer]\n        [[http.services.app.loadBalancer.servers]]\n          url = \"http://127.0.0.1:8000\"\n```\nThis file configures Traefik to use the path prefix `/api/v1` .\nAnd then Traefik will forward its requests to your server running on `http://127.0.0.1:8000` .\nNow start Traefik:\n```console\n$ ./traefik --configFile=traefik.toml\n\nINFO[0000] Configuration loaded from file: /home/user/awesomeapi/traefik.toml\n```\nAnd now start your app, using the `--root-path` option:\n```console\n$ uv run fastapi run main.py --forwarded-allow-ips=\"*\" --root-path /api/v1\n```"
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Testing locally with Traefik",
+        "Check the responses"
+      ],
+      "page_number": null,
+      "text": "Now, if you go to the URL with the port for the server: http://127.0.0.1:8000/app , you will see the normal response:\n```JSON\n{\n    \"message\": \"Hello World\",\n    \"root_path\": \"/api/v1\"\n}\n```\nNotice that even though you are accessing it at `http://127.0.0.1:8000/app` it shows the `root_path` of `/api/v1` , taken from the option `--root-path` .\nAnd now open the URL with the port for Traefik, including the path prefix: http://127.0.0.1:9999/api/v1/app .\nWe get the same response:\n```JSON\n{\n    \"message\": \"Hello World\",\n    \"root_path\": \"/api/v1\"\n}\n```\nbut this time at the URL with the prefix path provided by the proxy: `/api/v1` .\nOf course, the idea here is that everyone would access the app through the proxy, so the version with the path prefix `/api/v1` is the \"correct\" one.\nAnd the version without the path prefix ( `http://127.0.0.1:8000/app` ), provided by the server directly, would be exclusively for the proxy (Traefik) to access it.\nThat demonstrates how the Proxy (Traefik) uses the path prefix and how the server uses the `root_path` from the option `--root-path` ."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Testing locally with Traefik",
+        "Check the docs UI"
+      ],
+      "page_number": null,
+      "text": "But here's the fun part. ✨\nThe \"official\" way to access the app would be through the proxy with the path prefix that we defined. So, as we would expect, if you try the docs UI served by the server directly, without the path prefix in the URL, it won't work, because it expects to be accessed through the proxy.\nYou can check it at http://127.0.0.1:8000/docs :\nBut if we access the docs UI at the \"official\" URL using the proxy with port `9999` , at `/api/v1/docs` , it works correctly! 🎉\nYou can check it at http://127.0.0.1:9999/api/v1/docs :\nRight as we wanted it. ✔️\nThis is because FastAPI uses this `root_path` to create the default `server` in OpenAPI with the URL provided by `root_path` ."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Additional servers"
+      ],
+      "page_number": null,
+      "text": "This is a more advanced use case. Feel free to skip it.\nBy default, FastAPI will create a `server` in the OpenAPI schema with the URL for the `root_path` .\nBut you can also provide other alternative `servers` , for example if you want the same docs UI to interact with both a staging and a production environment.\nIf you pass a custom list of `servers` and there's a `root_path` (because your API lives behind a proxy), FastAPI will insert a \"server\" with this `root_path` at the beginning of the list.\nFor example, using the same `fastapi run --root-path /api/v1` server configuration:\n```python\n from fastapi import FastAPI, Request\n \n app = FastAPI(\n     servers=[\n         {\"url\": \"https://stag.example.com\", \"description\": \"Staging environment\"},\n         {\"url\": \"https://prod.example.com\", \"description\": \"Production environment\"},\n     ],\n )\n \n \n @app.get(\"/app\")\n def read_main(request: Request):\n     return {\"message\": \"Hello World\", \"root_path\": request.scope.get(\"root_path\")}\n```\nWill generate an OpenAPI schema like:\n```JSON\n{\n    \"openapi\": \"3.1.0\",\n    // More stuff here\n    \"servers\": [\n        {\n            \"url\": \"/api/v1\"\n        },\n        {\n            \"url\": \"https://stag.example.com\",\n            \"description\": \"Staging environment\"\n        },\n        {\n            \"url\": \"https://prod.example.com\",\n            \"description\": \"Production environment\"\n        }\n    ],\n    \"paths\": {\n            // More stuff here\n    }\n}\n```\nNotice the auto-generated server with a `url` value of `/api/v1` , taken from the `root_path` .\nIn the docs UI at http://127.0.0.1:9999/api/v1/docs it would look like:\nThe docs UI will interact with the server that you select.\nTechnical Details:\nThe `servers` property in the OpenAPI specification is optional.\nIf you don't specify the `servers` parameter and `root_path` is equal to `/` , the `servers` property in the generated OpenAPI schema will be omitted entirely by default, which is the equivalent of a single server with a `url` value of `/` ."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Additional servers",
+        "Disable automatic server from root_path"
+      ],
+      "page_number": null,
+      "text": "If you don't want FastAPI to include an automatic server using the `root_path` , you can use the parameter `root_path_in_servers=False` :\n```python\n from fastapi import FastAPI, Request\n \n app = FastAPI(\n     servers=[\n         {\"url\": \"https://stag.example.com\", \"description\": \"Staging environment\"},\n         {\"url\": \"https://prod.example.com\", \"description\": \"Production environment\"},\n     ],\n     root_path_in_servers=False,\n )\n \n \n @app.get(\"/app\")\n def read_main(request: Request):\n     return {\"message\": \"Hello World\", \"root_path\": request.scope.get(\"root_path\")}\n```\nand then it won't include it in the OpenAPI schema."
+    },
+    {
+      "heading_path": [
+        "Behind a Proxy",
+        "Mounting a sub-application"
+      ],
+      "page_number": null,
+      "text": "If you need to mount a sub-application (as described in Sub Applications - Mounts ) while also using a proxy with `root_path` , you can do it normally, as you would expect.\nFastAPI will internally use the `root_path` smartly, so it will just work. ✨"
+    }
+  ]
+}

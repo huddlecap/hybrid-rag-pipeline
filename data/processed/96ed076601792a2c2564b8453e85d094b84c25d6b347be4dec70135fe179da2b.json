@@ -1,0 +1,97 @@
+{
+  "doc_id": "96ed076601792a2c2564b8453e85d094b84c25d6b347be4dec70135fe179da2b",
+  "content_hash": "96ed076601792a2c2564b8453e85d094b84c25d6b347be4dec70135fe179da2b",
+  "source_file": "tutorial/metadata.md",
+  "source_files": [
+    "tutorial/metadata.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 6252,
+  "sections": [
+    {
+      "heading_path": [
+        "Metadata and Docs URLs"
+      ],
+      "page_number": null,
+      "text": "You can customize several metadata configurations in your FastAPI application."
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Metadata for API"
+      ],
+      "page_number": null,
+      "text": "You can set the following fields that are used in the OpenAPI specification and the automatic API docs UIs:\nYou can set them as follows:\n```python\n from fastapi import FastAPI\n \n description = \"\"\"\n ChimichangApp API helps you do awesome stuff. 🚀\n \n ## Items\n \n You can **read items**.\n \n ## Users\n \n You will be able to:\n \n * **Create users** (_not implemented_).\n * **Read users** (_not implemented_).\n \"\"\"\n \n app = FastAPI(\n     title=\"ChimichangApp\",\n     description=description,\n     summary=\"Deadpool's favorite app. Nuff said.\",\n     version=\"0.0.1\",\n     terms_of_service=\"http://example.com/terms/\",\n     contact={\n         \"name\": \"Deadpoolio the Amazing\",\n         \"url\": \"http://x-force.example.com/contact/\",\n         \"email\": \"dp@x-force.example.com\",\n     },\n     license_info={\n         \"name\": \"Apache 2.0\",\n         \"url\": \"https://www.apache.org/licenses/LICENSE-2.0.html\",\n     },\n )\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Katana\"}]\n```\nYou can write Markdown in the `description` field and it will be rendered in the output.\nWith this configuration, the automatic API docs would look like:"
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "License identifier"
+      ],
+      "page_number": null,
+      "text": "Since OpenAPI 3.1.0 and FastAPI 0.99.0, you can also set the `license_info` with an `identifier` instead of a `url` .\nFor example:\n```python\n from fastapi import FastAPI\n \n description = \"\"\"\n ChimichangApp API helps you do awesome stuff. 🚀\n \n ## Items\n \n You can **read items**.\n \n ## Users\n \n You will be able to:\n \n * **Create users** (_not implemented_).\n * **Read users** (_not implemented_).\n \"\"\"\n \n app = FastAPI(\n     title=\"ChimichangApp\",\n     description=description,\n     summary=\"Deadpool's favorite app. Nuff said.\",\n     version=\"0.0.1\",\n     terms_of_service=\"http://example.com/terms/\",\n     contact={\n         \"name\": \"Deadpoolio the Amazing\",\n         \"url\": \"http://x-force.example.com/contact/\",\n         \"email\": \"dp@x-force.example.com\",\n     },\n     license_info={\n         \"name\": \"Apache 2.0\",\n         \"identifier\": \"Apache-2.0\",\n     },\n )\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Katana\"}]\n```"
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Metadata for tags"
+      ],
+      "page_number": null,
+      "text": "You can also add additional metadata for the different tags used to group your path operations with the parameter `openapi_tags` .\nIt takes a list containing one dictionary for each tag.\nEach dictionary can contain:\n- name ( required ): a str with the same tag name you use in the tags parameter in your path operations and APIRouter s.\n- description : a str with a short description for the tag. It can have Markdown and will be shown in the docs UI.\n- externalDocs : a dict describing external documentation with: description : a str with a short description for the external docs. url ( required ): a str with the URL for the external documentation."
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Metadata for tags",
+        "Create metadata for tags"
+      ],
+      "page_number": null,
+      "text": "Let's try that in an example with tags for `users` and `items` .\nCreate metadata for your tags and pass it to the `openapi_tags` parameter:\n```python\n from fastapi import FastAPI\n \n tags_metadata = [\n     {\n         \"name\": \"users\",\n         \"description\": \"Operations with users. The **login** logic is also here.\",\n     },\n     {\n         \"name\": \"items\",\n         \"description\": \"Manage items. So _fancy_ they have their own docs.\",\n         \"externalDocs\": {\n             \"description\": \"Items external docs\",\n             \"url\": \"https://fastapi.tiangolo.com/\",\n         },\n     },\n ]\n \n app = FastAPI(openapi_tags=tags_metadata)\n \n \n @app.get(\"/users/\", tags=[\"users\"])\n async def get_users():\n     return [{\"name\": \"Harry\"}, {\"name\": \"Ron\"}]\n \n \n @app.get(\"/items/\", tags=[\"items\"])\n async def get_items():\n     return [{\"name\": \"wand\"}, {\"name\": \"flying broom\"}]\n```\nNotice that you can use Markdown inside of the descriptions, for example \"login\" will be shown in bold ( login ) and \"fancy\" will be shown in italics ( fancy ).\nYou don't have to add metadata for all the tags that you use."
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Metadata for tags",
+        "Use your tags"
+      ],
+      "page_number": null,
+      "text": "Use the `tags` parameter with your path operations (and `APIRouter` s) to assign them to different tags:\n```python\n from fastapi import FastAPI\n \n tags_metadata = [\n     {\n         \"name\": \"users\",\n         \"description\": \"Operations with users. The **login** logic is also here.\",\n     },\n     {\n         \"name\": \"items\",\n         \"description\": \"Manage items. So _fancy_ they have their own docs.\",\n         \"externalDocs\": {\n             \"description\": \"Items external docs\",\n             \"url\": \"https://fastapi.tiangolo.com/\",\n         },\n     },\n ]\n \n app = FastAPI(openapi_tags=tags_metadata)\n \n \n @app.get(\"/users/\", tags=[\"users\"])\n async def get_users():\n     return [{\"name\": \"Harry\"}, {\"name\": \"Ron\"}]\n \n \n @app.get(\"/items/\", tags=[\"items\"])\n async def get_items():\n     return [{\"name\": \"wand\"}, {\"name\": \"flying broom\"}]\n```\nRead more about tags in Path Operation Configuration ."
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Metadata for tags",
+        "Check the docs"
+      ],
+      "page_number": null,
+      "text": "Now, if you check the docs, they will show all the additional metadata:"
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Metadata for tags",
+        "Order of tags"
+      ],
+      "page_number": null,
+      "text": "The order of each tag metadata dictionary also defines the order shown in the docs UI.\nFor example, even though `users` would go after `items` in alphabetical order, it is shown before them, because we added their metadata as the first dictionary in the list."
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "OpenAPI URL"
+      ],
+      "page_number": null,
+      "text": "By default, the OpenAPI schema is served at `/openapi.json` .\nBut you can configure it with the parameter `openapi_url` .\nFor example, to set it to be served at `/api/v1/openapi.json` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI(openapi_url=\"/api/v1/openapi.json\")\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n```\nIf you want to disable the OpenAPI schema completely you can set `openapi_url=None` , that will also disable the documentation user interfaces that use it."
+    },
+    {
+      "heading_path": [
+        "Metadata and Docs URLs",
+        "Docs URLs"
+      ],
+      "page_number": null,
+      "text": "You can configure the two documentation user interfaces included:\n- Swagger UI : served at /docs . You can set its URL with the parameter docs_url . You can disable it by setting docs_url=None .\n- ReDoc : served at /redoc . You can set its URL with the parameter redoc_url . You can disable it by setting redoc_url=None .\nFor example, to set Swagger UI to be served at `/documentation` and disable ReDoc:\n```python\n from fastapi import FastAPI\n \n app = FastAPI(docs_url=\"/documentation\", redoc_url=None)\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n```"
+    }
+  ]
+}

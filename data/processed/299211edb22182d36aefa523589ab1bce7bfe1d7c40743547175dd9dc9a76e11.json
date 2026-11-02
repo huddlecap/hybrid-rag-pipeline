@@ -1,0 +1,89 @@
+{
+  "doc_id": "299211edb22182d36aefa523589ab1bce7bfe1d7c40743547175dd9dc9a76e11",
+  "content_hash": "299211edb22182d36aefa523589ab1bce7bfe1d7c40743547175dd9dc9a76e11",
+  "source_file": "how-to/migrate-from-pydantic-v1-to-pydantic-v2.md",
+  "source_files": [
+    "how-to/migrate-from-pydantic-v1-to-pydantic-v2.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 9,
+  "char_count": 6475,
+  "sections": [
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2"
+      ],
+      "page_number": null,
+      "text": "If you have an old FastAPI app, you might be using Pydantic version 1.\nFastAPI version 0.100.0 had support for either Pydantic v1 or v2. It would use whichever you had installed.\nFastAPI version 0.119.0 introduced partial support for Pydantic v1 from inside of Pydantic v2 (as `pydantic.v1` ), to facilitate the migration to v2.\nFastAPI 0.126.0 dropped support for Pydantic v1, while still supporting `pydantic.v1` for a little while.\nFastAPI 0.128.0 dropped support for `pydantic.v1` as well, so the latest versions of FastAPI require Pydantic v2.\nThe Pydantic team stopped support for Pydantic v1 for the latest versions of Python, starting with Python 3.14 .\nThis includes `pydantic.v1` , which is no longer supported in Python 3.14 and above.\nIf you want to use the latest features of Python, you will need to make sure you use Pydantic v2.\nIf you have an old FastAPI app with Pydantic v1, here I'll show you how to migrate it to Pydantic v2, and the features in FastAPI 0.119.0 to help you with a gradual migration."
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Official Guide"
+      ],
+      "page_number": null,
+      "text": "Pydantic has an official Migration Guide from v1 to v2.\nIt also includes what has changed, how validations are now more correct and strict, possible caveats, etc.\nYou can read it to understand better what has changed."
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Tests"
+      ],
+      "page_number": null,
+      "text": "Make sure you have tests for your app and you run them on continuous integration (CI).\nThis way, you can do the upgrade and make sure everything is still working as expected."
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "bump-pydantic"
+      ],
+      "page_number": null,
+      "text": "In many cases, when you use regular Pydantic models without customizations, you will be able to automate most of the process of migrating from Pydantic v1 to Pydantic v2.\nYou can use bump-pydantic from the same Pydantic team.\nThis tool will help you to automatically change most of the code that needs to be changed.\nAfter this, you can run the tests and check if everything works. If it does, you are done. 😎"
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Pydantic v1 in v2"
+      ],
+      "page_number": null,
+      "text": "Pydantic v2 includes everything from Pydantic v1 as a submodule `pydantic.v1` . But this is no longer supported in versions above Python 3.13.\nThis means that you can install the latest version of Pydantic v2 and import and use the old Pydantic v1 components from this submodule, as if you had the old Pydantic v1 installed.\n```python\n from pydantic.v1 import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     size: float\n```"
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Pydantic v1 in v2",
+        "FastAPI support for Pydantic v1 in v2"
+      ],
+      "page_number": null,
+      "text": "This FastAPI support for `pydantic.v1` models was added in FastAPI 0.119.0 and removed in FastAPI 0.128.0 . It was meant to be a temporary aid for the migration to Pydantic v2.\nIn current versions of FastAPI, using a `pydantic.v1` model in your app will raise an error.\nThe rest of this section describes the temporary support available only in those older versions.\nSince FastAPI 0.119.0, there's also partial support for Pydantic v1 from inside of Pydantic v2, to facilitate the migration to v2.\nSo, you could upgrade Pydantic to the latest version 2, and change the imports to use the `pydantic.v1` submodule, and in many cases it would just work.\n```python\n from fastapi import FastAPI\n from pydantic.v1 import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     size: float\n \n \n app = FastAPI()\n \n \n @app.post(\"/items/\")\n async def create_item(item: Item) -> Item:\n     return item\n```\nHave in mind that as the Pydantic team no longer supports Pydantic v1 in recent versions of Python, starting from Python 3.14, using `pydantic.v1` is also not supported in Python 3.14 and above."
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Pydantic v1 in v2",
+        "Pydantic v1 and v2 on the same app"
+      ],
+      "page_number": null,
+      "text": "It's not supported by Pydantic to have a model of Pydantic v2 with its own fields defined as Pydantic v1 models or vice versa.\n```mermaid\ngraph TB\n    subgraph \"❌ Not Supported\"\n        direction TB\n        subgraph V2[\"Pydantic v2 Model\"]\n            V1Field[\"Pydantic v1 Model\"]\n        end\n        subgraph V1[\"Pydantic v1 Model\"]\n            V2Field[\"Pydantic v2 Model\"]\n        end\n    end\n\n    style V2 fill:#f9fff3\n    style V1 fill:#fff6f0\n    style V1Field fill:#fff6f0\n    style V2Field fill:#f9fff3\n```\n...but you can have separate models, some using Pydantic v1 and others using Pydantic v2, in the same app.\n```mermaid\ngraph TB\n    subgraph \"✅ Supported\"\n        direction TB\n        subgraph V2[\"Pydantic v2 Model\"]\n            V2Field[\"Pydantic v2 Model\"]\n        end\n        subgraph V1[\"Pydantic v1 Model\"]\n            V1Field[\"Pydantic v1 Model\"]\n        end\n    end\n\n    style V2 fill:#f9fff3\n    style V1 fill:#fff6f0\n    style V1Field fill:#fff6f0\n    style V2Field fill:#f9fff3\n```\nIn some cases, it's even possible to have both Pydantic v1 and v2 models in the same path operation in your FastAPI app:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel as BaseModelV2\n from pydantic.v1 import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     size: float\n \n \n class ItemV2(BaseModelV2):\n     name: str\n     description: str | None = None\n     size: float\n \n \n app = FastAPI()\n \n \n @app.post(\"/items/\", response_model=ItemV2)\n async def create_item(item: Item):\n     return item\n```\nIn this example above, the input model is a Pydantic v1 model, and the output model (defined in `response_model=ItemV2` ) is a Pydantic v2 model."
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Pydantic v1 in v2",
+        "Pydantic v1 parameters"
+      ],
+      "page_number": null,
+      "text": "If you need to use some of the FastAPI-specific tools for parameters like `Body` , `Query` , `Form` , etc. with Pydantic v1 models, you can import them from `fastapi.temp_pydantic_v1_params` while you finish the migration to Pydantic v2:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI\n from fastapi.temp_pydantic_v1_params import Body\n from pydantic.v1 import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     size: float\n \n \n app = FastAPI()\n \n \n @app.post(\"/items/\")\n async def create_item(item: Annotated[Item, Body(embed=True)]) -> Item:\n     return item\n```"
+    },
+    {
+      "heading_path": [
+        "Migrate from Pydantic v1 to Pydantic v2",
+        "Pydantic v1 in v2",
+        "Migrate in steps"
+      ],
+      "page_number": null,
+      "text": "The gradual migration using both Pydantic v1 and v2 models in the same app described below only works in FastAPI 0.119.0 to 0.127.x . It was removed in FastAPI 0.128.0 , the latest versions require Pydantic v2 models.\nFirst try with `bump-pydantic` , if your tests pass and that works, then you're done in one command. ✨\nIf `bump-pydantic` doesn't work for your use case, you can use the support for both Pydantic v1 and v2 models in the same app to do the migration to Pydantic v2 gradually.\nYou could first upgrade Pydantic to use the latest version 2, and change the imports to use `pydantic.v1` for all your models.\nThen, you can start migrating your models from Pydantic v1 to v2 in groups, in gradual steps. 🚶"
+    }
+  ]
+}

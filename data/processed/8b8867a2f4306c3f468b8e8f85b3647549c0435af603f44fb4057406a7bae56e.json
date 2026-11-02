@@ -1,0 +1,45 @@
+{
+  "doc_id": "8b8867a2f4306c3f468b8e8f85b3647549c0435af603f44fb4057406a7bae56e",
+  "content_hash": "8b8867a2f4306c3f468b8e8f85b3647549c0435af603f44fb4057406a7bae56e",
+  "source_file": "advanced/using-request-directly.md",
+  "source_files": [
+    "advanced/using-request-directly.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 4,
+  "char_count": 2098,
+  "sections": [
+    {
+      "heading_path": [
+        "Using the Request Directly"
+      ],
+      "page_number": null,
+      "text": "Up to now, you have been declaring the parts of the request that you need with their types.\nTaking data from:\n- The path as parameters.\n- Headers.\n- Cookies.\n- etc.\nAnd by doing so, FastAPI is validating that data, converting it and generating documentation for your API automatically.\nBut there are situations where you might need to access the `Request` object directly."
+    },
+    {
+      "heading_path": [
+        "Using the Request Directly",
+        "Details about the Request object"
+      ],
+      "page_number": null,
+      "text": "As FastAPI is actually Starlette underneath, with a layer of several tools on top, you can use Starlette's Request object directly when you need to.\nIt would also mean that if you get data from the `Request` object directly (for example, read the body) it won't be validated, converted or documented (with OpenAPI, for the automatic API user interface) by FastAPI.\nAlthough any other parameter declared normally (for example, the body with a Pydantic model) would still be validated, converted, annotated, etc.\nBut there are specific cases where it's useful to get the `Request` object."
+    },
+    {
+      "heading_path": [
+        "Using the Request Directly",
+        "Use the Request object directly"
+      ],
+      "page_number": null,
+      "text": "Let's imagine you want to get the client's IP address/host inside of your path operation function .\nFor that you need to access the request directly.\n```python\n from fastapi import FastAPI, Request\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n def read_root(item_id: str, request: Request):\n     client_host = request.client.host\n     return {\"client_host\": client_host, \"item_id\": item_id}\n```\nBy declaring a path operation function parameter with the type being the `Request` FastAPI will know to pass the `Request` in that parameter.\nNote that in this case, we are declaring a path parameter beside the request parameter.\nSo, the path parameter will be extracted, validated, converted to the specified type and annotated with OpenAPI.\nThe same way, you can declare any other parameter as normally, and additionally, get the `Request` too."
+    },
+    {
+      "heading_path": [
+        "Using the Request Directly",
+        "Request documentation"
+      ],
+      "page_number": null,
+      "text": "You can read more details about the Request object in the official Starlette documentation site .\nTechnical Details:\nYou could also use `from starlette.requests import Request` .\nFastAPI provides it directly just as a convenience for you, the developer. But it comes directly from Starlette."
+    }
+  ]
+}

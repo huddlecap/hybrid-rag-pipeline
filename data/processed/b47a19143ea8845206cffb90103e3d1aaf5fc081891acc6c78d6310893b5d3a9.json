@@ -1,0 +1,21 @@
+{
+  "doc_id": "b47a19143ea8845206cffb90103e3d1aaf5fc081891acc6c78d6310893b5d3a9",
+  "content_hash": "b47a19143ea8845206cffb90103e3d1aaf5fc081891acc6c78d6310893b5d3a9",
+  "source_file": "about/index.md",
+  "source_files": [
+    "about/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 50,
+  "sections": [
+    {
+      "heading_path": [
+        "About"
+      ],
+      "page_number": null,
+      "text": "About FastAPI, its design, inspiration and more. 🤓"
+    }
+  ]
+}

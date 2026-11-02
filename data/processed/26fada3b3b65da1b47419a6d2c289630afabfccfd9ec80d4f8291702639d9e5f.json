@@ -1,0 +1,29 @@
+{
+  "doc_id": "26fada3b3b65da1b47419a6d2c289630afabfccfd9ec80d4f8291702639d9e5f",
+  "content_hash": "26fada3b3b65da1b47419a6d2c289630afabfccfd9ec80d4f8291702639d9e5f",
+  "source_file": "tutorial/dependencies/global-dependencies.md",
+  "source_files": [
+    "tutorial/dependencies/global-dependencies.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 1482,
+  "sections": [
+    {
+      "heading_path": [
+        "Global Dependencies"
+      ],
+      "page_number": null,
+      "text": "For some types of applications you might want to add dependencies to the whole application.\nSimilar to the way you can add dependencies to the path operation decorators , you can add them to the `FastAPI` application.\nIn that case, they will be applied to all the path operations in the application:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI, Header, HTTPException\n \n \n async def verify_token(x_token: Annotated[str, Header()]):\n     if x_token != \"fake-super-secret-token\":\n         raise HTTPException(status_code=400, detail=\"X-Token header invalid\")\n \n \n async def verify_key(x_key: Annotated[str, Header()]):\n     if x_key != \"fake-super-secret-key\":\n         raise HTTPException(status_code=400, detail=\"X-Key header invalid\")\n     return x_key\n \n \n app = FastAPI(dependencies=[Depends(verify_token), Depends(verify_key)])\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"item\": \"Portal Gun\"}, {\"item\": \"Plumbus\"}]\n \n \n @app.get(\"/users/\")\n async def read_users():\n     return [{\"username\": \"Rick\"}, {\"username\": \"Morty\"}]\n```\nAnd all the ideas in the section about adding dependencies to the path operation decorators still apply, but in this case, to all of the path operations in the app."
+    },
+    {
+      "heading_path": [
+        "Global Dependencies",
+        "Dependencies for groups of path operations"
+      ],
+      "page_number": null,
+      "text": "Later, when reading about how to structure bigger applications ( Bigger Applications - Multiple Files ), possibly with multiple files, you will learn how to declare a single `dependencies` parameter for a group of path operations ."
+    }
+  ]
+}

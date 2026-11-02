@@ -1,0 +1,66 @@
+{
+  "doc_id": "a798bdb62c27ac9a3f5d2b3853eb4168a31aeb08ff36595e0231747ccaad78a8",
+  "content_hash": "a798bdb62c27ac9a3f5d2b3853eb4168a31aeb08ff36595e0231747ccaad78a8",
+  "source_file": "tutorial/body-updates.md",
+  "source_files": [
+    "tutorial/body-updates.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 7200,
+  "sections": [
+    {
+      "heading_path": [
+        "Body - Updates",
+        "Update replacing with PUT"
+      ],
+      "page_number": null,
+      "text": "To update an item you can use the HTTP PUT operation.\nYou can use the `jsonable_encoder` to convert the input data to data that can be stored as JSON (e.g. with a NoSQL database). For example, converting `datetime` to `str` .\n```python\n from fastapi import FastAPI\n from fastapi.encoders import jsonable_encoder\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str | None = None\n     description: str | None = None\n     price: float | None = None\n     tax: float = 10.5\n     tags: list[str] = []\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The bartenders\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\"name\": \"Baz\", \"description\": None, \"price\": 50.2, \"tax\": 10.5, \"tags\": []},\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=Item)\n async def read_item(item_id: str):\n     return items[item_id]\n \n \n @app.put(\"/items/{item_id}\", response_model=Item)\n async def update_item(item_id: str, item: Item):\n     update_item_encoded = jsonable_encoder(item)\n     items[item_id] = update_item_encoded\n     return update_item_encoded\n```\n`PUT` is used to receive data that should replace the existing data."
+    },
+    {
+      "heading_path": [
+        "Body - Updates",
+        "Update replacing with PUT",
+        "Warning about replacing"
+      ],
+      "page_number": null,
+      "text": "That means that if you want to update the item `bar` using `PUT` with a body containing:\n```Python\n{\n    \"name\": \"Barz\",\n    \"price\": 3,\n    \"description\": None,\n}\n```\nbecause it doesn't include the already stored attribute `\"tax\": 20.2` , the input model would take the default value of `\"tax\": 10.5` .\nAnd the data would be saved with that \"new\" `tax` of `10.5` ."
+    },
+    {
+      "heading_path": [
+        "Body - Updates",
+        "Partial updates with PATCH"
+      ],
+      "page_number": null,
+      "text": "You can also use the HTTP PATCH operation to partially update data.\nThis means that you can send only the data that you want to update, leaving the rest intact.\n`PATCH` is less commonly used and known than `PUT` .\nAnd many teams use only `PUT` , even for partial updates.\nYou are free to use them however you want, FastAPI doesn't impose any restrictions.\nBut this guide shows you, more or less, how they are intended to be used."
+    },
+    {
+      "heading_path": [
+        "Body - Updates",
+        "Partial updates with PATCH",
+        "Using Pydantic's exclude_unset parameter"
+      ],
+      "page_number": null,
+      "text": "If you want to receive partial updates, it's very useful to use the parameter `exclude_unset` in Pydantic's model's `.model_dump()` .\nLike `item.model_dump(exclude_unset=True)` .\nThat would generate a `dict` with only the data that was set when creating the `item` model, excluding default values.\nThen you can use this to generate a `dict` with only the data that was set (sent in the request), omitting default values:\n```python\n from fastapi import FastAPI\n from fastapi.encoders import jsonable_encoder\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str | None = None\n     description: str | None = None\n     price: float | None = None\n     tax: float = 10.5\n     tags: list[str] = []\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The bartenders\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\"name\": \"Baz\", \"description\": None, \"price\": 50.2, \"tax\": 10.5, \"tags\": []},\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=Item)\n async def read_item(item_id: str):\n     return items[item_id]\n \n \n @app.patch(\"/items/{item_id}\")\n async def update_item(item_id: str, item: Item) -> Item:\n     stored_item_data = items[item_id]\n     stored_item_model = Item(**stored_item_data)\n     update_data = item.model_dump(exclude_unset=True)\n     updated_item = stored_item_model.model_copy(update=update_data)\n     items[item_id] = jsonable_encoder(updated_item)\n     return updated_item\n```"
+    },
+    {
+      "heading_path": [
+        "Body - Updates",
+        "Partial updates with PATCH",
+        "Using Pydantic's update parameter"
+      ],
+      "page_number": null,
+      "text": "Now, you can create a copy of the existing model using `.model_copy()` , and pass the `update` parameter with a `dict` containing the data to update.\nLike `stored_item_model.model_copy(update=update_data)` :\n```python\n from fastapi import FastAPI\n from fastapi.encoders import jsonable_encoder\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str | None = None\n     description: str | None = None\n     price: float | None = None\n     tax: float = 10.5\n     tags: list[str] = []\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The bartenders\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\"name\": \"Baz\", \"description\": None, \"price\": 50.2, \"tax\": 10.5, \"tags\": []},\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=Item)\n async def read_item(item_id: str):\n     return items[item_id]\n \n \n @app.patch(\"/items/{item_id}\")\n async def update_item(item_id: str, item: Item) -> Item:\n     stored_item_data = items[item_id]\n     stored_item_model = Item(**stored_item_data)\n     update_data = item.model_dump(exclude_unset=True)\n     updated_item = stored_item_model.model_copy(update=update_data)\n     items[item_id] = jsonable_encoder(updated_item)\n     return updated_item\n```"
+    },
+    {
+      "heading_path": [
+        "Body - Updates",
+        "Partial updates with PATCH",
+        "Partial updates recap"
+      ],
+      "page_number": null,
+      "text": "In summary, to apply partial updates you would:\n- (Optionally) use PATCH instead of PUT .\n- Retrieve the stored data.\n- Put that data in a Pydantic model.\n- Generate a dict without default values from the input model (using exclude_unset ). This way you can update only the values actually set by the user, instead of overriding values already stored with default values in your model.\n- Create a copy of the stored model, updating its attributes with the received partial updates (using the update parameter).\n- Convert the copied model to something that can be stored in your DB (for example, using the jsonable_encoder ). This is comparable to using the model's .model_dump() method again, but it makes sure (and converts) the values to data types that can be converted to JSON, for example, datetime to str .\n- Save the data to your DB.\n- Return the updated model.\n```python\n from fastapi import FastAPI\n from fastapi.encoders import jsonable_encoder\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str | None = None\n     description: str | None = None\n     price: float | None = None\n     tax: float = 10.5\n     tags: list[str] = []\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The bartenders\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\"name\": \"Baz\", \"description\": None, \"price\": 50.2, \"tax\": 10.5, \"tags\": []},\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=Item)\n async def read_item(item_id: str):\n     return items[item_id]\n \n \n @app.patch(\"/items/{item_id}\")\n async def update_item(item_id: str, item: Item) -> Item:\n     stored_item_data = items[item_id]\n     stored_item_model = Item(**stored_item_data)\n     update_data = item.model_dump(exclude_unset=True)\n     updated_item = stored_item_model.model_copy(update=update_data)\n     items[item_id] = jsonable_encoder(updated_item)\n     return updated_item\n```\nYou can actually use this same technique with an HTTP `PUT` operation.\nBut the example here uses `PATCH` because it was created for these use cases.\nNotice that the input model is still validated.\nSo, if you want to receive partial updates that can omit all the attributes, you need to have a model with all the attributes marked as optional (with default values or `None` ).\nTo distinguish from the models with all optional values for updates and models with required values for creation , you can use the ideas described in Extra Models ."
+    }
+  ]
+}

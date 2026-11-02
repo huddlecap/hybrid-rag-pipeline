@@ -1,0 +1,21 @@
+{
+  "doc_id": "1a70b7a256609449b572980901b2afefc157cb4361ed436dd96d1c43da8787f8",
+  "content_hash": "1a70b7a256609449b572980901b2afefc157cb4361ed436dd96d1c43da8787f8",
+  "source_file": "reference/staticfiles.md",
+  "source_files": [
+    "reference/staticfiles.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 301,
+  "sections": [
+    {
+      "heading_path": [
+        "Static Files - StaticFiles"
+      ],
+      "page_number": null,
+      "text": "You can use the `StaticFiles` class to serve static files, like JavaScript, CSS, images, etc.\nRead more about it in the FastAPI docs for Static Files .\nYou can import it directly from `fastapi.staticfiles` :\n```python\nfrom fastapi.staticfiles import StaticFiles\n```\n::: fastapi.staticfiles.StaticFiles"
+    }
+  ]
+}

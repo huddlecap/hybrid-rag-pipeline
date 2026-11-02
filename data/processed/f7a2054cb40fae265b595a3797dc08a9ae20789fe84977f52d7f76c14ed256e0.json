@@ -1,0 +1,37 @@
+{
+  "doc_id": "f7a2054cb40fae265b595a3797dc08a9ae20789fe84977f52d7f76c14ed256e0",
+  "content_hash": "f7a2054cb40fae265b595a3797dc08a9ae20789fe84977f52d7f76c14ed256e0",
+  "source_file": "management.md",
+  "source_files": [
+    "management.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 400,
+  "sections": [
+    {
+      "heading_path": [
+        "Repository Management"
+      ],
+      "page_number": null,
+      "text": "Here's a short description of how the FastAPI repository is managed and maintained."
+    },
+    {
+      "heading_path": [
+        "Repository Management",
+        "Owner"
+      ],
+      "page_number": null,
+      "text": "I, @tiangolo , am the creator and owner of the FastAPI repository. 🤓\nI normally give the final review to each PR before merging them. I make the final decisions on the project, I'm the BDFL . 😅"
+    },
+    {
+      "heading_path": [
+        "Repository Management",
+        "Team"
+      ],
+      "page_number": null,
+      "text": "There's a team of people that help manage and maintain the project. 😎\nLearn more about it in tiangolo.com - GitHub FastAPI ."
+    }
+  ]
+}

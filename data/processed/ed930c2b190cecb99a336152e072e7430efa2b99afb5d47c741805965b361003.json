@@ -1,0 +1,61 @@
+{
+  "doc_id": "ed930c2b190cecb99a336152e072e7430efa2b99afb5d47c741805965b361003",
+  "content_hash": "ed930c2b190cecb99a336152e072e7430efa2b99afb5d47c741805965b361003",
+  "source_file": "advanced/response-directly.md",
+  "source_files": [
+    "advanced/response-directly.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 4685,
+  "sections": [
+    {
+      "heading_path": [
+        "Return a Response Directly"
+      ],
+      "page_number": null,
+      "text": "When you create a FastAPI path operation you can normally return any data from it: a `dict` , a `list` , a Pydantic model, a database model, etc.\nIf you declare a Response Model FastAPI will use it to serialize the data to JSON, using Pydantic.\nIf you don't declare a response model, FastAPI will use the `jsonable_encoder` explained in JSON Compatible Encoder and put it in a `JSONResponse` .\nYou could also create a `JSONResponse` directly and return it.\nYou will normally have much better performance using a Response Model than returning a `JSONResponse` directly, as that way it serializes the data using Pydantic, in Rust."
+    },
+    {
+      "heading_path": [
+        "Return a Response Directly",
+        "Return a Response"
+      ],
+      "page_number": null,
+      "text": "You can return a `Response` or any sub-class of it.\n`JSONResponse` itself is a sub-class of `Response` .\nAnd when you return a `Response` , FastAPI will pass it directly.\nIt won't do any data conversion with Pydantic models, it won't convert the contents to any type, etc.\nThis gives you a lot of flexibility . You can return any data type, override any data declaration or validation, etc.\nIt also gives you a lot of responsibility . You have to make sure that the data you return is correct, in the correct format, that it can be serialized, etc."
+    },
+    {
+      "heading_path": [
+        "Return a Response Directly",
+        "Using the jsonable_encoder in a Response"
+      ],
+      "page_number": null,
+      "text": "Because FastAPI doesn't make any changes to a `Response` you return, you have to make sure its contents are ready for it.\nFor example, you cannot put a Pydantic model in a `JSONResponse` without first converting it to a `dict` with all the data types (like `datetime` , `UUID` , etc) converted to JSON-compatible types.\nFor those cases, you can use the `jsonable_encoder` to convert your data before passing it to a response:\n```python\n from datetime import datetime\n \n from fastapi import FastAPI\n from fastapi.encoders import jsonable_encoder\n from fastapi.responses import JSONResponse\n from pydantic import BaseModel\n \n \n class Item(BaseModel):\n     title: str\n     timestamp: datetime\n     description: str | None = None\n \n \n app = FastAPI()\n \n \n @app.put(\"/items/{id}\")\n def update_item(id: str, item: Item):\n     json_compatible_item_data = jsonable_encoder(item)\n     return JSONResponse(content=json_compatible_item_data)\n```\nTechnical Details:\nYou could also use `from starlette.responses import JSONResponse` .\nFastAPI provides the same `starlette.responses` as `fastapi.responses` just as a convenience for you, the developer. But most of the available responses come directly from Starlette."
+    },
+    {
+      "heading_path": [
+        "Return a Response Directly",
+        "Returning a custom Response"
+      ],
+      "page_number": null,
+      "text": "The example above shows all the parts you need, but it's not very useful yet, as you could have just returned the `item` directly, and FastAPI would put it in a `JSONResponse` for you, converting it to a `dict` , etc. All that by default.\nNow, let's see how you could use that to return a custom response.\nLet's say that you want to return an XML response.\nYou could put your XML content in a string, put that in a `Response` , and return it:\n```python\n from fastapi import FastAPI, Response\n \n app = FastAPI()\n \n \n @app.get(\"/legacy/\")\n def get_legacy_data():\n     data = \"\"\"<?xml version=\"1.0\"?>\n     <shampoo>\n     <Header>\n         Apply shampoo here.\n     </Header>\n     <Body>\n         You'll have to use soap here.\n     </Body>\n     </shampoo>\n     \"\"\"\n     return Response(content=data, media_type=\"application/xml\")\n```"
+    },
+    {
+      "heading_path": [
+        "Return a Response Directly",
+        "How a Response Model Works"
+      ],
+      "page_number": null,
+      "text": "When you declare a Response Model - Return Type in a path operation, FastAPI will use it to serialize the data to JSON, using Pydantic.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: list[str] = []\n \n \n @app.post(\"/items/\")\n async def create_item(item: Item) -> Item:\n     return item\n \n \n @app.get(\"/items/\")\n async def read_items() -> list[Item]:\n     return [\n         Item(name=\"Portal Gun\", price=42.0),\n         Item(name=\"Plumbus\", price=32.0),\n     ]\n```\nAs that will happen on the Rust side, the performance will be much better than if it was done with regular Python and the `JSONResponse` class.\nWhen using a `response_model` or return type, FastAPI won't use the `jsonable_encoder` to convert the data (which would be slower) nor the `JSONResponse` class.\nInstead it takes the JSON bytes generated with Pydantic using the response model (or return type) and returns a `Response` with the right media type for JSON directly ( `application/json` )."
+    },
+    {
+      "heading_path": [
+        "Return a Response Directly",
+        "Notes"
+      ],
+      "page_number": null,
+      "text": "When you return a `Response` directly its data is not validated, converted (serialized), or documented automatically.\nBut you can still document it as described in Additional Responses in OpenAPI .\nYou can see in later sections how to use/declare these custom `Response` s while still having automatic data conversion, documentation, etc."
+    }
+  ]
+}

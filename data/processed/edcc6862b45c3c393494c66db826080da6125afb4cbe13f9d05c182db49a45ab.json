@@ -1,0 +1,21 @@
+{
+  "doc_id": "edcc6862b45c3c393494c66db826080da6125afb4cbe13f9d05c182db49a45ab",
+  "content_hash": "edcc6862b45c3c393494c66db826080da6125afb4cbe13f9d05c182db49a45ab",
+  "source_file": "reference/openapi/models.md",
+  "source_files": [
+    "reference/openapi/models.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 103,
+  "sections": [
+    {
+      "heading_path": [
+        "OpenAPI models"
+      ],
+      "page_number": null,
+      "text": "OpenAPI Pydantic models used to generate and validate the generated OpenAPI.\n::: fastapi.openapi.models"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "doc_id": "cabf2d7ccaa178c7163899e837190bb89e90df1cc03db53acb256e74ab37ff9a",
+  "content_hash": "cabf2d7ccaa178c7163899e837190bb89e90df1cc03db53acb256e74ab37ff9a",
+  "source_file": "advanced/advanced-python-types.md",
+  "source_files": [
+    "advanced/advanced-python-types.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 1927,
+  "sections": [
+    {
+      "heading_path": [
+        "Advanced Python Types"
+      ],
+      "page_number": null,
+      "text": "Here are some additional ideas that might be useful when working with Python types."
+    },
+    {
+      "heading_path": [
+        "Advanced Python Types",
+        "Using Union or Optional"
+      ],
+      "page_number": null,
+      "text": "If your code for some reason can't use `|` , for example if it's not in a type annotation but in something like `response_model=` , instead of using the vertical bar ( `|` ) you can use `Union` from `typing` .\nFor example, you could declare that something could be a `str` or `None` :\n```python\nfrom typing import Union\n\n\ndef say_hi(name: Union[str, None]):\n    print(f\"Hi {name}!\")\n```\n`typing` also has a shortcut to declare that something could be `None` , with `Optional` .\nHere's a tip from my very subjective point of view:\n- 🚨 Avoid using Optional[SomeType]\n- Instead ✨ use Union[SomeType, None] ✨.\nBoth are equivalent and underneath they are the same, but I would recommend `Union` instead of `Optional` because the word \" optional \" would seem to imply that the value is optional, and it actually means \"it can be `None` \", even if it's not optional and is still required.\nI think `Union[SomeType, None]` is more explicit about what it means.\nIt's just about the words and names. But those words can affect how you and your teammates think about the code.\nAs an example, let's take this function:\n```python\nfrom typing import Optional\n\n\ndef say_hi(name: Optional[str]):\n    print(f\"Hey {name}!\")\n```\nThe parameter `name` is defined as `Optional[str]` , but it is not optional , you cannot call the function without the parameter:\n```Python\nsay_hi()  # Oh, no, this throws an error! 😱\n```\nThe `name` parameter is still required (not optional ) because it doesn't have a default value. Still, `name` accepts `None` as the value:\n```Python\nsay_hi(name=None)  # This works, None is valid 🎉\n```\nThe good news is, in most cases, you will be able to simply use `|` to define unions of types:\n```python\ndef say_hi(name: str | None):\n    print(f\"Hey {name}!\")\n```\nSo, normally you don't have to worry about names like `Optional` and `Union` . 😎"
+    }
+  ]
+}

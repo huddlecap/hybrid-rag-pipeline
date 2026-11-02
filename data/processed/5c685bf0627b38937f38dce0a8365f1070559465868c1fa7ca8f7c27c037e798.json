@@ -1,0 +1,91 @@
+{
+  "doc_id": "5c685bf0627b38937f38dce0a8365f1070559465868c1fa7ca8f7c27c037e798",
+  "content_hash": "5c685bf0627b38937f38dce0a8365f1070559465868c1fa7ca8f7c27c037e798",
+  "source_file": "how-to/extending-openapi.md",
+  "source_files": [
+    "how-to/extending-openapi.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 9,
+  "char_count": 6571,
+  "sections": [
+    {
+      "heading_path": [
+        "Extending OpenAPI"
+      ],
+      "page_number": null,
+      "text": "There are some cases where you might need to modify the generated OpenAPI schema.\nIn this section you will see how."
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "The normal process"
+      ],
+      "page_number": null,
+      "text": "The normal (default) process, is as follows.\nA `FastAPI` application (instance) has an `.openapi()` method that is expected to return the OpenAPI schema.\nAs part of the application object creation, a path operation for `/openapi.json` (or for whatever you set your `openapi_url` ) is registered.\nIt just returns a JSON response with the result of the application's `.openapi()` method.\nBy default, what the method `.openapi()` does is check the property `.openapi_schema` to see if it has contents and return them.\nIf it doesn't, it generates them using the utility function at `fastapi.openapi.utils.get_openapi` .\nAnd that function `get_openapi()` receives as parameters:\n- title : The OpenAPI title, shown in the docs.\n- version : The version of your API, e.g. 2.5.0 .\n- openapi_version : The version of the OpenAPI specification used. By default, the latest: 3.1.0 .\n- summary : A short summary of the API.\n- description : The description of your API, this can include markdown and will be shown in the docs.\n- routes : The routes from the application, taken from app.routes . FastAPI uses them to collect the registered path operations , including those from included routers.\nTechnical Details:\n`app.routes` is a lower-level route tree. It can include route candidates that FastAPI uses internally for included routers, not only final `APIRoute` objects.\nYou can still pass `app.routes` to `get_openapi()` . FastAPI will traverse that route tree to collect the effective path operations.\nThe parameter `summary` is available in OpenAPI 3.1.0 and above, supported by FastAPI 0.99.0 and above."
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults"
+      ],
+      "page_number": null,
+      "text": "Using the information above, you can use the same utility function to generate the OpenAPI schema and override each part that you need.\nFor example, let's add ReDoc's OpenAPI extension to include a custom logo ."
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults",
+        "Normal FastAPI"
+      ],
+      "page_number": null,
+      "text": "First, write all your FastAPI application as normally:\n```python\n from fastapi import FastAPI\n from fastapi.openapi.utils import get_openapi\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n \n \n def custom_openapi():\n     if app.openapi_schema:\n         return app.openapi_schema\n     openapi_schema = get_openapi(\n         title=\"Custom title\",\n         version=\"2.5.0\",\n         summary=\"This is a very custom OpenAPI schema\",\n         description=\"Here's a longer description of the custom **OpenAPI** schema\",\n         routes=app.routes,\n     )\n     openapi_schema[\"info\"][\"x-logo\"] = {\n         \"url\": \"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\"\n     }\n     app.openapi_schema = openapi_schema\n     return app.openapi_schema\n \n \n app.openapi = custom_openapi\n```"
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults",
+        "Generate the OpenAPI schema"
+      ],
+      "page_number": null,
+      "text": "Then, use the same utility function to generate the OpenAPI schema, inside a `custom_openapi()` function:\n```python\n from fastapi import FastAPI\n from fastapi.openapi.utils import get_openapi\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n \n \n def custom_openapi():\n     if app.openapi_schema:\n         return app.openapi_schema\n     openapi_schema = get_openapi(\n         title=\"Custom title\",\n         version=\"2.5.0\",\n         summary=\"This is a very custom OpenAPI schema\",\n         description=\"Here's a longer description of the custom **OpenAPI** schema\",\n         routes=app.routes,\n     )\n     openapi_schema[\"info\"][\"x-logo\"] = {\n         \"url\": \"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\"\n     }\n     app.openapi_schema = openapi_schema\n     return app.openapi_schema\n \n \n app.openapi = custom_openapi\n```"
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults",
+        "Modify the OpenAPI schema"
+      ],
+      "page_number": null,
+      "text": "Now you can add the ReDoc extension, adding a custom `x-logo` to the `info` \"object\" in the OpenAPI schema:\n```python\n from fastapi import FastAPI\n from fastapi.openapi.utils import get_openapi\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n \n \n def custom_openapi():\n     if app.openapi_schema:\n         return app.openapi_schema\n     openapi_schema = get_openapi(\n         title=\"Custom title\",\n         version=\"2.5.0\",\n         summary=\"This is a very custom OpenAPI schema\",\n         description=\"Here's a longer description of the custom **OpenAPI** schema\",\n         routes=app.routes,\n     )\n     openapi_schema[\"info\"][\"x-logo\"] = {\n         \"url\": \"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\"\n     }\n     app.openapi_schema = openapi_schema\n     return app.openapi_schema\n \n \n app.openapi = custom_openapi\n```"
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults",
+        "Cache the OpenAPI schema"
+      ],
+      "page_number": null,
+      "text": "You can use the property `.openapi_schema` as a \"cache\", to store your generated schema.\nThat way, your application won't have to generate the schema every time a user opens your API docs.\nIt will be generated only once, and then the same cached schema will be used for the next requests.\n```python\n from fastapi import FastAPI\n from fastapi.openapi.utils import get_openapi\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n \n \n def custom_openapi():\n     if app.openapi_schema:\n         return app.openapi_schema\n     openapi_schema = get_openapi(\n         title=\"Custom title\",\n         version=\"2.5.0\",\n         summary=\"This is a very custom OpenAPI schema\",\n         description=\"Here's a longer description of the custom **OpenAPI** schema\",\n         routes=app.routes,\n     )\n     openapi_schema[\"info\"][\"x-logo\"] = {\n         \"url\": \"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\"\n     }\n     app.openapi_schema = openapi_schema\n     return app.openapi_schema\n \n \n app.openapi = custom_openapi\n```"
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults",
+        "Override the method"
+      ],
+      "page_number": null,
+      "text": "Now you can replace the `.openapi()` method with your new function.\n```python\n from fastapi import FastAPI\n from fastapi.openapi.utils import get_openapi\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"name\": \"Foo\"}]\n \n \n def custom_openapi():\n     if app.openapi_schema:\n         return app.openapi_schema\n     openapi_schema = get_openapi(\n         title=\"Custom title\",\n         version=\"2.5.0\",\n         summary=\"This is a very custom OpenAPI schema\",\n         description=\"Here's a longer description of the custom **OpenAPI** schema\",\n         routes=app.routes,\n     )\n     openapi_schema[\"info\"][\"x-logo\"] = {\n         \"url\": \"https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png\"\n     }\n     app.openapi_schema = openapi_schema\n     return app.openapi_schema\n \n \n app.openapi = custom_openapi\n```"
+    },
+    {
+      "heading_path": [
+        "Extending OpenAPI",
+        "Overriding the defaults",
+        "Check it"
+      ],
+      "page_number": null,
+      "text": "Once you go to http://127.0.0.1:8000/redoc you will see that you are using your custom logo (in this example, FastAPI 's logo):"
+    }
+  ]
+}

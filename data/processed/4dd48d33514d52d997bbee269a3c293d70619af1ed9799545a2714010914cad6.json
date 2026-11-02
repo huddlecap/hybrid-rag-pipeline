@@ -1,0 +1,86 @@
+{
+  "doc_id": "4dd48d33514d52d997bbee269a3c293d70619af1ed9799545a2714010914cad6",
+  "content_hash": "4dd48d33514d52d997bbee269a3c293d70619af1ed9799545a2714010914cad6",
+  "source_file": "tutorial/path-operation-configuration.md",
+  "source_files": [
+    "tutorial/path-operation-configuration.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 9,
+  "char_count": 5988,
+  "sections": [
+    {
+      "heading_path": [
+        "Path Operation Configuration"
+      ],
+      "page_number": null,
+      "text": "There are several parameters that you can pass to your path operation decorator to configure it.\nNotice that these parameters are passed directly to the path operation decorator , not to your path operation function ."
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Response Status Code"
+      ],
+      "page_number": null,
+      "text": "You can define the (HTTP) `status_code` to be used in the response of your path operation .\nYou can pass directly the `int` code, like `404` .\nBut if you don't remember what each number code is for, you can use the shortcut constants in `status` :\n```python\n from fastapi import FastAPI, status\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.post(\"/items/\", status_code=status.HTTP_201_CREATED)\n async def create_item(item: Item) -> Item:\n     return item\n```\nThat status code will be used in the response and will be added to the OpenAPI schema.\nTechnical Details:\nYou could also use `from starlette import status` .\nFastAPI provides the same `starlette.status` as `fastapi.status` just as a convenience for you, the developer. But it comes directly from Starlette."
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Tags"
+      ],
+      "page_number": null,
+      "text": "You can add tags to your path operation , pass the parameter `tags` with a `list` of `str` (commonly just one `str` ):\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.post(\"/items/\", tags=[\"items\"])\n async def create_item(item: Item) -> Item:\n     return item\n \n \n @app.get(\"/items/\", tags=[\"items\"])\n async def read_items():\n     return [{\"name\": \"Foo\", \"price\": 42}]\n \n \n @app.get(\"/users/\", tags=[\"users\"])\n async def read_users():\n     return [{\"username\": \"johndoe\"}]\n```\nThey will be added to the OpenAPI schema and used by the automatic documentation interfaces:"
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Tags",
+        "Tags with Enums"
+      ],
+      "page_number": null,
+      "text": "If you have a big application, you might end up accumulating several tags , and you would want to make sure you always use the same tag for related path operations .\nIn these cases, it could make sense to store the tags in an `Enum` .\nFastAPI supports that the same way as with plain strings:\n```python\n from enum import Enum\n \n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n class Tags(Enum):\n     items = \"items\"\n     users = \"users\"\n \n \n @app.get(\"/items/\", tags=[Tags.items])\n async def get_items():\n     return [\"Portal gun\", \"Plumbus\"]\n \n \n @app.get(\"/users/\", tags=[Tags.users])\n async def read_users():\n     return [\"Rick\", \"Morty\"]\n```"
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Summary and description"
+      ],
+      "page_number": null,
+      "text": "You can add a `summary` and `description` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.post(\n     \"/items/\",\n     summary=\"Create an item\",\n     description=\"Create an item with all the information, name, description, price, tax and a set of unique tags\",\n )\n async def create_item(item: Item) -> Item:\n     return item\n```"
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Description from docstring"
+      ],
+      "page_number": null,
+      "text": "As descriptions tend to be long and cover multiple lines, you can declare the path operation description in the function docstring and FastAPI will read it from there.\nYou can write Markdown in the docstring, it will be interpreted and displayed correctly (taking into account docstring indentation).\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.post(\"/items/\", summary=\"Create an item\")\n async def create_item(item: Item) -> Item:\n     \"\"\"\n     Create an item with all the information:\n \n     - **name**: each item must have a name\n     - **description**: a long description\n     - **price**: required\n     - **tax**: if the item doesn't have tax, you can omit this\n     - **tags**: a set of unique tag strings for this item\n     \"\"\"\n     return item\n```\nIt will be used in the interactive docs:"
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Response description"
+      ],
+      "page_number": null,
+      "text": "You can specify the response description with the parameter `response_description` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.post(\n     \"/items/\",\n     summary=\"Create an item\",\n     response_description=\"The created item\",\n )\n async def create_item(item: Item) -> Item:\n     \"\"\"\n     Create an item with all the information:\n \n     - **name**: each item must have a name\n     - **description**: a long description\n     - **price**: required\n     - **tax**: if the item doesn't have tax, you can omit this\n     - **tags**: a set of unique tag strings for this item\n     \"\"\"\n     return item\n```\nNotice that `response_description` refers specifically to the response, the `description` refers to the path operation in general.\nOpenAPI specifies that each path operation requires a response description.\nSo, if you don't provide one, FastAPI will automatically generate one of \"Successful response\"."
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Deprecate a path operation"
+      ],
+      "page_number": null,
+      "text": "If you need to mark a path operation as deprecated , but without removing it, pass the parameter `deprecated` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\", tags=[\"items\"])\n async def read_items():\n     return [{\"name\": \"Foo\", \"price\": 42}]\n \n \n @app.get(\"/users/\", tags=[\"users\"])\n async def read_users():\n     return [{\"username\": \"johndoe\"}]\n \n \n @app.get(\"/elements/\", tags=[\"items\"], deprecated=True)\n async def read_elements():\n     return [{\"item_id\": \"Foo\"}]\n```\nIt will be clearly marked as deprecated in the interactive docs:\nCheck how deprecated and non-deprecated path operations look:"
+    },
+    {
+      "heading_path": [
+        "Path Operation Configuration",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "You can configure and add metadata for your path operations easily by passing parameters to the path operation decorators ."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "doc_id": "ff783f7a73905b1ac4fca980dfaa09782af510cc038e193512a1c675e33591e0",
+  "content_hash": "ff783f7a73905b1ac4fca980dfaa09782af510cc038e193512a1c675e33591e0",
+  "source_file": "advanced/response-headers.md",
+  "source_files": [
+    "advanced/response-headers.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 2228,
+  "sections": [
+    {
+      "heading_path": [
+        "Response Headers",
+        "Use a Response parameter"
+      ],
+      "page_number": null,
+      "text": "You can declare a parameter of type `Response` in your path operation function (as you can do for cookies).\nAnd then you can set headers in that temporary response object.\n```python\n from fastapi import FastAPI, Response\n \n app = FastAPI()\n \n \n @app.get(\"/headers-and-object/\")\n def get_headers(response: Response):\n     response.headers[\"X-Cat-Dog\"] = \"alone in the world\"\n     return {\"message\": \"Hello World\"}\n```\nAnd then you can return any object you need, as you normally would (a `dict` , a database model, etc).\nAnd if you declared a `response_model` , it will still be used to filter and convert the object you returned.\nFastAPI will use that temporary response to extract the headers (also cookies and status code), and will put them in the final response that contains the value you returned, filtered by any `response_model` .\nYou can also declare the `Response` parameter in dependencies, and set headers (and cookies) in them."
+    },
+    {
+      "heading_path": [
+        "Response Headers",
+        "Return a Response directly"
+      ],
+      "page_number": null,
+      "text": "You can also add headers when you return a `Response` directly.\nCreate a response as described in Return a Response Directly and pass the headers as an additional parameter:\n```python\n from fastapi import FastAPI\n from fastapi.responses import JSONResponse\n \n app = FastAPI()\n \n \n @app.get(\"/headers/\")\n def get_headers():\n     content = {\"message\": \"Hello World\"}\n     headers = {\"X-Cat-Dog\": \"alone in the world\", \"Content-Language\": \"en-US\"}\n     return JSONResponse(content=content, headers=headers)\n```\nTechnical Details:\nYou could also use `from starlette.responses import Response` or `from starlette.responses import JSONResponse` .\nFastAPI provides the same `starlette.responses` as `fastapi.responses` just as a convenience for you, the developer. But most of the available responses come directly from Starlette.\nAnd as the `Response` can be used frequently to set headers and cookies, FastAPI also provides it at `fastapi.Response` ."
+    },
+    {
+      "heading_path": [
+        "Response Headers",
+        "Custom Headers"
+      ],
+      "page_number": null,
+      "text": "Keep in mind that custom proprietary headers can be added using the X- prefix .\nBut if you have custom headers that you want a client in a browser to be able to see, you need to add them to your CORS configurations (read more in CORS (Cross-Origin Resource Sharing) ), using the parameter `expose_headers` documented in Starlette's CORS docs ."
+    }
+  ]
+}

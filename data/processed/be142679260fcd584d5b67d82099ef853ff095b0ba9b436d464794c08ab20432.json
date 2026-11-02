@@ -1,0 +1,69 @@
+{
+  "doc_id": "be142679260fcd584d5b67d82099ef853ff095b0ba9b436d464794c08ab20432",
+  "content_hash": "be142679260fcd584d5b67d82099ef853ff095b0ba9b436d464794c08ab20432",
+  "source_file": "deployment/versions.md",
+  "source_files": [
+    "deployment/versions.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 7,
+  "char_count": 2999,
+  "sections": [
+    {
+      "heading_path": [
+        "About FastAPI versions"
+      ],
+      "page_number": null,
+      "text": "FastAPI is already being used in production in many applications and systems. And the test coverage is kept at 100%. But its development is still moving quickly.\nNew features are added frequently, bugs are fixed regularly, and the code is still continuously improving.\nThat's why the current versions are still `0.x.x` , this reflects that each version could potentially have breaking changes. This follows the Semantic Versioning conventions.\nYou can create production applications with FastAPI right now (and you have probably been doing it for some time), you just have to make sure that you use a version that works correctly with the rest of your code."
+    },
+    {
+      "heading_path": [
+        "About FastAPI versions",
+        "Pin your fastapi version"
+      ],
+      "page_number": null,
+      "text": "The first thing you should do is to \"pin\" the version of FastAPI you are using to the specific latest version that you know works correctly for your application.\nFor example, let's say you are using version `0.112.0` in your app.\nIf you use a `requirements.txt` file you could specify the version with:\n```txt\nfastapi[standard]==0.112.0\n```\nthat would mean that you would use exactly the version `0.112.0` .\nOr you could also pin it with:\n```txt\nfastapi[standard]>=0.112.0,<0.113.0\n```\nthat would mean that you would use the versions `0.112.0` or above, but less than `0.113.0` , for example, a version `0.112.2` would still be accepted.\nIf you use any other tool to manage your installations, like `uv` , Poetry, Pipenv, or others, they all have a way that you can use to define specific versions for your packages."
+    },
+    {
+      "heading_path": [
+        "About FastAPI versions",
+        "Available versions"
+      ],
+      "page_number": null,
+      "text": "You can see the available versions (e.g. to check what is the current latest) in the Release Notes ."
+    },
+    {
+      "heading_path": [
+        "About FastAPI versions",
+        "About versions"
+      ],
+      "page_number": null,
+      "text": "Following the Semantic Versioning conventions, any version below `1.0.0` could potentially add breaking changes.\nFastAPI also follows the convention that any \"PATCH\" version change is for bug fixes and non-breaking changes.\nThe \"PATCH\" is the last number, for example, in `0.2.3` , the PATCH version is `3` .\nSo, you should be able to pin to a version like:\n```txt\nfastapi>=0.45.0,<0.46.0\n```\nBreaking changes and new features are added in \"MINOR\" versions.\nThe \"MINOR\" is the number in the middle, for example, in `0.2.3` , the MINOR version is `2` ."
+    },
+    {
+      "heading_path": [
+        "About FastAPI versions",
+        "Upgrading the FastAPI versions"
+      ],
+      "page_number": null,
+      "text": "You should add tests for your app.\nWith FastAPI it's very easy (thanks to Starlette), check the docs: Testing\nAfter you have tests, then you can upgrade the FastAPI version to a more recent one, and make sure that all your code is working correctly by running your tests.\nIf everything is working, or after you make the necessary changes, and all your tests are passing, then you can pin your `fastapi` to that new recent version."
+    },
+    {
+      "heading_path": [
+        "About FastAPI versions",
+        "About Starlette"
+      ],
+      "page_number": null,
+      "text": "You shouldn't pin the version of `starlette` .\nDifferent versions of FastAPI will use a specific newer version of Starlette.\nSo, you can just let FastAPI use the correct Starlette version."
+    },
+    {
+      "heading_path": [
+        "About FastAPI versions",
+        "About Pydantic"
+      ],
+      "page_number": null,
+      "text": "Pydantic includes the tests for FastAPI with its own tests, so new versions of Pydantic (above `1.0.0` ) are always compatible with FastAPI.\nYou can pin Pydantic to any version above `1.0.0` that works for you.\nFor example:\n```txt\npydantic>=2.7.0,<3.0.0\n```"
+    }
+  ]
+}

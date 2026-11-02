@@ -1,0 +1,169 @@
+{
+  "doc_id": "e25439be1e4468a444757378f4b65de038867df9bf969e1ddf64460dc3e8f79f",
+  "content_hash": "e25439be1e4468a444757378f4b65de038867df9bf969e1ddf64460dc3e8f79f",
+  "source_file": "advanced/settings.md",
+  "source_files": [
+    "advanced/settings.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 18,
+  "char_count": 13169,
+  "sections": [
+    {
+      "heading_path": [
+        "Settings and Environment Variables"
+      ],
+      "page_number": null,
+      "text": "In many cases your application could need some external settings or configurations, for example secret keys, database credentials, credentials for email services, etc.\nMost of these settings are variable (can change), like database URLs. And many could be sensitive, like secrets.\nFor this reason it's common to provide them in environment variables that are read by the application.\nAn environment variable (also known as an env var ) is a value that lives outside of the Python code, in the operating system, and can be read by your application and other programs.\nYou can create an environment variable for a command when you run it. You will see the platform-specific commands below.\nRead the Environment Variables guide for a detailed explanation of how environment variables work."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Types and validation"
+      ],
+      "page_number": null,
+      "text": "These environment variables can only handle text strings, as they are external to Python and have to be compatible with other programs and the rest of the system (and even with different operating systems, such as Linux, Windows, and macOS).\nThat means that any value read in Python from an environment variable will be a `str` , and any conversion to a different type or any validation has to be done in code."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Pydantic Settings"
+      ],
+      "page_number": null,
+      "text": "Fortunately, Pydantic provides a great utility to handle these settings coming from environment variables with Pydantic: Settings management ."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Pydantic Settings",
+        "Install pydantic-settings"
+      ],
+      "page_number": null,
+      "text": "Add the `pydantic-settings` package to your project:\n```console\n$ uv add pydantic-settings\n---> 100%\n```\nIt also comes included when you install the `all` extras with:\n```console\n$ uv add \"fastapi[all]\"\n---> 100%\n```"
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Pydantic Settings",
+        "Create the Settings object"
+      ],
+      "page_number": null,
+      "text": "Import `BaseSettings` from Pydantic and create a sub-class, very much like with a Pydantic model.\nThe same way as with Pydantic models, you declare class attributes with type annotations, and possibly default values.\nYou can use all the same validation features and tools you use for Pydantic models, like different data types and additional validations with `Field()` .\n```python\n from fastapi import FastAPI\n from pydantic_settings import BaseSettings\n \n \n class Settings(BaseSettings):\n     app_name: str = \"Awesome API\"\n     admin_email: str\n     items_per_user: int = 50\n \n \n settings = Settings()\n app = FastAPI()\n \n \n @app.get(\"/info\")\n async def info():\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```\nIf you want something quick to copy and paste, don't use this example, use the last one below.\nThen, when you create an instance of that `Settings` class (in this case, in the `settings` object), Pydantic will read the environment variables in a case-insensitive way, so, an upper-case variable `APP_NAME` will still be read for the attribute `app_name` .\nNext it will convert and validate the data. So, when you use that `settings` object, you will have data of the types you declared (e.g. `items_per_user` will be an `int` )."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Pydantic Settings",
+        "Use the settings"
+      ],
+      "page_number": null,
+      "text": "Then you can use the new `settings` object in your application:\n```python\n from fastapi import FastAPI\n from pydantic_settings import BaseSettings\n \n \n class Settings(BaseSettings):\n     app_name: str = \"Awesome API\"\n     admin_email: str\n     items_per_user: int = 50\n \n \n settings = Settings()\n app = FastAPI()\n \n \n @app.get(\"/info\")\n async def info():\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```"
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Pydantic Settings",
+        "Run the server"
+      ],
+      "page_number": null,
+      "text": "Next, you would run the server passing the configurations as environment variables, for example you could set an `ADMIN_EMAIL` and `APP_NAME` with:\nLinux, macOS, Windows Bash:\n```console\n$ ADMIN_EMAIL=\"deadpool@example.com\" APP_NAME=\"ChimichangApp\" uv run fastapi run main.py\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nWindows PowerShell:\n```console\n$ $Env:ADMIN_EMAIL = \"deadpool@example.com\"\n$ $Env:APP_NAME = \"ChimichangApp\"\n$ uv run fastapi run main.py\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nIn Bash, to set multiple env vars for a single command, separate them with a space and put them all before the command.\nAnd then the `admin_email` setting would be set to `\"deadpool@example.com\"` .\nThe `app_name` would be `\"ChimichangApp\"` .\nAnd the `items_per_user` would keep its default value of `50` ."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Settings in another module"
+      ],
+      "page_number": null,
+      "text": "You could put those settings in another module file as you saw in Bigger Applications - Multiple Files .\nFor example, you could have a file `config.py` with:\n```python\n from pydantic_settings import BaseSettings\n \n \n class Settings(BaseSettings):\n     app_name: str = \"Awesome API\"\n     admin_email: str\n     items_per_user: int = 50\n \n \n settings = Settings()\n```\nAnd then use it in a file `main.py` :\n```python\n from fastapi import FastAPI\n \n from .config import settings\n \n app = FastAPI()\n \n \n @app.get(\"/info\")\n async def info():\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```\nYou would also need a file `__init__.py` as you saw in Bigger Applications - Multiple Files ."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Settings in a dependency"
+      ],
+      "page_number": null,
+      "text": "In some occasions it might be useful to provide the settings from a dependency, instead of having a global object with `settings` that is used everywhere.\nThis could be especially useful during testing, as it's very easy to override a dependency with your own custom settings."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Settings in a dependency",
+        "The config file"
+      ],
+      "page_number": null,
+      "text": "Coming from the previous example, your `config.py` file could look like:\n```python\n from pydantic_settings import BaseSettings\n \n \n class Settings(BaseSettings):\n     app_name: str = \"Awesome API\"\n     admin_email: str\n     items_per_user: int = 50\n```\nNotice that now we don't create a default instance `settings = Settings()` ."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Settings in a dependency",
+        "The main app file"
+      ],
+      "page_number": null,
+      "text": "Now we create a dependency that returns a new `config.Settings()` .\n```python\n from functools import lru_cache\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n from .config import Settings\n \n app = FastAPI()\n \n \n @lru_cache\n def get_settings():\n     return Settings()\n \n \n @app.get(\"/info\")\n async def info(settings: Annotated[Settings, Depends(get_settings)]):\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```\nWe'll discuss the `@lru_cache` in a bit.\nFor now you can assume `get_settings()` is a normal function.\nAnd then we can require it from the path operation function as a dependency and use it anywhere we need it.\n```python\n from functools import lru_cache\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n from .config import Settings\n \n app = FastAPI()\n \n \n @lru_cache\n def get_settings():\n     return Settings()\n \n \n @app.get(\"/info\")\n async def info(settings: Annotated[Settings, Depends(get_settings)]):\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```"
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Settings in a dependency",
+        "Settings and testing"
+      ],
+      "page_number": null,
+      "text": "Then it would be very easy to provide a different settings object during testing by creating a dependency override for `get_settings` :\n```python\n from fastapi.testclient import TestClient\n \n from .config import Settings\n from .main import app, get_settings\n \n client = TestClient(app)\n \n \n def get_settings_override():\n     return Settings(admin_email=\"testing_admin@example.com\")\n \n \n app.dependency_overrides[get_settings] = get_settings_override\n \n \n def test_app():\n     response = client.get(\"/info\")\n     data = response.json()\n     assert data == {\n         \"app_name\": \"Awesome API\",\n         \"admin_email\": \"testing_admin@example.com\",\n         \"items_per_user\": 50,\n     }\n```\nIn the dependency override we set a new value for the `admin_email` when creating the new `Settings` object, and then we return that new object.\nThen we can test that it is used."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Reading a .env file"
+      ],
+      "page_number": null,
+      "text": "If you have many settings that possibly change a lot, maybe in different environments, it might be useful to put them on a file and then read them from it as if they were environment variables.\nThis practice is common enough that it has a name, these environment variables are commonly placed in a file `.env` , and the file is called a \"dotenv\".\nA file starting with a dot ( `.` ) is a hidden file in Unix-like systems, like Linux and macOS.\nBut a dotenv file doesn't really have to have that exact filename.\nPydantic has support for reading from these types of files using an external library. You can read more at Pydantic Settings: Dotenv (.env) support .\nFor this to work, add `python-dotenv` to your project with `uv add python-dotenv` ."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Reading a .env file",
+        "The .env file"
+      ],
+      "page_number": null,
+      "text": "You could have a `.env` file with:\n```bash\nADMIN_EMAIL=\"deadpool@example.com\"\nAPP_NAME=\"ChimichangApp\"\n```"
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Reading a .env file",
+        "Read settings from .env"
+      ],
+      "page_number": null,
+      "text": "And then update your `config.py` with:\n```python\n from pydantic_settings import BaseSettings, SettingsConfigDict\n \n \n class Settings(BaseSettings):\n     app_name: str = \"Awesome API\"\n     admin_email: str\n     items_per_user: int = 50\n \n     model_config = SettingsConfigDict(env_file=\".env\")\n```\nThe `model_config` attribute is used just for Pydantic configuration. You can read more at Pydantic: Concepts: Configuration .\nHere we define the config `env_file` inside of your Pydantic `Settings` class, and set the value to the filename with the dotenv file we want to use."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Reading a .env file",
+        "Creating the Settings only once with lru_cache"
+      ],
+      "page_number": null,
+      "text": "Reading a file from disk is normally a costly (slow) operation, so you probably want to do it only once and then reuse the same settings object, instead of reading it for each request.\nBut every time we do:\n```Python\nSettings()\n```\na new `Settings` object would be created, and at creation it would read the `.env` file again.\nIf the dependency function was just like:\n```Python\ndef get_settings():\n    return Settings()\n```\nwe would create that object for each request, and we would be reading the `.env` file for each request. ⚠️\nBut as we are using the `@lru_cache` decorator on top, the `Settings` object will be created only once, the first time it's called. ✔️\n```python\n from functools import lru_cache\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n from . import config\n \n app = FastAPI()\n \n \n @lru_cache\n def get_settings():\n     return config.Settings()\n \n \n @app.get(\"/info\")\n async def info(settings: Annotated[config.Settings, Depends(get_settings)]):\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```\nThen for any subsequent call of `get_settings()` in the dependencies for the next requests, instead of executing the internal code of `get_settings()` and creating a new `Settings` object, it will return the same object that was returned on the first call, again and again."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Reading a .env file",
+        "Creating the Settings only once with lru_cache",
+        "lru_cache Technical Details"
+      ],
+      "page_number": null,
+      "text": "`@lru_cache` modifies the function it decorates to return the same value that was returned the first time, instead of computing it again, executing the code of the function every time.\nSo, the function below it will be executed once for each combination of arguments. And then the values returned by each of those combinations of arguments will be used again and again whenever the function is called with exactly the same combination of arguments.\nFor example, if you have a function:\n```Python\n@lru_cache\ndef say_hi(name: str, salutation: str = \"Ms.\"):\n    return f\"Hello {salutation} {name}\"\n```\nyour program could execute like this:\n```mermaid\nsequenceDiagram\n\nparticipant code as Code\nparticipant function as say_hi()\nparticipant execute as Execute function\n\n    rect rgba(0, 255, 0, .1)\n        code ->> function: say_hi(name=\"Camila\")\n        function ->> execute: execute function code\n        execute ->> code: return the result\n    end\n\n    rect rgba(0, 255, 255, .1)\n        code ->> function: say_hi(name=\"Camila\")\n        function ->> code: return stored result\n    end\n\n    rect rgba(0, 255, 0, .1)\n        code ->> function: say_hi(name=\"Rick\")\n        function ->> execute: execute function code\n        execute ->> code: return the result\n    end\n\n    rect rgba(0, 255, 0, .1)\n        code ->> function: say_hi(name=\"Rick\", salutation=\"Mr.\")\n        function ->> execute: execute function code\n        execute ->> code: return the result\n    end\n\n    rect rgba(0, 255, 255, .1)\n        code ->> function: say_hi(name=\"Rick\")\n        function ->> code: return stored result\n    end\n\n    rect rgba(0, 255, 255, .1)\n        code ->> function: say_hi(name=\"Camila\")\n        function ->> code: return stored result\n    end\n```\nIn the case of our dependency `get_settings()` , the function doesn't even take any arguments, so it always returns the same value.\nThat way, it behaves almost as if it was just a global variable. But as it uses a dependency function, then we can override it easily for testing.\n`@lru_cache` is part of `functools` which is part of Python's standard library, you can read more about it in the Python docs for @lru_cache ."
+    },
+    {
+      "heading_path": [
+        "Settings and Environment Variables",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "You can use Pydantic Settings to handle the settings or configurations for your application, with all the power of Pydantic models.\n- By using a dependency you can simplify testing.\n- You can use .env files with it.\n- Using @lru_cache lets you avoid reading the dotenv file again and again for each request, while allowing you to override it during testing."
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "doc_id": "3c05a63e149781e253413447a62b2559dce4dab9a304920d283f3ce34cc7bcf4",
+  "content_hash": "3c05a63e149781e253413447a62b2559dce4dab9a304920d283f3ce34cc7bcf4",
+  "source_file": "tutorial/debugging.md",
+  "source_files": [
+    "tutorial/debugging.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 2162,
+  "sections": [
+    {
+      "heading_path": [
+        "Debugging"
+      ],
+      "page_number": null,
+      "text": "You can connect the debugger in your editor, for example with Visual Studio Code or PyCharm."
+    },
+    {
+      "heading_path": [
+        "Debugging",
+        "Call uvicorn"
+      ],
+      "page_number": null,
+      "text": "In your FastAPI application, import and run `uvicorn` directly:\n```python\n import uvicorn\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/\")\n def root():\n     a = \"a\"\n     b = \"b\" + a\n     return {\"hello world\": b}\n \n \n if __name__ == \"__main__\":\n     uvicorn.run(app, host=\"0.0.0.0\", port=8000)\n```"
+    },
+    {
+      "heading_path": [
+        "Debugging",
+        "Call uvicorn",
+        "About __name__ == \"__main__\""
+      ],
+      "page_number": null,
+      "text": "The main purpose of the `__name__ == \"__main__\"` is to have some code that is executed when your file is called with:\n```console\n$ uv run python myapp.py\n```\nbut is not called when another file imports it, like in:\n```Python\nfrom myapp import app\n```"
+    },
+    {
+      "heading_path": [
+        "Debugging",
+        "Call uvicorn",
+        "About __name__ == \"__main__\"",
+        "More details"
+      ],
+      "page_number": null,
+      "text": "Let's say your file is named `myapp.py` .\nIf you run it with:\n```console\n$ uv run python myapp.py\n```\nthen the internal variable `__name__` in your file, created automatically by Python, will have as value the string `\"__main__\"` .\nSo, the section:\n```Python\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)\n```\nwill run.\n---\nThis won't happen if you import that module (file).\nSo, if you have another file `importer.py` with:\n```Python\nfrom myapp import app\n\n# Some more code\n```\nin that case, the automatically created variable `__name__` inside of `myapp.py` will not have the value `\"__main__\"` .\nSo, the line:\n```Python\n    uvicorn.run(app, host=\"0.0.0.0\", port=8000)\n```\nwill not be executed.\nFor more information, check the official Python docs ."
+    },
+    {
+      "heading_path": [
+        "Debugging",
+        "Run your code with your debugger"
+      ],
+      "page_number": null,
+      "text": "Because you are running the Uvicorn server directly from your code, you can call your Python program (your FastAPI application) directly from the debugger.\n---\nFor example, in Visual Studio Code, you can:\n- Go to the \"Debug\" panel.\n- \"Add configuration...\".\n- Select \"Python\"\n- Run the debugger with the option \" Python: Current File (Integrated Terminal) \".\nIt will then start the server with your FastAPI code, stop at your breakpoints, etc.\nHere's how it might look:\n---\nIf you use PyCharm, you can:\n- Open the \"Run\" menu.\n- Select the option \"Debug...\".\n- Then a context menu shows up.\n- Select the file to debug (in this case, main.py ).\nIt will then start the server with your FastAPI code, stop at your breakpoints, etc.\nHere's how it might look:"
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "doc_id": "01a72f8818f0e04cc0b3d77d20fd1591ba34bdbe21b85d9f4ce9c17b2511a8b1",
+  "content_hash": "01a72f8818f0e04cc0b3d77d20fd1591ba34bdbe21b85d9f4ce9c17b2511a8b1",
+  "source_file": "python-types.md",
+  "source_files": [
+    "python-types.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 18,
+  "char_count": 10915,
+  "sections": [
+    {
+      "heading_path": [
+        "Python Types Intro"
+      ],
+      "page_number": null,
+      "text": "Python has support for optional \"type hints\" (also called \"type annotations\").\nThese \"type hints\" or annotations are a special syntax that allows declaring the type of a variable.\nBy declaring types for your variables, editors and tools can give you better support.\nThis is just a quick tutorial / refresher about Python type hints. It covers only the minimum necessary to use them with FastAPI ... which is actually very little.\nFastAPI is all based on these type hints, they give it many advantages and benefits.\nBut even if you never use FastAPI , you would benefit from learning a bit about them.\nIf you are a Python expert, and you already know everything about type hints, skip to the next chapter."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Motivation"
+      ],
+      "page_number": null,
+      "text": "Let's start with a simple example:\n```python\n def get_full_name(first_name, last_name):\n     full_name = first_name.title() + \" \" + last_name.title()\n     return full_name\n \n \n print(get_full_name(\"john\", \"doe\"))\n```\nCalling this program outputs:\n```text\nJohn Doe\n```\nThe function does the following:\n- Takes a first_name and last_name .\n- Converts the first letter of each one to upper case with title() .\n- Concatenates them with a space in the middle.\n```python\n def get_full_name(first_name, last_name):\n     full_name = first_name.title() + \" \" + last_name.title()\n     return full_name\n \n \n print(get_full_name(\"john\", \"doe\"))\n```"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Motivation",
+        "Edit it"
+      ],
+      "page_number": null,
+      "text": "It's a very simple program.\nBut now imagine that you were writing it from scratch.\nAt some point you start defining the function, and you have the parameters ready...\nBut then you have to call \"that method that converts the first letter to upper case\".\nWas it `upper` ? Was it `uppercase` ? `first_uppercase` ? `capitalize` ?\nThen, you try with the old programmer's friend, editor autocompletion.\nYou type the first parameter of the function, `first_name` , then a dot ( `.` ) and then hit `Ctrl+Space` to trigger the completion.\nBut, sadly, you get nothing useful:"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Motivation",
+        "Add types"
+      ],
+      "page_number": null,
+      "text": "Let's modify a single line from the previous version.\nWe will change exactly this fragment, the parameters of the function, from:\n```Python\n    first_name, last_name\n```\nto:\n```Python\n    first_name: str, last_name: str\n```\nThat's it.\nThose are the \"type hints\":\n```python\n def get_full_name(first_name: str, last_name: str):\n     full_name = first_name.title() + \" \" + last_name.title()\n     return full_name\n \n \n print(get_full_name(\"john\", \"doe\"))\n```\nThat is not the same as declaring default values like it would be with:\n```Python\n    first_name=\"john\", last_name=\"doe\"\n```\nIt's a different thing.\nWe are using colons ( `:` ), not equals ( `=` ).\nAnd adding type hints normally doesn't change what happens from what would happen without them.\nBut now, imagine you are again in the middle of creating that function, but with type hints.\nAt the same point, you try to trigger the autocomplete with `Ctrl+Space` and you see:\nWith that, you can scroll, seeing the options, until you find the one that \"rings a bell\":"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "More motivation"
+      ],
+      "page_number": null,
+      "text": "Check this function, it already has type hints:\n```python\n def get_name_with_age(name: str, age: int):\n     name_with_age = name + \" is this old: \" + age\n     return name_with_age\n```\nBecause the editor knows the types of the variables, you don't only get completion, you also get error checks:\nNow you know that you have to fix it, convert `age` to a string with `str(age)` :\n```python\n def get_name_with_age(name: str, age: int):\n     name_with_age = name + \" is this old: \" + str(age)\n     return name_with_age\n```"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types"
+      ],
+      "page_number": null,
+      "text": "You just saw the main place to declare type hints. As function parameters.\nThis is also the main place you would use them with FastAPI ."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Simple types"
+      ],
+      "page_number": null,
+      "text": "You can declare all the standard Python types, not only `str` .\nYou can use, for example:\n- int\n- float\n- bool\n- bytes\n```python\n def get_items(item_a: str, item_b: int, item_c: float, item_d: bool, item_e: bytes):\n     return item_a, item_b, item_c, item_d, item_e\n```"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "typing module"
+      ],
+      "page_number": null,
+      "text": "For some additional use cases, you might need to import some things from the standard library `typing` module, for example when you want to declare that something has \"any type\", you can use `Any` from `typing` :\n```python\nfrom typing import Any\n\n\ndef some_function(data: Any):\n    print(data)\n```"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Generic types"
+      ],
+      "page_number": null,
+      "text": "Some types can take \"type parameters\" in square brackets, to define their internal types, for example a \"list of strings\" would be declared `list[str]` .\nThese types that can take type parameters are called Generic types or Generics .\nYou can use the same builtin types as generics (with square brackets and types inside):\n- list\n- tuple\n- set\n- dict"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Generic types",
+        "List"
+      ],
+      "page_number": null,
+      "text": "For example, let's define a variable to be a `list` of `str` .\nDeclare the variable, with the same colon ( `:` ) syntax.\nAs the type, put `list` .\nAs the list is a type that contains some internal types, you put them in square brackets:\n```python\n def process_items(items: list[str]):\n     for item in items:\n         print(item)\n```\nThose internal types in the square brackets are called \"type parameters\".\nIn this case, `str` is the type parameter passed to `list` .\nThat means: \"the variable `items` is a `list` , and each of the items in this list is a `str` \".\nBy doing that, your editor can provide support even while processing items from the list:\nWithout types, that's almost impossible to achieve.\nNotice that the variable `item` is one of the elements in the list `items` .\nAnd still, the editor knows it is a `str` , and provides support for that."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Generic types",
+        "Tuple and Set"
+      ],
+      "page_number": null,
+      "text": "You would do the same to declare `tuple` s and `set` s:\n```python\n def process_items(items_t: tuple[int, int, str], items_s: set[bytes]):\n     return items_t, items_s\n```\nThis means:\n- The variable items_t is a tuple with 3 items, an int , another int , and a str .\n- The variable items_s is a set , and each of its items is of type bytes ."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Generic types",
+        "Dict"
+      ],
+      "page_number": null,
+      "text": "To define a `dict` , you pass 2 type parameters, separated by commas.\nThe first type parameter is for the keys of the `dict` .\nThe second type parameter is for the values of the `dict` :\n```python\n def process_items(prices: dict[str, float]):\n     for item_name, item_price in prices.items():\n         print(item_name)\n         print(item_price)\n```\nThis means:\n- The variable prices is a dict : The keys of this dict are of type str (let's say, the name of each item). The values of this dict are of type float (let's say, the price of each item)."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Generic types",
+        "Union"
+      ],
+      "page_number": null,
+      "text": "You can declare that a variable can be any of several types , for example, an `int` or a `str` .\nTo define it you use the vertical bar ( `|` ) to separate both types.\nThis is called a \"union\", because the variable can be anything in the union of those two sets of types.\n```Python\n{!> ../../docs_src/python_types/tutorial008b_py310.py!}\n```\nThis means that `item` could be an `int` or a `str` ."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Generic types",
+        "Possibly None"
+      ],
+      "page_number": null,
+      "text": "You can declare that a value could have a type, like `str` , but that it could also be `None` .\nPython 3.10+:\n```Python\n{!> ../../docs_src/python_types/tutorial009_py310.py!}\n```\nUsing `str | None` instead of just `str` will let the editor help you detect errors where you could be assuming that a value is always a `str` , when it could actually be `None` too."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Declaring types",
+        "Classes as types"
+      ],
+      "page_number": null,
+      "text": "You can also declare a class as the type of a variable.\nLet's say you have a class `Person` , with a name:\n```python\n class Person:\n     def __init__(self, name: str):\n         self.name = name\n \n \n def get_person_name(one_person: Person):\n     return one_person.name\n```\nThen you can declare a variable to be of type `Person` :\n```python\n class Person:\n     def __init__(self, name: str):\n         self.name = name\n \n \n def get_person_name(one_person: Person):\n     return one_person.name\n```\nAnd then, again, you get all the editor support:\nNotice that this means \" `one_person` is an instance of the class `Person` \".\nIt doesn't mean \" `one_person` is the class called `Person` \"."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Pydantic models"
+      ],
+      "page_number": null,
+      "text": "Pydantic is a Python library to perform data validation.\nYou declare the \"shape\" of the data as classes with attributes.\nAnd each attribute has a type.\nThen you create an instance of that class with some values and it will validate the values, convert them to the appropriate type (if that's the case) and give you an object with all the data.\nAnd you get all the editor support with that resulting object.\nAn example from the official Pydantic docs:\n```python\n from datetime import datetime\n \n from pydantic import BaseModel\n \n \n class User(BaseModel):\n     id: int\n     name: str = \"John Doe\"\n     signup_ts: datetime | None = None\n     friends: list[int] = []\n \n \n external_data = {\n     \"id\": \"123\",\n     \"signup_ts\": \"2017-06-01 12:22\",\n     \"friends\": [1, \"2\", b\"3\"],\n }\n user = User(**external_data)\n print(user)\n # > User id=123 name='John Doe' signup_ts=datetime.datetime(2017, 6, 1, 12, 22) friends=[1, 2, 3]\n print(user.id)\n # > 123\n```\nTo learn more about Pydantic, check its docs .\nFastAPI is all based on Pydantic.\nYou will see a lot more of all this in practice in the Tutorial - User Guide ."
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Type Hints with Metadata Annotations"
+      ],
+      "page_number": null,
+      "text": "Python also has a feature that allows putting additional metadata in these type hints using `Annotated` .\nYou can import `Annotated` from `typing` .\n```python\n from typing import Annotated\n \n \n def say_hello(name: Annotated[str, \"this is just metadata\"]) -> str:\n     return f\"Hello {name}\"\n```\nPython itself doesn't do anything with this `Annotated` . And for editors and other tools, the type is still `str` .\nBut you can use this space in `Annotated` to provide FastAPI with additional metadata about how you want your application to behave.\nThe important thing to remember is that the first type parameter you pass to `Annotated` is the actual type . The rest, is just metadata for other tools.\nFor now, you just need to know that `Annotated` exists, and that it's standard Python. 😎\nLater you will see how powerful it can be.\nThe fact that this is standard Python means that you will still get the best possible developer experience in your editor, with the tools you use to analyze and refactor your code, etc. ✨\nAnd also that your code will be very compatible with many other Python tools and libraries. 🚀"
+    },
+    {
+      "heading_path": [
+        "Python Types Intro",
+        "Type hints in FastAPI"
+      ],
+      "page_number": null,
+      "text": "FastAPI takes advantage of these type hints to do several things.\nWith FastAPI you declare parameters with type hints and you get:\n- Editor support .\n- Type checks .\n...and FastAPI uses the same declarations to:\n- Define requirements : from request path parameters, query parameters, headers, bodies, dependencies, etc.\n- Convert data : from the request to the required type.\n- Validate data : coming from each request: Generating automatic errors returned to the client when the data is invalid.\n- Document the API using OpenAPI: which is then used by the automatic interactive documentation user interfaces.\nThis might all sound abstract. Don't worry. You'll see all this in action in the Tutorial - User Guide .\nThe important thing is that by using standard Python types, in a single place (instead of adding more classes, decorators, etc), FastAPI will do a lot of the work for you.\nIf you already went through all the tutorial and came back to see more about types, a good resource is the \"cheat sheet\" from mypy ."
+    }
+  ]
+}

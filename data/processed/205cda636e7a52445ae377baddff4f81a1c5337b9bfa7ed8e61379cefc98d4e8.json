@@ -1,0 +1,21 @@
+{
+  "doc_id": "205cda636e7a52445ae377baddff4f81a1c5337b9bfa7ed8e61379cefc98d4e8",
+  "content_hash": "205cda636e7a52445ae377baddff4f81a1c5337b9bfa7ed8e61379cefc98d4e8",
+  "source_file": "reference/parameters.md",
+  "source_files": [
+    "reference/parameters.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 553,
+  "sections": [
+    {
+      "heading_path": [
+        "Request Parameters"
+      ],
+      "page_number": null,
+      "text": "Here's the reference information for the request parameters.\nThese are the special functions that you can put in path operation function parameters or dependency functions with `Annotated` to get data from the request.\nIt includes:\n- Query()\n- Path()\n- Body()\n- Cookie()\n- Header()\n- Form()\n- File()\nYou can import them all directly from `fastapi` :\n```python\nfrom fastapi import Body, Cookie, File, Form, Header, Path, Query\n```\n::: fastapi.Query\n::: fastapi.Path\n::: fastapi.Body\n::: fastapi.Cookie\n::: fastapi.Header\n::: fastapi.Form\n::: fastapi.File"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "doc_id": "ddfad2447ac9a678dc7a41d4985f6b958edb75812465accab0c3c46161029aa5",
+  "content_hash": "ddfad2447ac9a678dc7a41d4985f6b958edb75812465accab0c3c46161029aa5",
+  "source_file": "tutorial/dependencies/classes-as-dependencies.md",
+  "source_files": [
+    "tutorial/dependencies/classes-as-dependencies.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 7,
+  "char_count": 10060,
+  "sections": [
+    {
+      "heading_path": [
+        "Classes as Dependencies"
+      ],
+      "page_number": null,
+      "text": "Before diving deeper into the Dependency Injection system, let's upgrade the previous example."
+    },
+    {
+      "heading_path": [
+        "Classes as Dependencies",
+        "A dict from the previous example"
+      ],
+      "page_number": null,
+      "text": "In the previous example, we were returning a `dict` from our dependency (\"dependable\"):\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n     return {\"q\": q, \"skip\": skip, \"limit\": limit}\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n \n \n @app.get(\"/users/\")\n async def read_users(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n```\nBut then we get a `dict` in the parameter `commons` of the path operation function .\nAnd we know that editors can't provide a lot of support (like completion) for `dict` s, because they can't know their keys and value types.\nWe can do better..."
+    },
+    {
+      "heading_path": [
+        "Classes as Dependencies",
+        "What makes a dependency"
+      ],
+      "page_number": null,
+      "text": "Up to now you have seen dependencies declared as functions.\nBut that's not the only way to declare dependencies (although it would probably be the more common).\nThe key factor is that a dependency should be a \"callable\".\nA \" callable \" in Python is anything that Python can \"call\" like a function.\nSo, if you have an object `something` (that might not be a function) and you can \"call\" it (execute it) like:\n```Python\nsomething()\n```\nor\n```Python\nsomething(some_argument, some_keyword_argument=\"foo\")\n```\nthen it is a \"callable\"."
+    },
+    {
+      "heading_path": [
+        "Classes as Dependencies",
+        "Classes as dependencies"
+      ],
+      "page_number": null,
+      "text": "You might notice that to create an instance of a Python class, you use that same syntax.\nFor example:\n```Python\nclass Cat:\n    def __init__(self, name: str):\n        self.name = name\n\n\nfluffy = Cat(name=\"Mr Fluffy\")\n```\nIn this case, `fluffy` is an instance of the class `Cat` .\nAnd to create `fluffy` , you are \"calling\" `Cat` .\nSo, a Python class is also a callable .\nThen, in FastAPI , you could use a Python class as a dependency.\nWhat FastAPI actually checks is that it is a \"callable\" (function, class or anything else) and the parameters defined.\nIf you pass a \"callable\" as a dependency in FastAPI , it will analyze the parameters for that \"callable\", and process them in the same way as the parameters for a path operation function . Including sub-dependencies.\nThat also applies to callables with no parameters at all. The same as it would be for path operation functions with no parameters.\nThen, we can change the dependency \"dependable\" `common_parameters` from above to the class `CommonQueryParams` :\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n fake_items_db = [{\"item_name\": \"Foo\"}, {\"item_name\": \"Bar\"}, {\"item_name\": \"Baz\"}]\n \n \n class CommonQueryParams:\n     def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):\n         self.q = q\n         self.skip = skip\n         self.limit = limit\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]):\n     response = {}\n     if commons.q:\n         response.update({\"q\": commons.q})\n     items = fake_items_db[commons.skip : commons.skip + commons.limit]\n     response.update({\"items\": items})\n     return response\n```\nPay attention to the `__init__` method used to create the instance of the class:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n fake_items_db = [{\"item_name\": \"Foo\"}, {\"item_name\": \"Bar\"}, {\"item_name\": \"Baz\"}]\n \n \n class CommonQueryParams:\n     def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):\n         self.q = q\n         self.skip = skip\n         self.limit = limit\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]):\n     response = {}\n     if commons.q:\n         response.update({\"q\": commons.q})\n     items = fake_items_db[commons.skip : commons.skip + commons.limit]\n     response.update({\"items\": items})\n     return response\n```\n...it has the same parameters as our previous `common_parameters` :\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n     return {\"q\": q, \"skip\": skip, \"limit\": limit}\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n \n \n @app.get(\"/users/\")\n async def read_users(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n```\nThose parameters are what FastAPI will use to \"solve\" the dependency.\nIn both cases, it will have:\n- An optional q query parameter that is a str .\n- A skip query parameter that is an int , with a default of 0 .\n- A limit query parameter that is an int , with a default of 100 .\nIn both cases the data will be converted, validated, documented on the OpenAPI schema, etc."
+    },
+    {
+      "heading_path": [
+        "Classes as Dependencies",
+        "Use it"
+      ],
+      "page_number": null,
+      "text": "Now you can declare your dependency using this class.\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n fake_items_db = [{\"item_name\": \"Foo\"}, {\"item_name\": \"Bar\"}, {\"item_name\": \"Baz\"}]\n \n \n class CommonQueryParams:\n     def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):\n         self.q = q\n         self.skip = skip\n         self.limit = limit\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]):\n     response = {}\n     if commons.q:\n         response.update({\"q\": commons.q})\n     items = fake_items_db[commons.skip : commons.skip + commons.limit]\n     response.update({\"items\": items})\n     return response\n```\nFastAPI calls the `CommonQueryParams` class. This creates an \"instance\" of that class and the instance will be passed as the parameter `commons` to your function."
+    },
+    {
+      "heading_path": [
+        "Classes as Dependencies",
+        "Type annotation vs Depends"
+      ],
+      "page_number": null,
+      "text": "Notice how we write `CommonQueryParams` twice in the above code:\nPython 3.10+:\n```Python\ncommons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\ncommons: CommonQueryParams = Depends(CommonQueryParams)\n```\nThe last `CommonQueryParams` , in:\n```Python\n... Depends(CommonQueryParams)\n```\n...is what FastAPI will actually use to know what is the dependency.\nIt is from this one that FastAPI will extract the declared parameters and that is what FastAPI will actually call.\n---\nIn this case, the first `CommonQueryParams` , in:\nPython 3.10+:\n```Python\ncommons: Annotated[CommonQueryParams, ...\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\ncommons: CommonQueryParams ...\n```\n...doesn't have any special meaning for FastAPI . FastAPI won't use it for data conversion, validation, etc. (as it is using the `Depends(CommonQueryParams)` for that).\nYou could actually write just:\nPython 3.10+:\n```Python\ncommons: Annotated[Any, Depends(CommonQueryParams)]\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\ncommons = Depends(CommonQueryParams)\n```\n...as in:\n```python\n from typing import Annotated, Any\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n fake_items_db = [{\"item_name\": \"Foo\"}, {\"item_name\": \"Bar\"}, {\"item_name\": \"Baz\"}]\n \n \n class CommonQueryParams:\n     def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):\n         self.q = q\n         self.skip = skip\n         self.limit = limit\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[Any, Depends(CommonQueryParams)]):\n     response = {}\n     if commons.q:\n         response.update({\"q\": commons.q})\n     items = fake_items_db[commons.skip : commons.skip + commons.limit]\n     response.update({\"items\": items})\n     return response\n```\nBut declaring the type is encouraged as that way your editor will know what will be passed as the parameter `commons` , and then it can help you with code completion, type checks, etc:"
+    },
+    {
+      "heading_path": [
+        "Classes as Dependencies",
+        "Shortcut"
+      ],
+      "page_number": null,
+      "text": "But you see that we are having some code repetition here, writing `CommonQueryParams` twice:\nPython 3.10+:\n```Python\ncommons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\ncommons: CommonQueryParams = Depends(CommonQueryParams)\n```\nFastAPI provides a shortcut for these cases, in where the dependency is specifically a class that FastAPI will \"call\" to create an instance of the class itself.\nFor those specific cases, you can do the following:\nInstead of writing:\nPython 3.10+:\n```Python\ncommons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\ncommons: CommonQueryParams = Depends(CommonQueryParams)\n```\n...you write:\nPython 3.10+:\n```Python\ncommons: Annotated[CommonQueryParams, Depends()]\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\ncommons: CommonQueryParams = Depends()\n```\nYou declare the dependency as the type of the parameter, and you use `Depends()` without any parameter, instead of having to write the full class again inside of `Depends(CommonQueryParams)` .\nThe same example would then look like:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n fake_items_db = [{\"item_name\": \"Foo\"}, {\"item_name\": \"Bar\"}, {\"item_name\": \"Baz\"}]\n \n \n class CommonQueryParams:\n     def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):\n         self.q = q\n         self.skip = skip\n         self.limit = limit\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[CommonQueryParams, Depends()]):\n     response = {}\n     if commons.q:\n         response.update({\"q\": commons.q})\n     items = fake_items_db[commons.skip : commons.skip + commons.limit]\n     response.update({\"items\": items})\n     return response\n```\n...and FastAPI will know what to do.\nIf that seems more confusing than helpful, disregard it, you don't need it.\nIt is just a shortcut. Because FastAPI cares about helping you minimize code repetition."
+    }
+  ]
+}

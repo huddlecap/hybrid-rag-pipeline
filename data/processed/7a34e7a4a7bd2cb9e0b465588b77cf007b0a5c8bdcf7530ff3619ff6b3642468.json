@@ -1,0 +1,77 @@
+{
+  "doc_id": "7a34e7a4a7bd2cb9e0b465588b77cf007b0a5c8bdcf7530ff3619ff6b3642468",
+  "content_hash": "7a34e7a4a7bd2cb9e0b465588b77cf007b0a5c8bdcf7530ff3619ff6b3642468",
+  "source_file": "tutorial/background-tasks.md",
+  "source_files": [
+    "tutorial/background-tasks.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 8,
+  "char_count": 6342,
+  "sections": [
+    {
+      "heading_path": [
+        "Background Tasks"
+      ],
+      "page_number": null,
+      "text": "You can define background tasks to be run after returning a response.\nThis is useful for operations that need to happen after a request, but that the client doesn't really have to be waiting for the operation to complete before receiving the response.\nThis includes, for example:\n- Email notifications sent after performing an action: As connecting to an email server and sending an email tends to be \"slow\" (several seconds), you can return the response right away and send the email notification in the background.\n- Processing data: For example, let's say you receive a file that must go through a slow process, you can return a response of \"Accepted\" (HTTP 202) and process the file in the background."
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Using BackgroundTasks"
+      ],
+      "page_number": null,
+      "text": "First, import `BackgroundTasks` and define a parameter in your path operation function with a type declaration of `BackgroundTasks` :\n```python\n from fastapi import BackgroundTasks, FastAPI\n \n app = FastAPI()\n \n \n def write_notification(email: str, message=\"\"):\n     with open(\"log.txt\", mode=\"w\") as email_file:\n         content = f\"notification for {email}: {message}\"\n         email_file.write(content)\n \n \n @app.post(\"/send-notification/{email}\")\n async def send_notification(email: str, background_tasks: BackgroundTasks):\n     background_tasks.add_task(write_notification, email, message=\"some notification\")\n     return {\"message\": \"Notification sent in the background\"}\n```\nFastAPI will create the object of type `BackgroundTasks` for you and pass it as that parameter."
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Create a task function"
+      ],
+      "page_number": null,
+      "text": "Create a function to be run as the background task.\nIt is just a standard function that can receive parameters.\nIt can be an `async def` or normal `def` function, FastAPI will know how to handle it correctly.\nIn this case, the task function will write to a file (simulating sending an email).\nAnd as the write operation doesn't use `async` and `await` , we define the function with normal `def` :\n```python\n from fastapi import BackgroundTasks, FastAPI\n \n app = FastAPI()\n \n \n def write_notification(email: str, message=\"\"):\n     with open(\"log.txt\", mode=\"w\") as email_file:\n         content = f\"notification for {email}: {message}\"\n         email_file.write(content)\n \n \n @app.post(\"/send-notification/{email}\")\n async def send_notification(email: str, background_tasks: BackgroundTasks):\n     background_tasks.add_task(write_notification, email, message=\"some notification\")\n     return {\"message\": \"Notification sent in the background\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Add the background task"
+      ],
+      "page_number": null,
+      "text": "Inside of your path operation function , pass your task function to the background tasks object with the method `.add_task()` :\n```python\n from fastapi import BackgroundTasks, FastAPI\n \n app = FastAPI()\n \n \n def write_notification(email: str, message=\"\"):\n     with open(\"log.txt\", mode=\"w\") as email_file:\n         content = f\"notification for {email}: {message}\"\n         email_file.write(content)\n \n \n @app.post(\"/send-notification/{email}\")\n async def send_notification(email: str, background_tasks: BackgroundTasks):\n     background_tasks.add_task(write_notification, email, message=\"some notification\")\n     return {\"message\": \"Notification sent in the background\"}\n```\n`.add_task()` receives as arguments:\n- A task function to be run in the background ( write_notification ).\n- Any sequence of arguments that should be passed to the task function in order ( email ).\n- Any keyword arguments that should be passed to the task function ( message=\"some notification\" )."
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Dependency Injection"
+      ],
+      "page_number": null,
+      "text": "Using `BackgroundTasks` also works with the dependency injection system, you can declare a parameter of type `BackgroundTasks` at multiple levels: in a path operation function , in a dependency (dependable), in a sub-dependency, etc.\nFastAPI knows what to do in each case and how to reuse the same object, so that all the background tasks are merged together and are run in the background afterwards:\n```python\n from typing import Annotated\n \n from fastapi import BackgroundTasks, Depends, FastAPI\n \n app = FastAPI()\n \n \n def write_log(message: str):\n     with open(\"log.txt\", mode=\"a\") as log:\n         log.write(message)\n \n \n def get_query(background_tasks: BackgroundTasks, q: str | None = None):\n     if q:\n         message = f\"found query: {q}\\n\"\n         background_tasks.add_task(write_log, message)\n     return q\n \n \n @app.post(\"/send-notification/{email}\")\n async def send_notification(\n     email: str, background_tasks: BackgroundTasks, q: Annotated[str, Depends(get_query)]\n ):\n     message = f\"message to {email}\\n\"\n     background_tasks.add_task(write_log, message)\n     return {\"message\": \"Message sent\"}\n```\nIn this example, the messages will be written to the `log.txt` file after the response is sent.\nIf there was a query in the request, it will be written to the log in a background task.\nAnd then another background task generated at the path operation function will write a message using the `email` path parameter."
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Technical Details"
+      ],
+      "page_number": null,
+      "text": "The class `BackgroundTasks` comes directly from starlette.background .\nIt is imported/included directly into FastAPI so that you can import it from `fastapi` and avoid accidentally importing the alternative `BackgroundTask` (without the `s` at the end) from `starlette.background` .\nBy only using `BackgroundTasks` (and not `BackgroundTask` ), it's then possible to use it as a path operation function parameter and have FastAPI handle the rest for you, just like when using the `Request` object directly.\nIt's still possible to use `BackgroundTask` alone in FastAPI, but you have to create the object in your code and return a Starlette `Response` including it.\nYou can see more details in Starlette's official docs for Background Tasks ."
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Caveat"
+      ],
+      "page_number": null,
+      "text": "If you need to perform heavy background computation and you don't necessarily need it to be run by the same process (for example, you don't need to share memory, variables, etc), you might benefit from using other bigger tools like Celery .\nThey tend to require more complex configurations, a message/job queue manager, like RabbitMQ or Redis, but they allow you to run background tasks in multiple processes, and especially, in multiple servers.\nBut if you need to access variables and objects from the same FastAPI app, or you need to perform small background tasks (like sending an email notification), you can simply just use `BackgroundTasks` ."
+    },
+    {
+      "heading_path": [
+        "Background Tasks",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Import and use `BackgroundTasks` with parameters in path operation functions and dependencies to add background tasks."
+    }
+  ]
+}

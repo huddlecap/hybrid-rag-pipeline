@@ -1,0 +1,19 @@
+{
+  "doc_id": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+  "content_hash": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+  "source_file": "translation-banner.md",
+  "source_files": [
+    "translation-banner.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 266,
+  "sections": [
+    {
+      "heading_path": [],
+      "page_number": null,
+      "text": "🌐 Translation by AI and humans:\nThis translation was made by AI guided by humans. 🤝\nIt could have mistakes of misunderstanding the original meaning, or looking unnatural, etc. 🤖\nYou can improve this translation by helping us guide the AI LLM better .\nEnglish version"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "doc_id": "e500a3aabb5ea2498feea2dd4eb8bab22546a1f7c29b5ca3fd7dfd485eb0351e",
+  "content_hash": "e500a3aabb5ea2498feea2dd4eb8bab22546a1f7c29b5ca3fd7dfd485eb0351e",
+  "source_file": "how-to/general.md",
+  "source_files": [
+    "how-to/general.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 11,
+  "char_count": 1518,
+  "sections": [
+    {
+      "heading_path": [
+        "General - How To - Recipes"
+      ],
+      "page_number": null,
+      "text": "Here are several pointers to other places in the docs, for general or frequent questions."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Filter Data - Security"
+      ],
+      "page_number": null,
+      "text": "To ensure that you don't return more data than you should, read the docs for Tutorial - Response Model - Return Type ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Optimize Response Performance - Response Model - Return Type"
+      ],
+      "page_number": null,
+      "text": "To optimize performance when returning JSON data, use a return type or response model, that way Pydantic will handle the serialization to JSON on the Rust side, without going through Python. Read more in the docs for Tutorial - Response Model - Return Type ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Documentation Tags - OpenAPI"
+      ],
+      "page_number": null,
+      "text": "To add tags to your path operations , and group them in the docs UI, read the docs for Tutorial - Path Operation Configurations - Tags ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Documentation Summary and Description - OpenAPI"
+      ],
+      "page_number": null,
+      "text": "To add a summary and description to your path operations , and show them in the docs UI, read the docs for Tutorial - Path Operation Configurations - Summary and Description ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Documentation Response description - OpenAPI"
+      ],
+      "page_number": null,
+      "text": "To define the description of the response, shown in the docs UI, read the docs for Tutorial - Path Operation Configurations - Response description ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Documentation Deprecate a Path Operation - OpenAPI"
+      ],
+      "page_number": null,
+      "text": "To deprecate a path operation , and show it in the docs UI, read the docs for Tutorial - Path Operation Configurations - Deprecation ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "Convert any Data to JSON-compatible"
+      ],
+      "page_number": null,
+      "text": "To convert any data to JSON-compatible, read the docs for Tutorial - JSON Compatible Encoder ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "OpenAPI Metadata - Docs"
+      ],
+      "page_number": null,
+      "text": "To add metadata to your OpenAPI schema, including a license, version, contact, etc, read the docs for Tutorial - Metadata and Docs URLs ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "OpenAPI Custom URL"
+      ],
+      "page_number": null,
+      "text": "To customize the OpenAPI URL (or remove it), read the docs for Tutorial - Metadata and Docs URLs ."
+    },
+    {
+      "heading_path": [
+        "General - How To - Recipes",
+        "OpenAPI Docs URLs"
+      ],
+      "page_number": null,
+      "text": "To update the URLs used for the automatically generated docs user interfaces, read the docs for Tutorial - Metadata and Docs URLs ."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "doc_id": "2b1367d719cb81aaff9bd51e1d75de96ddb5e376245b1ef78ba07fe54d3756c5",
+  "content_hash": "2b1367d719cb81aaff9bd51e1d75de96ddb5e376245b1ef78ba07fe54d3756c5",
+  "source_file": "deployment/fastapicloud.md",
+  "source_files": [
+    "deployment/fastapicloud.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 4,
+  "char_count": 1388,
+  "sections": [
+    {
+      "heading_path": [
+        "FastAPI Cloud"
+      ],
+      "page_number": null,
+      "text": "You can deploy your FastAPI app to FastAPI Cloud with just one command . 🚀\n```console\n$ uv run fastapi deploy\n\nDeploying to FastAPI Cloud...\n\n✅ Deployment successful!\n\n🐔 Ready the chicken! Your app is ready at https://myapp.fastapicloud.dev\n```\nThe CLI will automatically detect your FastAPI application and deploy it to the cloud. If you are not logged in, your browser will open to complete the authentication process.\nThat's it! Now you can access your app at that URL. ✨"
+    },
+    {
+      "heading_path": [
+        "FastAPI Cloud",
+        "About FastAPI Cloud"
+      ],
+      "page_number": null,
+      "text": "FastAPI Cloud is built by the same author and team behind FastAPI .\nIt streamlines the process of building , deploying , and accessing an API with minimal effort.\nIt brings the same developer experience of building apps with FastAPI to deploying them to the cloud. 🎉\nIt will also take care of most of the things you would need when deploying an app, like:\n- HTTPS\n- Replication, with autoscaling based on requests\n- etc.\nFastAPI Cloud is the primary sponsor and funding provider for the FastAPI and friends open source projects. ✨"
+    },
+    {
+      "heading_path": [
+        "FastAPI Cloud",
+        "Deploy to other cloud providers"
+      ],
+      "page_number": null,
+      "text": "FastAPI is open source and based on standards. You can deploy FastAPI apps to any cloud provider you choose.\nFollow your cloud provider's guides to deploy FastAPI apps with them. 🤓"
+    },
+    {
+      "heading_path": [
+        "FastAPI Cloud",
+        "Deploy your own server"
+      ],
+      "page_number": null,
+      "text": "I will also teach you later in this Deployment guide all the details, so you can understand what is going on, what needs to happen, or how to deploy FastAPI apps on your own, also with your own servers. 🤓"
+    }
+  ]
+}

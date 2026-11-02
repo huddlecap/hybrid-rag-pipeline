@@ -1,0 +1,45 @@
+{
+  "doc_id": "2b0b1c3218818cb05b679ea0f80f1fe6493cf43fbf651305411b3e2b44a122b2",
+  "content_hash": "2b0b1c3218818cb05b679ea0f80f1fe6493cf43fbf651305411b3e2b44a122b2",
+  "source_file": "tutorial/request-forms-and-files.md",
+  "source_files": [
+    "tutorial/request-forms-and-files.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 4,
+  "char_count": 1730,
+  "sections": [
+    {
+      "heading_path": [
+        "Request Forms and Files"
+      ],
+      "page_number": null,
+      "text": "You can define files and form fields at the same time using `File` and `Form` .\nTo receive uploaded files and/or form data, first install python-multipart .\nAdd it to your project:\n```console\n$ uv add python-multipart\n```"
+    },
+    {
+      "heading_path": [
+        "Request Forms and Files",
+        "Import File and Form"
+      ],
+      "page_number": null,
+      "text": "```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, Form, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(\n     file: Annotated[bytes, File()],\n     fileb: Annotated[UploadFile, File()],\n     token: Annotated[str, Form()],\n ):\n     return {\n         \"file_size\": len(file),\n         \"token\": token,\n         \"fileb_content_type\": fileb.content_type,\n     }\n```"
+    },
+    {
+      "heading_path": [
+        "Request Forms and Files",
+        "Define File and Form parameters"
+      ],
+      "page_number": null,
+      "text": "Create file and form parameters the same way you would for `Body` or `Query` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, Form, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(\n     file: Annotated[bytes, File()],\n     fileb: Annotated[UploadFile, File()],\n     token: Annotated[str, Form()],\n ):\n     return {\n         \"file_size\": len(file),\n         \"token\": token,\n         \"fileb_content_type\": fileb.content_type,\n     }\n```\nThe files and form fields will be uploaded as form data and you will receive the files and form fields.\nAnd you can declare some of the files as `bytes` and some as `UploadFile` .\nYou can declare multiple `File` and `Form` parameters in a path operation , but you can't also declare `Body` fields that you expect to receive as JSON, as the request will have the body encoded using `multipart/form-data` instead of `application/json` .\nThis is not a limitation of FastAPI , it's part of the HTTP protocol."
+    },
+    {
+      "heading_path": [
+        "Request Forms and Files",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Use `File` and `Form` together when you need to receive data and files in the same request."
+    }
+  ]
+}

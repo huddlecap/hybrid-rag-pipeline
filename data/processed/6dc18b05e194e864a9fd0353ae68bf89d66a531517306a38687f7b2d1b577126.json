@@ -1,0 +1,29 @@
+{
+  "doc_id": "6dc18b05e194e864a9fd0353ae68bf89d66a531517306a38687f7b2d1b577126",
+  "content_hash": "6dc18b05e194e864a9fd0353ae68bf89d66a531517306a38687f7b2d1b577126",
+  "source_file": "contributing.md",
+  "source_files": [
+    "contributing.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 170,
+  "sections": [
+    {
+      "heading_path": [
+        "Contributing"
+      ],
+      "page_number": null,
+      "text": "First, you might want to see the basic ways to help FastAPI and get help ."
+    },
+    {
+      "heading_path": [
+        "Contributing",
+        "Developing"
+      ],
+      "page_number": null,
+      "text": "To contribute code to the project, please follow the guidelines in tiangolo.com - Contributing ."
+    }
+  ]
+}

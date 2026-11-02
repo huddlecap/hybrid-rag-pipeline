@@ -1,0 +1,142 @@
+{
+  "doc_id": "d401f5f136ddae9e78d2f7bd0f28e5de08f69189b89e2f58fe22c95d4d9dd07f",
+  "content_hash": "d401f5f136ddae9e78d2f7bd0f28e5de08f69189b89e2f58fe22c95d4d9dd07f",
+  "source_file": "advanced/generate-clients.md",
+  "source_files": [
+    "advanced/generate-clients.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 15,
+  "char_count": 9215,
+  "sections": [
+    {
+      "heading_path": [
+        "Generating SDKs"
+      ],
+      "page_number": null,
+      "text": "Because FastAPI is based on the OpenAPI specification, its APIs can be described in a standard format that many tools understand.\nThis makes it easy to generate up-to-date documentation , client libraries ( SDKs ) in multiple languages, and testing or automation workflows that stay in sync with your code.\nIn this guide, you'll learn how to generate a TypeScript SDK for your FastAPI backend."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Open Source SDK Generators"
+      ],
+      "page_number": null,
+      "text": "A versatile option is the OpenAPI Generator , which supports many programming languages and can generate SDKs from your OpenAPI specification.\nFor TypeScript clients , Hey API is a purpose-built solution, providing an optimized experience for the TypeScript ecosystem.\nYou can discover more SDK generators on OpenAPI.Tools .\nFastAPI automatically generates OpenAPI 3.1 specifications, so any tool you use must support this version."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Create a TypeScript SDK"
+      ],
+      "page_number": null,
+      "text": "Let's start with a simple FastAPI application:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     price: float\n \n \n class ResponseMessage(BaseModel):\n     message: str\n \n \n @app.post(\"/items/\", response_model=ResponseMessage)\n async def create_item(item: Item):\n     return {\"message\": \"item received\"}\n \n \n @app.get(\"/items/\", response_model=list[Item])\n async def get_items():\n     return [\n         {\"name\": \"Plumbus\", \"price\": 3},\n         {\"name\": \"Portal Gun\", \"price\": 9001},\n     ]\n```\nNotice that the path operations define the models they use for request payload and response payload, using the models `Item` and `ResponseMessage` ."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Create a TypeScript SDK",
+        "API Docs"
+      ],
+      "page_number": null,
+      "text": "If you go to `/docs` , you will see that it has the schemas for the data to be sent in requests and received in responses:\nYou can see those schemas because they were declared with the models in the app.\nThat information is available in the app's OpenAPI schema , and then shown in the API docs.\nThat same information from the models that is included in OpenAPI is what can be used to generate the client code ."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Create a TypeScript SDK",
+        "Hey API"
+      ],
+      "page_number": null,
+      "text": "Once we have a FastAPI app with the models, we can use Hey API to generate a TypeScript client. The fastest way to do that is via npx.\n```sh\nnpx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/client\n```\nThis will generate a TypeScript SDK in `./src/client` .\nYou can learn how to install @hey-api/openapi-ts and read about the generated output on their website."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Create a TypeScript SDK",
+        "Using the SDK"
+      ],
+      "page_number": null,
+      "text": "Now you can import and use the client code. It could look like this, notice that you get autocompletion for the methods:\nYou will also get autocompletion for the payload to send:\nNotice the autocompletion for `name` and `price` , that was defined in the FastAPI application, in the `Item` model.\nYou will have inline errors for the data that you send:\nThe response object will also have autocompletion:"
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "FastAPI App with Tags"
+      ],
+      "page_number": null,
+      "text": "In many cases, your FastAPI app will be bigger, and you will probably use tags to separate different groups of path operations .\nFor example, you could have a section for items and another section for users , and they could be separated by tags:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     price: float\n \n \n class ResponseMessage(BaseModel):\n     message: str\n \n \n class User(BaseModel):\n     username: str\n     email: str\n \n \n @app.post(\"/items/\", response_model=ResponseMessage, tags=[\"items\"])\n async def create_item(item: Item):\n     return {\"message\": \"Item received\"}\n \n \n @app.get(\"/items/\", response_model=list[Item], tags=[\"items\"])\n async def get_items():\n     return [\n         {\"name\": \"Plumbus\", \"price\": 3},\n         {\"name\": \"Portal Gun\", \"price\": 9001},\n     ]\n \n \n @app.post(\"/users/\", response_model=ResponseMessage, tags=[\"users\"])\n async def create_user(user: User):\n     return {\"message\": \"User received\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "FastAPI App with Tags",
+        "Generate a TypeScript Client with Tags"
+      ],
+      "page_number": null,
+      "text": "If you generate a client for a FastAPI app using tags, it will normally also separate the client code based on the tags.\nThis way, you will be able to have things ordered and grouped correctly for the client code:\nIn this case, you have:\n- ItemsService\n- UsersService"
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "FastAPI App with Tags",
+        "Client Method Names"
+      ],
+      "page_number": null,
+      "text": "Right now, the generated method names like `createItemItemsPost` don't look very clean:\n```TypeScript\nItemsService.createItemItemsPost({name: \"Plumbus\", price: 5})\n```\n...that's because the client generator uses the OpenAPI internal operation ID for each path operation .\nOpenAPI requires that each operation ID is unique across all the path operations , so FastAPI uses the function name , the path , and the HTTP method/operation to generate that operation ID, because that way it can make sure that the operation IDs are unique.\nBut I'll show you how to improve that next. 🤓"
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Custom Operation IDs and Better Method Names"
+      ],
+      "page_number": null,
+      "text": "You can modify the way these operation IDs are generated to make them simpler and have simpler method names in the clients.\nIn this case, you will have to ensure that each operation ID is unique in some other way.\nFor example, you could make sure that each path operation has a tag, and then generate the operation ID based on the tag and the path operation name (the function name)."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Custom Operation IDs and Better Method Names",
+        "Custom Generate Unique ID Function"
+      ],
+      "page_number": null,
+      "text": "FastAPI uses a unique ID for each path operation , which is used for the operation ID and also for the names of any needed custom models, for requests or responses.\nYou can customize that function. It takes an `APIRoute` and outputs a string.\nFor example, here it is using the first tag (you will probably have only one tag) and the path operation name (the function name).\nYou can then pass that custom function to FastAPI as the `generate_unique_id_function` parameter:\n```python\n from fastapi import FastAPI\n from fastapi.routing import APIRoute\n from pydantic import BaseModel\n \n \n def custom_generate_unique_id(route: APIRoute):\n     return f\"{route.tags[0]}-{route.name}\"\n \n \n app = FastAPI(generate_unique_id_function=custom_generate_unique_id)\n \n \n class Item(BaseModel):\n     name: str\n     price: float\n \n \n class ResponseMessage(BaseModel):\n     message: str\n \n \n class User(BaseModel):\n     username: str\n     email: str\n \n \n @app.post(\"/items/\", response_model=ResponseMessage, tags=[\"items\"])\n async def create_item(item: Item):\n     return {\"message\": \"Item received\"}\n \n \n @app.get(\"/items/\", response_model=list[Item], tags=[\"items\"])\n async def get_items():\n     return [\n         {\"name\": \"Plumbus\", \"price\": 3},\n         {\"name\": \"Portal Gun\", \"price\": 9001},\n     ]\n \n \n @app.post(\"/users/\", response_model=ResponseMessage, tags=[\"users\"])\n async def create_user(user: User):\n     return {\"message\": \"User received\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Custom Operation IDs and Better Method Names",
+        "Generate a TypeScript Client with Custom Operation IDs"
+      ],
+      "page_number": null,
+      "text": "Now, if you generate the client again, you will see that it has the improved method names:\nAs you see, the method names now have the tag and then the function name, now they don't include information from the URL path and the HTTP operation."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Custom Operation IDs and Better Method Names",
+        "Preprocess the OpenAPI Specification for the Client Generator"
+      ],
+      "page_number": null,
+      "text": "The generated code still has some duplicated information .\nWe already know that this method is related to the items because that word is in the `ItemsService` (taken from the tag), but we still have the tag name prefixed in the method name too. 😕\nWe will probably still want to keep it for OpenAPI in general, as that will ensure that the operation IDs are unique .\nBut for the generated client, we could modify the OpenAPI operation IDs right before generating the clients, just to make those method names nicer and cleaner .\nWe could download the OpenAPI JSON to a file `openapi.json` and then we could remove that prefixed tag with a script like this:\n```python\n import json\n from pathlib import Path\n \n file_path = Path(\"./openapi.json\")\n openapi_content = json.loads(file_path.read_text())\n \n for path_data in openapi_content[\"paths\"].values():\n     for operation in path_data.values():\n         tag = operation[\"tags\"][0]\n         operation_id = operation[\"operationId\"]\n         to_remove = f\"{tag}-\"\n         new_operation_id = operation_id[len(to_remove) :]\n         operation[\"operationId\"] = new_operation_id\n \n file_path.write_text(json.dumps(openapi_content))\n```\nNode.js:\n```Javascript\n{!> ../../docs_src/generate_clients/tutorial004.js!}\n```\nWith that, the operation IDs would be renamed from things like `items-get_items` to just `get_items` , that way the client generator can generate simpler method names."
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Custom Operation IDs and Better Method Names",
+        "Generate a TypeScript Client with the Preprocessed OpenAPI"
+      ],
+      "page_number": null,
+      "text": "Since the end result is now in an `openapi.json` file, you need to update your input location:\n```sh\nnpx @hey-api/openapi-ts -i ./openapi.json -o src/client\n```\nAfter generating the new client, you would now have clean method names , with all the autocompletion , inline errors , etc:"
+    },
+    {
+      "heading_path": [
+        "Generating SDKs",
+        "Benefits"
+      ],
+      "page_number": null,
+      "text": "When using the automatically generated clients, you would get autocompletion for:\n- Methods.\n- Request payloads in the body, query parameters, etc.\n- Response payloads.\nYou would also have inline errors for everything.\nAnd whenever you update the backend code, and regenerate the frontend, it would have any new path operations available as methods, the old ones removed, and any other change would be reflected on the generated code. 🤓\nThis also means that if something changed, it will be reflected on the client code automatically. And if you build the client, it will error out if you have any mismatch in the data used.\nSo, you would detect many errors very early in the development cycle instead of having to wait for the errors to show up to your final users in production and then trying to debug where the problem is. ✨"
+    }
+  ]
+}

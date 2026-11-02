@@ -1,0 +1,103 @@
+{
+  "doc_id": "4faafb4853d46b41cb9bc4c7c57e3ab293bcb9ce318b3b369162c4e239425ab6",
+  "content_hash": "4faafb4853d46b41cb9bc4c7c57e3ab293bcb9ce318b3b369162c4e239425ab6",
+  "source_file": "tutorial/request-files.md",
+  "source_files": [
+    "tutorial/request-files.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 11,
+  "char_count": 9225,
+  "sections": [
+    {
+      "heading_path": [
+        "Request Files"
+      ],
+      "page_number": null,
+      "text": "You can define files to be uploaded by the client using `File` .\nTo receive uploaded files, first install python-multipart .\nAdd it to your project:\n```console\n$ uv add python-multipart\n```\nThis is because uploaded files are sent as \"form data\"."
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "Import File"
+      ],
+      "page_number": null,
+      "text": "Import `File` and `UploadFile` from `fastapi` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(file: Annotated[bytes, File()]):\n     return {\"file_size\": len(file)}\n \n \n @app.post(\"/uploadfile/\")\n async def create_upload_file(file: UploadFile):\n     return {\"filename\": file.filename}\n```"
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "Define File Parameters"
+      ],
+      "page_number": null,
+      "text": "Create file parameters the same way you would for `Body` or `Form` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(file: Annotated[bytes, File()]):\n     return {\"file_size\": len(file)}\n \n \n @app.post(\"/uploadfile/\")\n async def create_upload_file(file: UploadFile):\n     return {\"filename\": file.filename}\n```\n`File` is a class that inherits directly from `Form` .\nBut remember that when you import `Query` , `Path` , `File` and others from `fastapi` , those are actually functions that return special classes.\nTo declare File bodies, you need to use `File` , because otherwise the parameters would be interpreted as query parameters or body (JSON) parameters.\nThe files will be uploaded as \"form data\".\nIf you declare the type of your path operation function parameter as `bytes` , FastAPI will read the file for you and you will receive the contents as `bytes` .\nKeep in mind that this means that the whole contents will be stored in memory. This will work well for small files.\nBut there are several cases in which you might benefit from using `UploadFile` ."
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "File Parameters with UploadFile"
+      ],
+      "page_number": null,
+      "text": "Define a file parameter with a type of `UploadFile` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(file: Annotated[bytes, File()]):\n     return {\"file_size\": len(file)}\n \n \n @app.post(\"/uploadfile/\")\n async def create_upload_file(file: UploadFile):\n     return {\"filename\": file.filename}\n```\nUsing `UploadFile` has several advantages over `bytes` :\n- You don't have to use File() in the default value of the parameter.\n- It uses a \"spooled\" file: A file stored in memory up to a maximum size limit, and after passing this limit it will be stored on disk.\n- This means that it will work well for large files like images, videos, large binaries, etc. without consuming all the memory.\n- You can get metadata from the uploaded file.\n- It has a file-like async interface.\n- It exposes an actual Python SpooledTemporaryFile object that you can pass directly to other libraries that expect a file-like object."
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "File Parameters with UploadFile",
+        "UploadFile"
+      ],
+      "page_number": null,
+      "text": "`UploadFile` has the following attributes:\n- filename : A str with the original file name that was uploaded (e.g. myimage.jpg ).\n- content_type : A str with the content type (MIME type / media type) (e.g. image/jpeg ).\n- file : A SpooledTemporaryFile (a file-like object). This is the actual Python file object that you can pass directly to other functions or libraries that expect a \"file-like\" object.\n`UploadFile` has the following `async` methods. They all call the corresponding file methods underneath (using the internal `SpooledTemporaryFile` ).\n- write(data) : Writes data ( str or bytes ) to the file.\n- read(size) : Reads size ( int ) bytes/characters of the file.\n- seek(offset) : Goes to the byte position offset ( int ) in the file. E.g., await myfile.seek(0) would go to the start of the file. This is especially useful if you run await myfile.read() once and then need to read the contents again.\n- close() : Closes the file.\nAs all these methods are `async` methods, you need to \"await\" them.\nFor example, inside of an `async` path operation function you can get the contents with:\n```Python\ncontents = await myfile.read()\n```\nIf you are inside of a normal `def` path operation function , you can access the `UploadFile.file` directly, for example:\n```Python\ncontents = myfile.file.read()\n```\n`async` Technical Details:\nWhen you use the `async` methods, FastAPI runs the file methods in a threadpool and awaits for them.\nStarlette Technical Details:\nFastAPI 's `UploadFile` inherits directly from Starlette 's `UploadFile` , but adds some necessary parts to make it compatible with Pydantic and the other parts of FastAPI."
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "What is \"Form Data\""
+      ],
+      "page_number": null,
+      "text": "The way HTML forms ( `<form></form>` ) send the data to the server normally uses a \"special\" encoding for that data, it's different from JSON.\nFastAPI will make sure to read that data from the right place instead of JSON.\nTechnical Details:\nData from forms is normally encoded using the \"media type\" `application/x-www-form-urlencoded` when it doesn't include files.\nBut when the form includes files, it is encoded as `multipart/form-data` . If you use `File` , FastAPI will know it has to get the files from the correct part of the body.\nIf you want to read more about these encodings and form fields, head to the MDN web docs for POST .\nYou can declare multiple `File` and `Form` parameters in a path operation , but you can't also declare `Body` fields that you expect to receive as JSON, as the request will have the body encoded using `multipart/form-data` instead of `application/json` .\nThis is not a limitation of FastAPI , it's part of the HTTP protocol."
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "Optional File Upload"
+      ],
+      "page_number": null,
+      "text": "You can make a file optional by using standard type annotations and setting a default value of `None` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(file: Annotated[bytes | None, File()] = None):\n     if not file:\n         return {\"message\": \"No file sent\"}\n     else:\n         return {\"file_size\": len(file)}\n \n \n @app.post(\"/uploadfile/\")\n async def create_upload_file(file: UploadFile | None = None):\n     if not file:\n         return {\"message\": \"No upload file sent\"}\n     else:\n         return {\"filename\": file.filename}\n```"
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "UploadFile with Additional Metadata"
+      ],
+      "page_number": null,
+      "text": "You can also use `File()` with `UploadFile` , for example, to set additional metadata:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(file: Annotated[bytes, File(description=\"A file read as bytes\")]):\n     return {\"file_size\": len(file)}\n \n \n @app.post(\"/uploadfile/\")\n async def create_upload_file(\n     file: Annotated[UploadFile, File(description=\"A file read as UploadFile\")],\n ):\n     return {\"filename\": file.filename}\n```"
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "Multiple File Uploads"
+      ],
+      "page_number": null,
+      "text": "It's possible to upload several files at the same time.\nThey would be associated to the same \"form field\" sent using \"form data\".\nTo use that, declare a list of `bytes` or `UploadFile` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_files(files: Annotated[list[bytes], File()]):\n     return {\"file_sizes\": [len(file) for file in files]}\n \n \n @app.post(\"/uploadfiles/\")\n async def create_upload_files(files: list[UploadFile]):\n     return {\"filenames\": [file.filename for file in files]}\n \n \n @app.get(\"/\")\n async def main():\n     content = \"\"\"\n <body>\n <form action=\"/files/\" enctype=\"multipart/form-data\" method=\"post\">\n <input name=\"files\" type=\"file\" multiple>\n <input type=\"submit\">\n </form>\n <form action=\"/uploadfiles/\" enctype=\"multipart/form-data\" method=\"post\">\n <input name=\"files\" type=\"file\" multiple>\n <input type=\"submit\">\n </form>\n </body>\n     \"\"\"\n     return HTMLResponse(content=content)\n```\nYou will receive, as declared, a `list` of `bytes` or `UploadFile` s.\nTechnical Details:\nYou could also use `from starlette.responses import HTMLResponse` .\nFastAPI provides the same `starlette.responses` as `fastapi.responses` just as a convenience for you, the developer. But most of the available responses come directly from Starlette."
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "Multiple File Uploads",
+        "Multiple File Uploads with Additional Metadata"
+      ],
+      "page_number": null,
+      "text": "And the same way as before, you can use `File()` to set additional parameters, even for `UploadFile` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, UploadFile\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_files(\n     files: Annotated[list[bytes], File(description=\"Multiple files as bytes\")],\n ):\n     return {\"file_sizes\": [len(file) for file in files]}\n \n \n @app.post(\"/uploadfiles/\")\n async def create_upload_files(\n     files: Annotated[\n         list[UploadFile], File(description=\"Multiple files as UploadFile\")\n     ],\n ):\n     return {\"filenames\": [file.filename for file in files]}\n \n \n @app.get(\"/\")\n async def main():\n     content = \"\"\"\n <body>\n <form action=\"/files/\" enctype=\"multipart/form-data\" method=\"post\">\n <input name=\"files\" type=\"file\" multiple>\n <input type=\"submit\">\n </form>\n <form action=\"/uploadfiles/\" enctype=\"multipart/form-data\" method=\"post\">\n <input name=\"files\" type=\"file\" multiple>\n <input type=\"submit\">\n </form>\n </body>\n     \"\"\"\n     return HTMLResponse(content=content)\n```"
+    },
+    {
+      "heading_path": [
+        "Request Files",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Use `File` , `bytes` , and `UploadFile` to declare files to be uploaded in the request, sent as form data."
+    }
+  ]
+}

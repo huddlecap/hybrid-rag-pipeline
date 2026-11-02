@@ -1,0 +1,128 @@
+{
+  "doc_id": "83319cc87297bb0959c5721a112133e6a3cd19900163c348a8ee6cf4818cd21f",
+  "content_hash": "83319cc87297bb0959c5721a112133e6a3cd19900163c348a8ee6cf4818cd21f",
+  "source_file": "tutorial/dependencies/index.md",
+  "source_files": [
+    "tutorial/dependencies/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 14,
+  "char_count": 10088,
+  "sections": [
+    {
+      "heading_path": [
+        "Dependencies"
+      ],
+      "page_number": null,
+      "text": "FastAPI has a very powerful but intuitive Dependency Injection system.\nIt is designed to be very simple to use, and to make it very easy for any developer to integrate other components with FastAPI ."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "What is \"Dependency Injection\""
+      ],
+      "page_number": null,
+      "text": "\"Dependency Injection\" means, in programming, that there is a way for your code (in this case, your path operation functions ) to declare things that it requires to work and use: \"dependencies\".\nAnd then, that system (in this case FastAPI ) will take care of doing whatever is needed to provide your code with those needed dependencies (\"inject\" the dependencies).\nThis is very useful when you need to:\n- Have shared logic (the same code logic again and again).\n- Share database connections.\n- Enforce security, authentication, role requirements, etc.\n- And many other things...\nAll these, while minimizing code repetition."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "First Steps"
+      ],
+      "page_number": null,
+      "text": "Let's see a very simple example. It will be so simple that it is not very useful, for now.\nBut this way we can focus on how the Dependency Injection system works."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "First Steps",
+        "Create a dependency, or \"dependable\""
+      ],
+      "page_number": null,
+      "text": "Let's first focus on the dependency.\nIt is just a function that can take all the same parameters that a path operation function can take:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n     return {\"q\": q, \"skip\": skip, \"limit\": limit}\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n \n \n @app.get(\"/users/\")\n async def read_users(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n```\nThat's it.\n2 lines .\nAnd it has the same shape and structure that all your path operation functions have.\nYou can think of it as a path operation function without the \"decorator\" (without the `@app.get(\"/some-path\")` ).\nAnd it can return anything you want.\nIn this case, this dependency expects:\n- An optional query parameter q that is a str .\n- An optional query parameter skip that is an int , and by default is 0 .\n- An optional query parameter limit that is an int , and by default is 100 .\nAnd then it just returns a `dict` containing those values.\nFastAPI added support for `Annotated` (and started recommending it) in version 0.95.0.\nIf you have an older version, you would get errors when trying to use `Annotated` .\nMake sure you Upgrade the FastAPI version to at least 0.95.1 before using `Annotated` ."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "First Steps",
+        "Import Depends"
+      ],
+      "page_number": null,
+      "text": "```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n     return {\"q\": q, \"skip\": skip, \"limit\": limit}\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n \n \n @app.get(\"/users/\")\n async def read_users(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n```"
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "First Steps",
+        "Declare the dependency, in the \"dependant\""
+      ],
+      "page_number": null,
+      "text": "The same way you use `Body` , `Query` , etc. with your path operation function parameters, use `Depends` with a new parameter:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n     return {\"q\": q, \"skip\": skip, \"limit\": limit}\n \n \n @app.get(\"/items/\")\n async def read_items(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n \n \n @app.get(\"/users/\")\n async def read_users(commons: Annotated[dict, Depends(common_parameters)]):\n     return commons\n```\nAlthough you use `Depends` in the parameters of your function the same way you use `Body` , `Query` , etc, `Depends` works a bit differently.\nYou only give `Depends` a single parameter.\nThis parameter must be something like a function.\nYou don't call it directly (don't add the parenthesis at the end), you just pass it as a parameter to `Depends()` .\nAnd that function takes parameters in the same way that path operation functions do.\nYou'll see what other \"things\", apart from functions, can be used as dependencies in the next chapter.\nWhenever a new request arrives, FastAPI will take care of:\n- Calling your dependency (\"dependable\") function with the correct parameters.\n- Get the result from your function.\n- Assign that result to the parameter in your path operation function .\n```mermaid\ngraph TB\n\ncommon_parameters([\"common_parameters\"])\nread_items[\"/items/\"]\nread_users[\"/users/\"]\n\ncommon_parameters --> read_items\ncommon_parameters --> read_users\n```\nThis way you write shared code once and FastAPI takes care of calling it for your path operations .\nNotice that you don't have to create a special class and pass it somewhere to FastAPI to \"register\" it or anything similar.\nYou just pass it to `Depends` and FastAPI knows how to do the rest."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "Share Annotated dependencies"
+      ],
+      "page_number": null,
+      "text": "In the examples above, you see that there's a tiny bit of code duplication .\nWhen you need to use the `common_parameters()` dependency, you have to write the whole parameter with the type annotation and `Depends()` :\n```Python\ncommons: Annotated[dict, Depends(common_parameters)]\n```\nBut because we are using `Annotated` , we can store that `Annotated` value in a variable and use it in multiple places:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI\n \n app = FastAPI()\n \n \n async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):\n     return {\"q\": q, \"skip\": skip, \"limit\": limit}\n \n \n CommonsDep = Annotated[dict, Depends(common_parameters)]\n \n \n @app.get(\"/items/\")\n async def read_items(commons: CommonsDep):\n     return commons\n \n \n @app.get(\"/users/\")\n async def read_users(commons: CommonsDep):\n     return commons\n```\nThis is just standard Python, it's called a \"type alias\", it's actually not specific to FastAPI .\nBut because FastAPI is based on the Python standards, including `Annotated` , you can use this trick in your code. 😎\nThe dependencies will keep working as expected, and the best part is that the type information will be preserved , which means that your editor will be able to keep providing you with autocompletion , inline errors , etc. The same for other tools like `mypy` .\nThis will be especially useful when you use it in a large code base where you use the same dependencies over and over again in many path operations ."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "To async or not to async"
+      ],
+      "page_number": null,
+      "text": "As dependencies will also be called by FastAPI (the same as your path operation functions ), the same rules apply while defining your functions.\nYou can use `async def` or normal `def` .\nAnd you can declare dependencies with `async def` inside of normal `def` path operation functions , or `def` dependencies inside of `async def` path operation functions , etc.\nIt doesn't matter. FastAPI will know what to do.\nIf you don't know, check the Async: \"In a hurry?\" section about `async` and `await` in the docs."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "Integrated with OpenAPI"
+      ],
+      "page_number": null,
+      "text": "All the request declarations, validations and requirements of your dependencies (and sub-dependencies) will be integrated in the same OpenAPI schema.\nSo, the interactive docs will have all the information from these dependencies too:"
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "Simple usage"
+      ],
+      "page_number": null,
+      "text": "If you look at it, path operation functions are declared to be used whenever a path and operation matches, and then FastAPI takes care of calling the function with the correct parameters, extracting the data from the request.\nActually, all (or most) of the web frameworks work in this same way.\nYou never call those functions directly. They are called by your framework (in this case, FastAPI ).\nWith the Dependency Injection system, you can also tell FastAPI that your path operation function also \"depends\" on something else that should be executed before your path operation function , and FastAPI will take care of executing it and \"injecting\" the results.\nOther common terms for this same idea of \"dependency injection\" are:\n- resources\n- providers\n- services\n- injectables\n- components"
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "FastAPI plug-ins"
+      ],
+      "page_number": null,
+      "text": "Integrations and \"plug-ins\" can be built using the Dependency Injection system. But in fact, there is actually no need to create \"plug-ins\" , as by using dependencies it's possible to declare an infinite number of integrations and interactions that become available to your path operation functions .\nAnd dependencies can be created in a very simple and intuitive way that allows you to just import the Python packages you need, and integrate them with your API functions in a couple of lines of code, literally .\nYou will see examples of this in the next chapters, about relational and NoSQL databases, security, etc."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "FastAPI compatibility"
+      ],
+      "page_number": null,
+      "text": "The simplicity of the dependency injection system makes FastAPI compatible with:\n- all the relational databases\n- NoSQL databases\n- external packages\n- external APIs\n- authentication and authorization systems\n- API usage monitoring systems\n- response data injection systems\n- etc."
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "Simple and Powerful"
+      ],
+      "page_number": null,
+      "text": "Although the hierarchical dependency injection system is very simple to define and use, it's still very powerful.\nYou can define dependencies that in turn can define dependencies themselves.\nIn the end, a hierarchical tree of dependencies is built, and the Dependency Injection system takes care of solving all these dependencies for you (and their sub-dependencies) and providing (injecting) the results at each step.\nFor example, let's say you have 4 API endpoints ( path operations ):\n- /items/public/\n- /items/private/\n- /users//activate\n- /items/pro/\nthen you could add different permission requirements for each of them just with dependencies and sub-dependencies:\n```mermaid\ngraph TB\n\ncurrent_user([\"current_user\"])\nactive_user([\"active_user\"])\nadmin_user([\"admin_user\"])\npaying_user([\"paying_user\"])\n\npublic[\"/items/public/\"]\nprivate[\"/items/private/\"]\nactivate_user[\"/users/{user_id}/activate\"]\npro_items[\"/items/pro/\"]\n\ncurrent_user --> active_user\nactive_user --> admin_user\nactive_user --> paying_user\n\ncurrent_user --> public\nactive_user --> private\nadmin_user --> activate_user\npaying_user --> pro_items\n```"
+    },
+    {
+      "heading_path": [
+        "Dependencies",
+        "Integrated with OpenAPI"
+      ],
+      "page_number": null,
+      "text": "All these dependencies, while declaring their requirements, also add parameters, validations, etc. to your path operations .\nFastAPI will take care of adding it all to the OpenAPI schema, so that it is shown in the interactive documentation systems."
+    }
+  ]
+}

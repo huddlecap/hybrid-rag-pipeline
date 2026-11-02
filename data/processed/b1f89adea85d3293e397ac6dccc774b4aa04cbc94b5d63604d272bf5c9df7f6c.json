@@ -1,0 +1,30 @@
+{
+  "doc_id": "b1f89adea85d3293e397ac6dccc774b4aa04cbc94b5d63604d272bf5c9df7f6c",
+  "content_hash": "b1f89adea85d3293e397ac6dccc774b4aa04cbc94b5d63604d272bf5c9df7f6c",
+  "source_file": "advanced/index.md",
+  "source_files": [
+    "advanced/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 525,
+  "sections": [
+    {
+      "heading_path": [
+        "Advanced User Guide",
+        "Additional Features"
+      ],
+      "page_number": null,
+      "text": "The main Tutorial - User Guide should be enough to give you a tour through all the main features of FastAPI .\nIn the next sections you will see other options, configurations, and additional features.\nThe next sections are not necessarily \"advanced\" .\nAnd it's possible that for your use case, the solution is in one of them."
+    },
+    {
+      "heading_path": [
+        "Advanced User Guide",
+        "Read the Tutorial first"
+      ],
+      "page_number": null,
+      "text": "You could still use most of the features in FastAPI with the knowledge from the main Tutorial - User Guide .\nAnd the next sections assume you already read it, and assume that you know those main ideas."
+    }
+  ]
+}

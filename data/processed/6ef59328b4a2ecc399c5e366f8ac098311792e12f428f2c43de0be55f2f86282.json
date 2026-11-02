@@ -1,0 +1,37 @@
+{
+  "doc_id": "6ef59328b4a2ecc399c5e366f8ac098311792e12f428f2c43de0be55f2f86282",
+  "content_hash": "6ef59328b4a2ecc399c5e366f8ac098311792e12f428f2c43de0be55f2f86282",
+  "source_file": "reference/responses.md",
+  "source_files": [
+    "reference/responses.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 2803,
+  "sections": [
+    {
+      "heading_path": [
+        "Custom Response Classes - File, HTML, Redirect, Streaming, etc."
+      ],
+      "page_number": null,
+      "text": "There are several custom response classes you can use to create an instance and return them directly from your path operations .\nRead more about it in the FastAPI docs for Custom Response - HTML, Stream, File, others .\nYou can import them directly from `fastapi.responses` :\n```python\nfrom fastapi.responses import (\n    FileResponse,\n    HTMLResponse,\n    JSONResponse,\n    ORJSONResponse,\n    PlainTextResponse,\n    RedirectResponse,\n    Response,\n    StreamingResponse,\n    UJSONResponse,\n)\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Response Classes - File, HTML, Redirect, Streaming, etc.",
+        "FastAPI Responses"
+      ],
+      "page_number": null,
+      "text": "There were a couple of custom FastAPI response classes that were intended to optimize JSON performance.\nHowever, they are now deprecated as you will now get better performance by using a Response Model - Return Type .\nThat way, Pydantic will serialize the data into JSON bytes on the Rust side, which will achieve better performance than these custom JSON responses.\nRead more about it in Custom Response - HTML, Stream, File, others - orjson or Response Model .\n::: fastapi.responses.UJSONResponse\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.ORJSONResponse\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie"
+    },
+    {
+      "heading_path": [
+        "Custom Response Classes - File, HTML, Redirect, Streaming, etc.",
+        "Starlette Responses"
+      ],
+      "page_number": null,
+      "text": "You can read more about all of them in the FastAPI docs for Custom Response and in the Starlette docs about Responses .\n::: fastapi.responses.FileResponse\noptions:\nmembers:\n- chunk_size\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.HTMLResponse\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.JSONResponse\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.PlainTextResponse\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.RedirectResponse\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.Response\noptions:\nmembers:\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie\n::: fastapi.responses.StreamingResponse\noptions:\nmembers:\n- body_iterator\n- charset\n- status_code\n- media_type\n- body\n- background\n- raw_headers\n- render\n- init_headers\n- headers\n- set_cookie\n- delete_cookie"
+    }
+  ]
+}

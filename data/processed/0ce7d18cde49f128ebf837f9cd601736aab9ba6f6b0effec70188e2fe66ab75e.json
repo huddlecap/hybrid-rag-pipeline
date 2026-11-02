@@ -1,0 +1,21 @@
+{
+  "doc_id": "0ce7d18cde49f128ebf837f9cd601736aab9ba6f6b0effec70188e2fe66ab75e",
+  "content_hash": "0ce7d18cde49f128ebf837f9cd601736aab9ba6f6b0effec70188e2fe66ab75e",
+  "source_file": "reference/request.md",
+  "source_files": [
+    "reference/request.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 548,
+  "sections": [
+    {
+      "heading_path": [
+        "Request class"
+      ],
+      "page_number": null,
+      "text": "You can declare a parameter in a path operation function or dependency to be of type `Request` and then you can access the raw request object directly, without any validation, etc.\nRead more about it in the FastAPI docs about using Request directly\nYou can import it directly from `fastapi` :\n```python\nfrom fastapi import Request\n```\nWhen you want to define dependencies that should be compatible with both HTTP and WebSockets, you can define a parameter that takes an `HTTPConnection` instead of a `Request` or a `WebSocket` .\n::: fastapi.Request"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "doc_id": "759b81a9967dc50ec405877a23bb362d202e5d483fe38ad2308cb32a88eb8eda",
+  "content_hash": "759b81a9967dc50ec405877a23bb362d202e5d483fe38ad2308cb32a88eb8eda",
+  "source_file": "tutorial/testing.md",
+  "source_files": [
+    "tutorial/testing.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 9,
+  "char_count": 8212,
+  "sections": [
+    {
+      "heading_path": [
+        "Testing"
+      ],
+      "page_number": null,
+      "text": "Thanks to Starlette , testing FastAPI applications is easy and enjoyable.\nIt is based on HTTPX , which in turn is designed based on Requests, so it's very familiar and intuitive.\nWith it, you can use pytest directly with FastAPI ."
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Using TestClient"
+      ],
+      "page_number": null,
+      "text": "To use `TestClient` , first install httpx .\nAdd it to your project:\n```console\n$ uv add httpx\n```\nImport `TestClient` .\nCreate a `TestClient` by passing your FastAPI application to it.\nCreate functions with a name that starts with `test_` (this is a standard `pytest` convention).\nUse the `TestClient` object the same way as you do with `httpx` .\nWrite simple `assert` statements with the standard Python expressions that you need to check (again, standard `pytest` ).\n```python\n from fastapi import FastAPI\n from fastapi.testclient import TestClient\n \n app = FastAPI()\n \n \n @app.get(\"/\")\n async def read_main():\n     return {\"msg\": \"Hello World\"}\n \n \n client = TestClient(app)\n \n \n def test_read_main():\n     response = client.get(\"/\")\n     assert response.status_code == 200\n     assert response.json() == {\"msg\": \"Hello World\"}\n```\nNotice that the testing functions are normal `def` , not `async def` .\nAnd the calls to the client are also normal calls, not using `await` .\nThis allows you to use `pytest` directly without complications.\nTechnical Details:\nYou could also use `from starlette.testclient import TestClient` .\nFastAPI provides the same `starlette.testclient` as `fastapi.testclient` just as a convenience for you, the developer. But it comes directly from Starlette.\nIf you want to call `async` functions in your tests apart from sending requests to your FastAPI application (e.g. asynchronous database functions), have a look at the Async Tests in the advanced tutorial."
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Separating tests"
+      ],
+      "page_number": null,
+      "text": "In a real application, you probably would have your tests in a different file.\nAnd your FastAPI application might also be composed of several files/modules, etc."
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Separating tests",
+        "FastAPI app file"
+      ],
+      "page_number": null,
+      "text": "Let's say you have a file structure as described in Bigger Applications :\n```text\n.\n├── app\n│   ├── __init__.py\n│   └── main.py\n```\nIn the file `main.py` you have your FastAPI app:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/\")\n async def read_main():\n     return {\"msg\": \"Hello World\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Separating tests",
+        "Testing file"
+      ],
+      "page_number": null,
+      "text": "Then you could have a file `test_main.py` with your tests. It could live on the same Python package (the same directory with a `__init__.py` file):\n```hl_lines=\"5\"\n.\n├── app\n│   ├── __init__.py\n│   ├── main.py\n│   └── test_main.py\n```\nBecause this file is in the same package, you can use relative imports to import the object `app` from the `main` module ( `main.py` ):\n```python\n from fastapi.testclient import TestClient\n \n from .main import app\n \n client = TestClient(app)\n \n \n def test_read_main():\n     response = client.get(\"/\")\n     assert response.status_code == 200\n     assert response.json() == {\"msg\": \"Hello World\"}\n```\n...and have the code for the tests just like before."
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Testing: extended example"
+      ],
+      "page_number": null,
+      "text": "Now let's extend this example and add more details to see how to test different parts."
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Testing: extended example",
+        "Extended FastAPI app file"
+      ],
+      "page_number": null,
+      "text": "Let's continue with the same file structure as before:\n```text\n.\n├── app\n│   ├── __init__.py\n│   ├── main.py\n│   └── test_main.py\n```\nLet's say that now the file `main.py` with your FastAPI app has some other path operations .\nIt has a `GET` operation that could return an error.\nIt has a `POST` operation that could return several errors.\nBoth path operations require an `X-Token` header.\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Header, HTTPException\n from pydantic import BaseModel\n \n fake_secret_token = \"coneofsilence\"\n \n fake_db = {\n     \"foo\": {\"id\": \"foo\", \"title\": \"Foo\", \"description\": \"There goes my hero\"},\n     \"bar\": {\"id\": \"bar\", \"title\": \"Bar\", \"description\": \"The bartenders\"},\n }\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     id: str\n     title: str\n     description: str | None = None\n \n \n @app.get(\"/items/{item_id}\", response_model=Item)\n async def read_main(item_id: str, x_token: Annotated[str, Header()]):\n     if x_token != fake_secret_token:\n         raise HTTPException(status_code=400, detail=\"Invalid X-Token header\")\n     if item_id not in fake_db:\n         raise HTTPException(status_code=404, detail=\"Item not found\")\n     return fake_db[item_id]\n \n \n @app.post(\"/items/\")\n async def create_item(item: Item, x_token: Annotated[str, Header()]) -> Item:\n     if x_token != fake_secret_token:\n         raise HTTPException(status_code=400, detail=\"Invalid X-Token header\")\n     if item.id in fake_db:\n         raise HTTPException(status_code=409, detail=\"Item already exists\")\n     fake_db[item.id] = item.model_dump()\n     return item\n```"
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Testing: extended example",
+        "Extended testing file"
+      ],
+      "page_number": null,
+      "text": "You could then update `test_main.py` with the extended tests:\n```python\n from fastapi.testclient import TestClient\n \n from .main import app\n \n client = TestClient(app)\n \n \n def test_read_item():\n     response = client.get(\"/items/foo\", headers={\"X-Token\": \"coneofsilence\"})\n     assert response.status_code == 200\n     assert response.json() == {\n         \"id\": \"foo\",\n         \"title\": \"Foo\",\n         \"description\": \"There goes my hero\",\n     }\n \n \n def test_read_item_bad_token():\n     response = client.get(\"/items/foo\", headers={\"X-Token\": \"hailhydra\"})\n     assert response.status_code == 400\n     assert response.json() == {\"detail\": \"Invalid X-Token header\"}\n \n \n def test_read_nonexistent_item():\n     response = client.get(\"/items/baz\", headers={\"X-Token\": \"coneofsilence\"})\n     assert response.status_code == 404\n     assert response.json() == {\"detail\": \"Item not found\"}\n \n \n def test_create_item():\n     response = client.post(\n         \"/items/\",\n         headers={\"X-Token\": \"coneofsilence\"},\n         json={\"id\": \"foobar\", \"title\": \"Foo Bar\", \"description\": \"The Foo Barters\"},\n     )\n     assert response.status_code == 200\n     assert response.json() == {\n         \"id\": \"foobar\",\n         \"title\": \"Foo Bar\",\n         \"description\": \"The Foo Barters\",\n     }\n \n \n def test_create_item_bad_token():\n     response = client.post(\n         \"/items/\",\n         headers={\"X-Token\": \"hailhydra\"},\n         json={\"id\": \"bazz\", \"title\": \"Bazz\", \"description\": \"Drop the bazz\"},\n     )\n     assert response.status_code == 400\n     assert response.json() == {\"detail\": \"Invalid X-Token header\"}\n \n \n def test_create_existing_item():\n     response = client.post(\n         \"/items/\",\n         headers={\"X-Token\": \"coneofsilence\"},\n         json={\n             \"id\": \"foo\",\n             \"title\": \"The Foo ID Stealers\",\n             \"description\": \"There goes my stealer\",\n         },\n     )\n     assert response.status_code == 409\n     assert response.json() == {\"detail\": \"Item already exists\"}\n```\nWhenever you need the client to pass information in the request and you don't know how to, you can search (Google) how to do it in `httpx` , or even how to do it with `requests` , as HTTPX's design is based on Requests' design.\nThen you just do the same in your tests.\nE.g.:\n- To pass a path or query parameter, add it to the URL itself.\n- To pass a JSON body, pass a Python object (e.g. a dict ) to the parameter json .\n- If you need to send Form Data instead of JSON, use the data parameter instead.\n- To pass headers , use a dict in the headers parameter.\n- For cookies , a dict in the cookies parameter.\nFor more information about how to pass data to the backend (using `httpx` or the `TestClient` ) check the HTTPX documentation .\nNote that the `TestClient` receives data that can be converted to JSON, not Pydantic models.\nIf you have a Pydantic model in your test and you want to send its data to the application during testing, you can use the `jsonable_encoder` described in JSON Compatible Encoder ."
+    },
+    {
+      "heading_path": [
+        "Testing",
+        "Run it"
+      ],
+      "page_number": null,
+      "text": "After that, you just need to install `pytest` .\nAdd it to your project:\n```console\n$ uv add pytest\n\n---> 100%\n```\nIt will detect the files and tests automatically, execute them, and report the results back to you.\nRun the tests with:\n```console\n$ uv run pytest\n\n================ test session starts ================\nplatform linux -- Python 3.6.9, pytest-5.3.5, py-1.8.1, pluggy-0.13.1\nrootdir: /home/user/code/superawesome-cli/app\nplugins: forked-1.1.3, xdist-1.31.0, cov-2.8.1\ncollected 6 items\n\n---> 100%\n\ntest_main.py ......                            [100%]\n\n================= 1 passed in 0.03s =================\n```"
+    }
+  ]
+}

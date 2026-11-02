@@ -1,0 +1,94 @@
+{
+  "doc_id": "149a8e36ede2dc1341eb4d403c24c75392be6829c4b4e731e84bf3e6c0200f6f",
+  "content_hash": "149a8e36ede2dc1341eb4d403c24c75392be6829c4b4e731e84bf3e6c0200f6f",
+  "source_file": "tutorial/path-params-numeric-validations.md",
+  "source_files": [
+    "tutorial/path-params-numeric-validations.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 7547,
+  "sections": [
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations"
+      ],
+      "page_number": null,
+      "text": "In the same way that you can declare more validations and metadata for query parameters with `Query` , you can declare the same type of validations and metadata for path parameters with `Path` ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Import Path"
+      ],
+      "page_number": null,
+      "text": "First, import `Path` from `fastapi` , and import `Annotated` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path, Query\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\")],\n     q: Annotated[str | None, Query(alias=\"item-query\")] = None,\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```\nFastAPI added support for `Annotated` (and started recommending it) in version 0.95.0.\nIf you have an older version, you would get errors when trying to use `Annotated` .\nMake sure you Upgrade the FastAPI version to at least 0.95.1 before using `Annotated` ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Declare metadata"
+      ],
+      "page_number": null,
+      "text": "You can declare all the same parameters as for `Query` .\nFor example, to declare a `title` metadata value for the path parameter `item_id` you can type:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path, Query\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\")],\n     q: Annotated[str | None, Query(alias=\"item-query\")] = None,\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```\nA path parameter is always required because it has to be part of the URL path. Adding `None` to its type does not make it optional. A parameter declared with `Path` cannot have a default value."
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Order the parameters as you need"
+      ],
+      "page_number": null,
+      "text": "This is probably not as important or necessary if you use `Annotated` .\nLet's say that you want to declare the query parameter `q` as a required `str` .\nAnd you don't need to declare anything else for that parameter, so you don't really need to use `Query` .\nBut you still need to use `Path` for the `item_id` path parameter. And you don't want to use `Annotated` for some reason.\nPython will complain if you put a value with a \"default\" before a value that doesn't have a \"default\".\nBut you can re-order them, and have the value without a default (the query parameter `q` ) first.\nIt doesn't matter for FastAPI . It will detect the parameters by their names, types and default declarations ( `Query` , `Path` , etc), it doesn't care about the order.\nSo, you can declare your function as:\n```python\n from fastapi import FastAPI, Path\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(q: str, item_id: int = Path(title=\"The ID of the item to get\")):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```\nBut keep in mind that if you use `Annotated` , you won't have this problem, it won't matter as you're not using the function parameter default values for `Query()` or `Path()` .\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     q: str, item_id: Annotated[int, Path(title=\"The ID of the item to get\")]\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Order the parameters as you need, tricks"
+      ],
+      "page_number": null,
+      "text": "This is probably not as important or necessary if you use `Annotated` .\nHere's a small trick that can be handy, but you won't need it often.\nIf you want to:\n- declare the q query parameter without a Query nor any default value\n- declare the path parameter item_id using Path\n- have them in a different order\n- not use Annotated\n...Python has a little special syntax for that.\nPass `*` , as the first parameter of the function.\nPython won't do anything with that `*` , but it will know that all the following parameters should be called as keyword arguments (key-value pairs), also known as `kwargs` . Even if they don't have a default value.\n```python\n from fastapi import FastAPI, Path\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(*, item_id: int = Path(title=\"The ID of the item to get\"), q: str):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Order the parameters as you need, tricks",
+        "Better with Annotated"
+      ],
+      "page_number": null,
+      "text": "Keep in mind that if you use `Annotated` , as you are not using function parameter default values, you won't have this problem, and you probably won't need to use `*` .\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\")], q: str\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Number validations: greater than or equal"
+      ],
+      "page_number": null,
+      "text": "With `Query` and `Path` (and others you'll see later) you can declare number constraints.\nHere, with `ge=1` , `item_id` will need to be an integer number \" `g` reater than or `e` qual\" to `1` .\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\", ge=1)], q: str\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Number validations: greater than and less than or equal"
+      ],
+      "page_number": null,
+      "text": "The same applies for:\n- gt : g reater t han\n- le : l ess than or e qual\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\", gt=0, le=1000)],\n     q: str,\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     return results\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Number validations: floats, greater than and less than"
+      ],
+      "page_number": null,
+      "text": "Number validations also work for `float` values.\nHere's where it becomes important to be able to declare `gt` and not just `ge` . As with it you can require, for example, that a value must be greater than `0` , even if it is less than `1` .\nSo, `0.5` would be a valid value. But `0.0` or `0` would not.\nAnd the same for `lt` .\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Path, Query\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(\n     *,\n     item_id: Annotated[int, Path(title=\"The ID of the item to get\", ge=0, le=1000)],\n     q: str,\n     size: Annotated[float, Query(gt=0, lt=10.5)],\n ):\n     results = {\"item_id\": item_id}\n     if q:\n         results.update({\"q\": q})\n     if size:\n         results.update({\"size\": size})\n     return results\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters and Numeric Validations",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "With `Query` , `Path` (and others you haven't seen yet) you can declare metadata and string validations in the same ways as with Query Parameters and String Validations .\nAnd you can also declare numeric validations:\n- gt : g reater t han\n- ge : g reater than or e qual\n- lt : l ess t han\n- le : l ess than or e qual\n`Query` , `Path` , and other classes you will see later are subclasses of a common `Param` class.\nAll of them share the same parameters for additional validation and metadata you have seen.\nTechnical Details:\nWhen you import `Query` , `Path` and others from `fastapi` , they are actually functions.\nThat when called, return instances of classes of the same name.\nSo, you import `Query` , which is a function. And when you call it, it returns an instance of a class also named `Query` .\nThese functions are there (instead of just using the classes directly) so that your editor doesn't mark errors about their types.\nThat way you can use your normal editor and coding tools without having to add custom configurations to disregard those errors."
+    }
+  ]
+}

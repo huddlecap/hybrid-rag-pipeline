@@ -1,0 +1,37 @@
+{
+  "doc_id": "ea918672101986658fa199f2f307351aa80a053709cf2b904bddeac9972fc343",
+  "content_hash": "ea918672101986658fa199f2f307351aa80a053709cf2b904bddeac9972fc343",
+  "source_file": "advanced/response-change-status-code.md",
+  "source_files": [
+    "advanced/response-change-status-code.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 1683,
+  "sections": [
+    {
+      "heading_path": [
+        "Response - Change Status Code"
+      ],
+      "page_number": null,
+      "text": "You probably read before that you can set a default Response Status Code .\nBut in some cases you need to return a different status code than the default."
+    },
+    {
+      "heading_path": [
+        "Response - Change Status Code",
+        "Use case"
+      ],
+      "page_number": null,
+      "text": "For example, imagine that you want to return an HTTP status code of \"OK\" `200` by default.\nBut if the data didn't exist, you want to create it, and return an HTTP status code of \"CREATED\" `201` .\nBut you still want to be able to filter and convert the data you return with a `response_model` .\nFor those cases, you can use a `Response` parameter."
+    },
+    {
+      "heading_path": [
+        "Response - Change Status Code",
+        "Use a Response parameter"
+      ],
+      "page_number": null,
+      "text": "You can declare a parameter of type `Response` in your path operation function (as you can do for cookies and headers).\nAnd then you can set the `status_code` in that temporary response object.\n```python\n from fastapi import FastAPI, Response, status\n \n app = FastAPI()\n \n tasks = {\"foo\": \"Listen to the Bar Fighters\"}\n \n \n @app.put(\"/get-or-create-task/{task_id}\", status_code=200)\n def get_or_create_task(task_id: str, response: Response):\n     if task_id not in tasks:\n         tasks[task_id] = \"This didn't exist before\"\n         response.status_code = status.HTTP_201_CREATED\n     return tasks[task_id]\n```\nAnd then you can return any object you need, as you normally would (a `dict` , a database model, etc).\nAnd if you declared a `response_model` , it will still be used to filter and convert the object you returned.\nFastAPI will use that temporary response to extract the status code (also cookies and headers), and will put them in the final response that contains the value you returned, filtered by any `response_model` .\nYou can also declare the `Response` parameter in dependencies, and set the status code in them. But keep in mind that the last one to be set will win."
+    }
+  ]
+}

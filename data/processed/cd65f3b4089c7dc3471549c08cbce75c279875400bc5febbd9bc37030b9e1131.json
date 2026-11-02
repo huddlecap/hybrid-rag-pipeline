@@ -1,0 +1,21 @@
+{
+  "doc_id": "cd65f3b4089c7dc3471549c08cbce75c279875400bc5febbd9bc37030b9e1131",
+  "content_hash": "cd65f3b4089c7dc3471549c08cbce75c279875400bc5febbd9bc37030b9e1131",
+  "source_file": "reference/middleware.md",
+  "source_files": [
+    "reference/middleware.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 769,
+  "sections": [
+    {
+      "heading_path": [
+        "Middleware"
+      ],
+      "page_number": null,
+      "text": "There are several middlewares available provided by Starlette directly.\nRead more about them in the FastAPI docs for Middleware .\n::: fastapi.middleware.cors.CORSMiddleware\nIt can be imported from `fastapi` :\n```python\nfrom fastapi.middleware.cors import CORSMiddleware\n```\n::: fastapi.middleware.gzip.GZipMiddleware\nIt can be imported from `fastapi` :\n```python\nfrom fastapi.middleware.gzip import GZipMiddleware\n```\n::: fastapi.middleware.httpsredirect.HTTPSRedirectMiddleware\nIt can be imported from `fastapi` :\n```python\nfrom fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware\n```\n::: fastapi.middleware.trustedhost.TrustedHostMiddleware\nIt can be imported from `fastapi` :\n```python\nfrom fastapi.middleware.trustedhost import TrustedHostMiddleware\n```"
+    }
+  ]
+}

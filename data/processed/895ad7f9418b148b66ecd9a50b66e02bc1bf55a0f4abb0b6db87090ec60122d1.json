@@ -1,0 +1,21 @@
+{
+  "doc_id": "895ad7f9418b148b66ecd9a50b66e02bc1bf55a0f4abb0b6db87090ec60122d1",
+  "content_hash": "895ad7f9418b148b66ecd9a50b66e02bc1bf55a0f4abb0b6db87090ec60122d1",
+  "source_file": "reference/background.md",
+  "source_files": [
+    "reference/background.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 333,
+  "sections": [
+    {
+      "heading_path": [
+        "Background Tasks - BackgroundTasks"
+      ],
+      "page_number": null,
+      "text": "You can declare a parameter in a path operation function or dependency function with the type `BackgroundTasks` , and then you can use it to schedule the execution of background tasks after the response is sent.\nYou can import it directly from `fastapi` :\n```python\nfrom fastapi import BackgroundTasks\n```\n::: fastapi.BackgroundTasks"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "doc_id": "a7c65db4bd585c2057badb95d059d0d34c408fc906721960fa67a7640b7e13d6",
+  "content_hash": "a7c65db4bd585c2057badb95d059d0d34c408fc906721960fa67a7640b7e13d6",
+  "source_file": "reference/websockets.md",
+  "source_files": [
+    "reference/websockets.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 1455,
+  "sections": [
+    {
+      "heading_path": [
+        "WebSockets"
+      ],
+      "page_number": null,
+      "text": "When defining WebSockets, you normally declare a parameter of type `WebSocket` and with it you can read data from the client and send data to it.\nRead more about it in the FastAPI docs for WebSockets\nIt is provided directly by Starlette, but you can import it from `fastapi` :\n```python\nfrom fastapi import WebSocket\n```\nWhen you want to define dependencies that should be compatible with both HTTP and WebSockets, you can define a parameter that takes an `HTTPConnection` instead of a `Request` or a `WebSocket` .\n::: fastapi.WebSocket\noptions:\nmembers:\n- scope\n- app\n- url\n- base_url\n- headers\n- query_params\n- path_params\n- cookies\n- client\n- state\n- url_for\n- client_state\n- application_state\n- receive\n- send\n- accept\n- receive_text\n- receive_bytes\n- receive_json\n- iter_text\n- iter_bytes\n- iter_json\n- send_text\n- send_bytes\n- send_json\n- close"
+    },
+    {
+      "heading_path": [
+        "WebSockets",
+        "WebSockets - additional classes"
+      ],
+      "page_number": null,
+      "text": "Additional classes for handling WebSockets.\nProvided directly by Starlette, but you can import them from `fastapi` :\n```python\nfrom fastapi.websockets import WebSocketDisconnect, WebSocketState\n```\n::: fastapi.websockets.WebSocketDisconnect\nWhen a client disconnects, a `WebSocketDisconnect` exception is raised, you can catch it.\nYou can import it directly from `fastapi` :\n```python\nfrom fastapi import WebSocketDisconnect\n```\nRead more about it in the FastAPI docs for WebSockets\n::: fastapi.websockets.WebSocketState\n`WebSocketState` is an enumeration of the possible states of a WebSocket connection."
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "doc_id": "a090bb4174b12a5d7bbc84a7e7c3d8d4461d02b23501c59abbed2d894460df9f",
+  "content_hash": "a090bb4174b12a5d7bbc84a7e7c3d8d4461d02b23501c59abbed2d894460df9f",
+  "source_file": "tutorial/sql-databases.md",
+  "source_files": [
+    "tutorial/sql-databases.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 27,
+  "char_count": 16051,
+  "sections": [
+    {
+      "heading_path": [
+        "SQL (Relational) Databases"
+      ],
+      "page_number": null,
+      "text": "FastAPI doesn't require you to use a SQL (relational) database. But you can use any database that you want.\nHere we'll see an example using SQLModel .\nSQLModel is built on top of SQLAlchemy and Pydantic. It was made by the same author of FastAPI to be the perfect match for FastAPI applications that need to use SQL databases .\nYou could use any other SQL or NoSQL database library you want (in some cases called \"ORMs\" ), FastAPI doesn't force you to use anything. 😎\nAs SQLModel is based on SQLAlchemy, you can easily use any database supported by SQLAlchemy (which makes them also supported by SQLModel), like:\n- PostgreSQL\n- MySQL\n- SQLite\n- Oracle\n- Microsoft SQL Server, etc.\nIn this example, we'll use SQLite , because it uses a single file and Python has integrated support. So, you can copy this example and run it as is.\nLater, for your production application, you might want to use a database server like PostgreSQL .\nThere is an official project generator with FastAPI and PostgreSQL including a frontend and more tools: https://github.com/fastapi/full-stack-fastapi-template\nThis is a very simple and short tutorial, if you want to learn about databases in general, about SQL, or more advanced features, go to the SQLModel docs ."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Install SQLModel"
+      ],
+      "page_number": null,
+      "text": "Add `sqlmodel` to your project:\n```console\n$ uv add sqlmodel\n---> 100%\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model"
+      ],
+      "page_number": null,
+      "text": "We'll create the simplest first version of the app with a single SQLModel model first.\nLater we'll improve it increasing security and versatility with multiple models below. 🤓"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Create Models"
+      ],
+      "page_number": null,
+      "text": "Import `SQLModel` and create a database model:\n```python\n from typing import Annotated\n \n from fastapi import Depends, FastAPI, HTTPException, Query\n from sqlmodel import Field, Session, SQLModel, create_engine, select\n \n \n class Hero(SQLModel, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n     secret_name: str\n```\nThe `Hero` class is very similar to a Pydantic model (in fact, underneath, it actually is a Pydantic model ).\nThere are a few differences:\n- table=True tells SQLModel that this is a table model , it should represent a table in the SQL database, it's not just a data model (as would be any other regular Pydantic class).\n- Field(primary_key=True) tells SQLModel that the id is the primary key in the SQL database (you can learn more about SQL primary keys in the SQLModel docs). Note: We use int | None for the primary key field so that in Python code we can create an object without an id ( id=None ), assuming the database will generate it when saving . SQLModel understands that the database will provide the id and defines the column as a non-null INTEGER in the database schema. See SQLModel docs on primary keys for details.\n- Field(index=True) tells SQLModel that it should create a SQL index for this column, that would allow faster lookups in the database when reading data filtered by this column. SQLModel will know that something declared as str will be a SQL column of type TEXT (or VARCHAR , depending on the database)."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Create an Engine"
+      ],
+      "page_number": null,
+      "text": "A SQLModel `engine` (underneath it's actually a SQLAlchemy `engine` ) is what holds the connections to the database.\nYou would have one single `engine` object for all your code to connect to the same database.\n```python\n sqlite_file_name = \"database.db\"\n sqlite_url = f\"sqlite:///{sqlite_file_name}\"\n \n connect_args = {\"check_same_thread\": False}\n engine = create_engine(sqlite_url, connect_args=connect_args)\n```\nUsing `check_same_thread=False` allows FastAPI to use the same SQLite database in different threads. This is necessary as one single request could use more than one thread (for example in dependencies).\nDon't worry, with the way the code is structured, we'll make sure we use a single SQLModel session per request later, this is actually what the `check_same_thread` is trying to achieve."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Create the Tables"
+      ],
+      "page_number": null,
+      "text": "We then add a function that uses `SQLModel.metadata.create_all(engine)` to create the tables for all the table models .\n```python\n def create_db_and_tables():\n     SQLModel.metadata.create_all(engine)\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Create a Session Dependency"
+      ],
+      "page_number": null,
+      "text": "A `Session` is what stores the objects in memory and keeps track of any changes needed in the data, then it uses the `engine` to communicate with the database.\nWe will create a FastAPI dependency with `yield` that will provide a new `Session` for each request. This is what ensures that we use a single session per request. 🤓\nThen we create an `Annotated` dependency `SessionDep` to simplify the rest of the code that will use this dependency.\n```python\n def get_session():\n     with Session(engine) as session:\n         yield session\n \n \n SessionDep = Annotated[Session, Depends(get_session)]\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Create Database Tables on Startup"
+      ],
+      "page_number": null,
+      "text": "We will create the database tables when the application starts.\n```python\n app = FastAPI()\n \n \n @app.on_event(\"startup\")\n def on_startup():\n     create_db_and_tables()\n```\nHere we create the tables on an application startup event.\nFor production you would probably use a migration script that runs before you start your app. 🤓\nSQLModel will have migration utilities wrapping Alembic, but for now, you can use Alembic directly."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Create a Hero"
+      ],
+      "page_number": null,
+      "text": "Because each SQLModel model is also a Pydantic model, you can use it in the same type annotations that you could use Pydantic models.\nFor example, if you declare a parameter of type `Hero` , it will be read from the JSON body .\nThe same way, you can declare it as the function's return type , and then the shape of the data will show up in the automatic API docs UI.\n```python\n @app.post(\"/heroes/\")\n def create_hero(hero: Hero, session: SessionDep) -> Hero:\n     session.add(hero)\n     session.commit()\n     session.refresh(hero)\n     return hero\n```\nHere we use the `SessionDep` dependency (a `Session` ) to add the new `Hero` to the `Session` instance, commit the changes to the database, refresh the data in the `hero` , and then return it."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Read Heroes"
+      ],
+      "page_number": null,
+      "text": "We can read `Hero` s from the database using a `select()` . We can include a `limit` and `offset` to paginate the results.\n```python\n @app.get(\"/heroes/\")\n def read_heroes(\n     session: SessionDep,\n     offset: int = 0,\n     limit: Annotated[int, Query(le=100)] = 100,\n ) -> list[Hero]:\n     heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()\n     return heroes\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Read One Hero"
+      ],
+      "page_number": null,
+      "text": "We can read a single `Hero` .\n```python\n @app.get(\"/heroes/{hero_id}\")\n def read_hero(hero_id: int, session: SessionDep) -> Hero:\n     hero = session.get(Hero, hero_id)\n     if not hero:\n         raise HTTPException(status_code=404, detail=\"Hero not found\")\n     return hero\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Delete a Hero"
+      ],
+      "page_number": null,
+      "text": "We can also delete a `Hero` .\n```python\n @app.delete(\"/heroes/{hero_id}\")\n def delete_hero(hero_id: int, session: SessionDep):\n     hero = session.get(Hero, hero_id)\n     if not hero:\n         raise HTTPException(status_code=404, detail=\"Hero not found\")\n     session.delete(hero)\n     session.commit()\n     return {\"ok\": True}\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Create the App with a Single Model",
+        "Run the App"
+      ],
+      "page_number": null,
+      "text": "You can run the app:\n```console\n$ uv run fastapi dev\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nThen go to the `/docs` UI, you will see that FastAPI is using these models to document the API, and it will use them to serialize and validate the data too."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models"
+      ],
+      "page_number": null,
+      "text": "Now let's refactor this app a bit to increase security and versatility .\nIf you check the previous app, in the UI you can see that, up to now, it lets the client decide the `id` of the `Hero` to create. 😱\nWe shouldn't let that happen, they could overwrite an `id` we already have assigned in the DB. Deciding the `id` should be done by the backend or the database , not by the client .\nAdditionally, we create a `secret_name` for the hero, but so far, we are returning it everywhere, that's not very secret ... 😅\nWe'll fix these things by adding a few extra models . Here's where SQLModel will shine. ✨"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create Multiple Models"
+      ],
+      "page_number": null,
+      "text": "In SQLModel , any model class that has `table=True` is a table model .\nAnd any model class that doesn't have `table=True` is a data model , these ones are actually just Pydantic models (with a couple of small extra features). 🤓\nWith SQLModel, we can use inheritance to avoid duplicating all the fields in all the cases."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create Multiple Models",
+        "HeroBase - the base class"
+      ],
+      "page_number": null,
+      "text": "Let's start with a `HeroBase` model that has all the fields that are shared by all the models:\n- name\n- age\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create Multiple Models",
+        "Hero - the table model"
+      ],
+      "page_number": null,
+      "text": "Then let's create `Hero` , the actual table model , with the extra fields that are not always in the other models:\n- id\n- secret_name\nBecause `Hero` inherits from `HeroBase` , it also has the fields declared in `HeroBase` , so all the fields for `Hero` are:\n- id\n- name\n- age\n- secret_name\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n \n \n class Hero(HeroBase, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     secret_name: str\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create Multiple Models",
+        "HeroPublic - the public data model"
+      ],
+      "page_number": null,
+      "text": "Next, we create a `HeroPublic` model, this is the one that will be returned to the clients of the API.\nIt has the same fields as `HeroBase` , so it won't include `secret_name` .\nFinally, the identity of our heroes is protected! 🥷\nIt also re-declares `id: int` . By doing this, we are making a contract with the API clients, so that they can always expect the `id` to be there and to be an `int` (it will never be `None` ).\nHaving the return model ensure that a value is always available and always `int` (not `None` ) is very useful for the API clients, they can write much simpler code having this certainty.\nAlso, automatically generated clients will have simpler interfaces, so that the developers communicating with your API can have a much better time working with your API. 😎\nAll the fields in `HeroPublic` are the same as in `HeroBase` , with `id` declared as `int` (not `None` ):\n- id\n- name\n- age\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n \n \n class Hero(HeroBase, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     secret_name: str\n \n \n class HeroPublic(HeroBase):\n     id: int\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create Multiple Models",
+        "HeroCreate - the data model to create a hero"
+      ],
+      "page_number": null,
+      "text": "Now we create a `HeroCreate` model, this is the one that will validate the data from the clients.\nIt has the same fields as `HeroBase` , and it also has `secret_name` .\nNow, when the clients create a new hero , they will send the `secret_name` , it will be stored in the database, but those secret names won't be returned in the API to the clients.\nThis is how you would handle passwords . Receive them, but don't return them in the API.\nYou would also hash the values of the passwords before storing them, never store them in plain text .\nThe fields of `HeroCreate` are:\n- name\n- age\n- secret_name\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n \n \n class Hero(HeroBase, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     secret_name: str\n \n \n class HeroPublic(HeroBase):\n     id: int\n \n \n class HeroCreate(HeroBase):\n     secret_name: str\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create Multiple Models",
+        "HeroUpdate - the data model to update a hero"
+      ],
+      "page_number": null,
+      "text": "We didn't have a way to update a hero in the previous version of the app, but now with multiple models , we can do it. 🎉\nThe `HeroUpdate` data model is somewhat special, it has all the same fields that would be needed to create a new hero, but all the fields are optional (they all have a default value). This way, when you update a hero, you can send just the fields that you want to update.\nBecause all the fields actually change (the type now includes `None` and they now have a default value of `None` ), we need to re-declare them.\nWe don't really need to inherit from `HeroBase` because we are re-declaring all the fields. I'll leave it inheriting just for consistency, but this is not necessary. It's more a matter of personal taste. 🤷\nThe fields of `HeroUpdate` are:\n- name\n- age\n- secret_name\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n \n \n class Hero(HeroBase, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     secret_name: str\n \n \n class HeroPublic(HeroBase):\n     id: int\n \n \n class HeroCreate(HeroBase):\n     secret_name: str\n \n \n class HeroUpdate(HeroBase):\n     name: str | None = None\n     age: int | None = None\n     secret_name: str | None = None\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Create with HeroCreate and return a HeroPublic"
+      ],
+      "page_number": null,
+      "text": "Now that we have multiple models , we can update the parts of the app that use them.\nWe receive in the request a `HeroCreate` data model , and from it, we create a `Hero` table model .\nThis new table model `Hero` will have the fields sent by the client, and will also have an `id` generated by the database.\nThen we return the same table model `Hero` as is from the function. But as we declare the `response_model` with the `HeroPublic` data model , FastAPI will use `HeroPublic` to validate and serialize the data.\n```python\n @app.post(\"/heroes/\", response_model=HeroPublic)\n def create_hero(hero: HeroCreate, session: SessionDep):\n     db_hero = Hero.model_validate(hero)\n     session.add(db_hero)\n     session.commit()\n     session.refresh(db_hero)\n     return db_hero\n```\nNow we use `response_model=HeroPublic` instead of the return type annotation `-> HeroPublic` because the value that we are returning is actually not a `HeroPublic` .\nIf we had declared `-> HeroPublic` , your editor and linter would complain (rightfully so) that you are returning a `Hero` instead of a `HeroPublic` .\nBy declaring it in `response_model` we are telling FastAPI to do its thing, without interfering with the type annotations and the help from your editor and other tools."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Read Heroes with HeroPublic"
+      ],
+      "page_number": null,
+      "text": "We can do the same as before to read `Hero` s, again, we use `response_model=list[HeroPublic]` to ensure that the data is validated and serialized correctly.\n```python\n @app.get(\"/heroes/\", response_model=list[HeroPublic])\n def read_heroes(\n     session: SessionDep,\n     offset: int = 0,\n     limit: Annotated[int, Query(le=100)] = 100,\n ):\n     heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()\n     return heroes\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Read One Hero with HeroPublic"
+      ],
+      "page_number": null,
+      "text": "We can read a single hero:\n```python\n @app.get(\"/heroes/{hero_id}\", response_model=HeroPublic)\n def read_hero(hero_id: int, session: SessionDep):\n     hero = session.get(Hero, hero_id)\n     if not hero:\n         raise HTTPException(status_code=404, detail=\"Hero not found\")\n     return hero\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Update a Hero with HeroUpdate"
+      ],
+      "page_number": null,
+      "text": "We can update a hero . For this we use an HTTP `PATCH` operation.\nAnd in the code, we get a `dict` with all the data sent by the client, only the data sent by the client , excluding any values that would be there just for being the default values. To do it we use `exclude_unset=True` . This is the main trick. 🪄\nThen we use `hero_db.sqlmodel_update(hero_data)` to update the `hero_db` with the data from `hero_data` .\n```python\n @app.patch(\"/heroes/{hero_id}\", response_model=HeroPublic)\n def update_hero(hero_id: int, hero: HeroUpdate, session: SessionDep):\n     hero_db = session.get(Hero, hero_id)\n     if not hero_db:\n         raise HTTPException(status_code=404, detail=\"Hero not found\")\n     hero_data = hero.model_dump(exclude_unset=True)\n     hero_db.sqlmodel_update(hero_data)\n     session.add(hero_db)\n     session.commit()\n     session.refresh(hero_db)\n     return hero_db\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Delete a Hero Again"
+      ],
+      "page_number": null,
+      "text": "Deleting a hero stays pretty much the same.\nWe won't satisfy the desire to refactor everything in this one. 😅\n```python\n @app.delete(\"/heroes/{hero_id}\")\n def delete_hero(hero_id: int, session: SessionDep):\n     hero = session.get(Hero, hero_id)\n     if not hero:\n         raise HTTPException(status_code=404, detail=\"Hero not found\")\n     session.delete(hero)\n     session.commit()\n     return {\"ok\": True}\n```"
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Update the App with Multiple Models",
+        "Run the App Again"
+      ],
+      "page_number": null,
+      "text": "You can run the app again:\n```console\n$ uv run fastapi dev\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nIf you go to the `/docs` API UI, you will see that it is now updated, and it won't expect to receive the `id` from the client when creating a hero, etc."
+    },
+    {
+      "heading_path": [
+        "SQL (Relational) Databases",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "You can use SQLModel to interact with a SQL database and simplify the code with data models and table models .\nYou can learn a lot more at the SQLModel docs, there's a longer mini tutorial on using SQLModel with FastAPI . 🚀"
+    }
+  ]
+}

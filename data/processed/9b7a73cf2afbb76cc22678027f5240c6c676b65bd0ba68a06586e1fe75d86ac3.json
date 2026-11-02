@@ -1,0 +1,29 @@
+{
+  "doc_id": "9b7a73cf2afbb76cc22678027f5240c6c676b65bd0ba68a06586e1fe75d86ac3",
+  "content_hash": "9b7a73cf2afbb76cc22678027f5240c6c676b65bd0ba68a06586e1fe75d86ac3",
+  "source_file": "reference/status.md",
+  "source_files": [
+    "reference/status.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 757,
+  "sections": [
+    {
+      "heading_path": [
+        "Status Codes"
+      ],
+      "page_number": null,
+      "text": "You can import the `status` module from `fastapi` :\n```python\nfrom fastapi import status\n```\n`status` is provided directly by Starlette.\nIt contains a group of named constants (variables) with integer status codes.\nFor example:\n- 200: status.HTTP_200_OK\n- 403: status.HTTP_403_FORBIDDEN\n- etc.\nIt can be convenient to quickly access HTTP (and WebSocket) status codes in your app, using autocompletion for the name without having to memorize the integer status codes.\nRead more about it in the FastAPI docs about Response Status Code ."
+    },
+    {
+      "heading_path": [
+        "Status Codes",
+        "Example"
+      ],
+      "page_number": null,
+      "text": "```python\nfrom fastapi import FastAPI, status\n\napp = FastAPI()\n\n\n@app.get(\"/items/\", status_code=status.HTTP_418_IM_A_TEAPOT)\ndef read_items():\n    return [{\"name\": \"Plumbus\"}, {\"name\": \"Portal Gun\"}]\n```\n::: fastapi.status"
+    }
+  ]
+}

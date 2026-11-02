@@ -1,0 +1,21 @@
+{
+  "doc_id": "def013c4e40ea6573fa8a87beaa0fc7867b84b8ce8138936fca25f25c8d06e95",
+  "content_hash": "def013c4e40ea6573fa8a87beaa0fc7867b84b8ce8138936fca25f25c8d06e95",
+  "source_file": "how-to/index.md",
+  "source_files": [
+    "how-to/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 487,
+  "sections": [
+    {
+      "heading_path": [
+        "How To - Recipes"
+      ],
+      "page_number": null,
+      "text": "Here you will see different recipes or \"how to\" guides for several topics .\nMost of these ideas would be more or less independent , and in most cases you should only need to study them if they apply directly to your project .\nIf something seems interesting and useful to your project, go ahead and check it, but otherwise, you might probably just skip them.\nIf you want to learn FastAPI in a structured way (recommended), go and read the Tutorial - User Guide chapter by chapter instead."
+    }
+  ]
+}

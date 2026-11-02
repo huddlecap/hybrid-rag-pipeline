@@ -1,0 +1,93 @@
+{
+  "doc_id": "eb513e68941a9d5d001001ee55d3d4235e5a25b613891c5681933fe76ff75d9e",
+  "content_hash": "eb513e68941a9d5d001001ee55d3d4235e5a25b613891c5681933fe76ff75d9e",
+  "source_file": "tutorial/frontend.md",
+  "source_files": [
+    "tutorial/frontend.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 6217,
+  "sections": [
+    {
+      "heading_path": [
+        "Frontend"
+      ],
+      "page_number": null,
+      "text": "You can serve static frontend apps with `app.frontend()` (or `router.frontend()` ).\nThis is useful for frontend tools that generate static files, like React with Vite, TanStack Router, Astro, Vue, Svelte, Angular, Solid, and others.\nWith these tools, you normally have a step that builds the frontend, with a command like:\n```bash\nnpm run build\n```\nThat would generate a directory like `./dist/` with your frontend files.\nYou can use `app.frontend()` to serve that directory following the conventions needed by these frontend frameworks.\nFastAPI checks path operations first. The frontend files are checked only if no normal route matched, so your API won't be affected."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Serve a Frontend"
+      ],
+      "page_number": null,
+      "text": "After building your frontend, for example with `npm run build` , put the generated files in a directory, for example, `dist` .\nYour project structure could look like this:\n```text\n.\n├── pyproject.toml\n├── app\n│   ├── __init__.py\n│   └── main.py\n└── dist\n    ├── index.html\n    └── assets\n        └── app.js\n```\nThen serve it with `app.frontend()` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\")\n```\nWith this, a request for `/assets/app.js` can serve `dist/assets/app.js` .\nIf you also have a FastAPI path operation , the path operation wins."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Client-Side Routing"
+      ],
+      "page_number": null,
+      "text": "Many frontend apps, including single-page apps (SPAs), use client-side routing. A path like `/dashboard/settings` might not be a real file but the framework would take care of handling it.\nSo, if accessing that URL directly (instead of navigating through the app), the backend should serve the frontend app from `index.html` , so that the frontend framework can then handle the client-side routing.\nFor that, use `fallback=\"index.html\"` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\", fallback=\"index.html\")\n```\nFastAPI uses this fallback only for `GET` and `HEAD` requests that explicitly accept HTML with `Accept: text/html` or `Accept: application/xhtml+xml` , as browser navigation requests normally do. Missing files like JavaScript, CSS, and images still return `404` .\nRequests with other methods, like `POST` or `PUT` , to paths that only match the frontend fallback also return `404` . Regular FastAPI path operations still have higher priority than frontend routes.\nBy default, `fallback` has a value of `fallback=\"auto\"` . In most cases you won't need to specify `fallback` . Read below for details.\nThis is what you would want with many frontend apps that use client-side routing, for example, React with TanStack Router, Vue, Angular, SvelteKit, or Solid."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Custom 404 Page"
+      ],
+      "page_number": null,
+      "text": "You can also serve a static `404.html` page for missing frontend paths:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\", fallback=\"404.html\")\n```\nThat response keeps a status code of `404` .\nIn this case, FastAPI won't serve `index.html` for missing frontend paths. It will return the `404.html` file instead.\nBy default, `fallback` has a value of `fallback=\"auto\"` . With this, if a `404.html` file is found, it will be used as the fallback automatically.\nSo, you can normally omit the `fallback` argument.\nThis is useful with frontend tools that generate static HTML files for each page, like Astro."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Fallback Auto"
+      ],
+      "page_number": null,
+      "text": "By default, `app.frontend()` uses `fallback=\"auto\"` .\nIf there is a `404.html` file in the frontend directory, missing frontend paths serve that file with status code `404` .\nOtherwise, if there is an `index.html` file, missing browser navigation paths serve `index.html` , which is what many frontend apps with client-side routing expect.\nSo, in most cases you can use `app.frontend(\"/\", directory=\"dist\")` without specifying the `fallback` argument.\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\")\n```"
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Disable Fallback"
+      ],
+      "page_number": null,
+      "text": "If you don't want to serve a fallback file for missing frontend paths, use `fallback=None` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\", fallback=None)\n```\nThen missing frontend paths return the normal `404` ."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Check Directory"
+      ],
+      "page_number": null,
+      "text": "By default, `app.frontend()` uses `check_dir=\"auto\"` .\nWhen the `FASTAPI_ENV` environment variable is set to `development` , FastAPI only shows a warning if the frontend build output directory is missing. The fastapi dev command sets this environment variable for you if it is not already set. This lets you start the backend before building or starting the frontend during development.\nIn any other environment, FastAPI raises an error when the app is created. This helps catch configuration errors early before deploying an app without its frontend files.\nYou can also set `check_dir=True` to always check the directory when the app is created.\nIf your frontend files are created later, for example by a separate build step after the app object is created, set `check_dir=False` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\", check_dir=False)\n```\nWith `check_dir=False` , FastAPI will not check the directory when the app is created. If the configured directory is still missing when a request is handled, FastAPI will raise an error then."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Use it with APIRouter"
+      ],
+      "page_number": null,
+      "text": "You can also add frontend files to an `APIRouter` and include it with a prefix:\n```python\n from fastapi import APIRouter, FastAPI\n \n app = FastAPI()\n router = APIRouter()\n \n router.frontend(\"/\", directory=\"dist\", fallback=\"index.html\")\n app.include_router(router, prefix=\"/app\")\n```\nIn this example, frontend paths are served under `/app` .\nAny regular path operations in the app will still take precedence, including in other routers."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Dependencies and Middleware"
+      ],
+      "page_number": null,
+      "text": "Frontend responses run inside the normal FastAPI application, so HTTP middleware applies to them.\nDependencies from the app, from an `APIRouter` , and from `include_router()` also apply to frontend responses. This can be useful for protecting a frontend with cookie authentication or similar.\nDependencies can also modify response headers and add background tasks, as with normal path operations ."
+    },
+    {
+      "heading_path": [
+        "Frontend",
+        "Static Build Output Only"
+      ],
+      "page_number": null,
+      "text": "`app.frontend()` serves files already generated by your frontend build.\nIt does not run server-side rendering. It is for frontend frameworks that generate static files, not for frameworks that need dynamic rendering on the server for each request."
+    }
+  ]
+}

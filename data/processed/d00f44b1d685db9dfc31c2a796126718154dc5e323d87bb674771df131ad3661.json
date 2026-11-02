@@ -1,0 +1,88 @@
+{
+  "doc_id": "d00f44b1d685db9dfc31c2a796126718154dc5e323d87bb674771df131ad3661",
+  "content_hash": "d00f44b1d685db9dfc31c2a796126718154dc5e323d87bb674771df131ad3661",
+  "source_file": "advanced/templates.md",
+  "source_files": [
+    "advanced/templates.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 9,
+  "char_count": 4296,
+  "sections": [
+    {
+      "heading_path": [
+        "Templates"
+      ],
+      "page_number": null,
+      "text": "You can use any template engine you want with FastAPI .\nA common choice is Jinja2, the same one used by Flask and other tools.\nThere are utilities to configure it easily that you can use directly in your FastAPI application (provided by Starlette)."
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Install dependencies"
+      ],
+      "page_number": null,
+      "text": "Add `jinja2` to your project:\n```console\n$ uv add jinja2\n\n---> 100%\n```"
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Using Jinja2Templates"
+      ],
+      "page_number": null,
+      "text": "- Import Jinja2Templates .\n- Create a templates object that you can reuse later.\n- Declare a Request parameter in the path operation that will return a template.\n- Use the templates you created to render and return a TemplateResponse , pass the name of the template, the request object, and a \"context\" dictionary with key-value pairs to be used inside of the Jinja2 template.\n```python\n from fastapi import FastAPI, Request\n from fastapi.responses import HTMLResponse\n from fastapi.staticfiles import StaticFiles\n from fastapi.templating import Jinja2Templates\n \n app = FastAPI()\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n templates = Jinja2Templates(directory=\"templates\")\n \n \n @app.get(\"/items/{id}\", response_class=HTMLResponse)\n async def read_item(request: Request, id: str):\n     return templates.TemplateResponse(\n         request=request, name=\"item.html\", context={\"id\": id}\n     )\n```\nBefore FastAPI 0.108.0, Starlette 0.29.0, the `name` was the first parameter.\nAlso, before that, in previous versions, the `request` object was passed as part of the key-value pairs in the context for Jinja2.\nBy declaring `response_class=HTMLResponse` the docs UI will be able to know that the response will be HTML.\nTechnical Details:\nYou could also use `from starlette.templating import Jinja2Templates` .\nFastAPI provides the same `starlette.templating` as `fastapi.templating` just as a convenience for you, the developer. But most of the available responses come directly from Starlette. The same with `Request` and `StaticFiles` ."
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Writing templates"
+      ],
+      "page_number": null,
+      "text": "Then you can write a template at `templates/item.html` with, for example:\n```jinja\n{!../../docs_src/templates/templates/item.html!}\n```"
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Writing templates",
+        "Template Context Values"
+      ],
+      "page_number": null,
+      "text": "In the HTML that contains:\n```jinja\nItem ID: {{ id }}\n```\n...it will show the `id` taken from the \"context\" `dict` you passed:\n```Python\n{\"id\": id}\n```\nFor example, with an ID of `42` , this would render:\n```html\nItem ID: 42\n```"
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Writing templates",
+        "Template url_for Arguments"
+      ],
+      "page_number": null,
+      "text": "You can also use `url_for()` inside of the template, it takes as arguments the same arguments that would be used by your path operation function .\nSo, the section with:\n```jinja\n<a href=\"{{ url_for('read_item', id=id) }}\">\n```\n...will generate a link to the same URL that would be handled by the path operation function `read_item(id=id)` .\n`url_for()` returns an absolute URL, including the scheme and host, based on the current request.\nFor example, if your application is served at `https://example.com` , with an ID of `42` , this would render:\n```html\n<a href=\"https://example.com/items/42\">\n```"
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Writing templates",
+        "URL paths in templates"
+      ],
+      "page_number": null,
+      "text": "For links to the same site, you can use the `.path` attribute to get only the URL path, for example, in `templates/item_path.html` :\n```jinja\n{!../../docs_src/templates/templates/item_path.html!}\n```\nPass the template's name to `TemplateResponse` :\n```python\n @app.get(\"/items/{id}\", response_class=HTMLResponse)\n async def read_item(request: Request, id: str):\n     return templates.TemplateResponse(\n         request=request, name=\"item_path.html\", context={\"id\": id}\n     )\n```\nWith the same example, the item link would render:\n```html\n<a href=\"/items/42\">\n```\nThe leading `/` makes this path relative to the root of the current site.\nThe `.path` attribute excludes the scheme, host, query parameters, and fragment. Use the full URL for links to another host.\nIf your application is behind a proxy, configure forwarded headers and `root_path` as described in Behind a Proxy ."
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "Templates and static files"
+      ],
+      "page_number": null,
+      "text": "You can also use `url_for()` inside of the template, and use it, for example, with the `StaticFiles` you mounted with the `name=\"static\"` .\n```jinja\n{!../../docs_src/templates/templates/item.html!}\n```\nIn this example, it would link to a CSS file at `static/styles.css` with:\n```CSS\n{!../../docs_src/templates/static/styles.css!}\n```\nAnd because you are using `StaticFiles` , that CSS file would be served automatically by your FastAPI application at the URL `/static/styles.css` ."
+    },
+    {
+      "heading_path": [
+        "Templates",
+        "More details"
+      ],
+      "page_number": null,
+      "text": "For more details, including how to test templates, check Starlette's docs on templates ."
+    }
+  ]
+}

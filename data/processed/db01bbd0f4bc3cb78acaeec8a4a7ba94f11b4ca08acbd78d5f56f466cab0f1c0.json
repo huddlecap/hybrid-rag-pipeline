@@ -1,0 +1,37 @@
+{
+  "doc_id": "db01bbd0f4bc3cb78acaeec8a4a7ba94f11b4ca08acbd78d5f56f466cab0f1c0",
+  "content_hash": "db01bbd0f4bc3cb78acaeec8a4a7ba94f11b4ca08acbd78d5f56f466cab0f1c0",
+  "source_file": "deployment/index.md",
+  "source_files": [
+    "deployment/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 1287,
+  "sections": [
+    {
+      "heading_path": [
+        "Deployment"
+      ],
+      "page_number": null,
+      "text": "Deploying a FastAPI application is relatively easy."
+    },
+    {
+      "heading_path": [
+        "Deployment",
+        "What Does Deployment Mean"
+      ],
+      "page_number": null,
+      "text": "To deploy an application means to perform the necessary steps to make it available to the users .\nFor a web API , it normally involves putting it in a remote machine , with a server program that provides good performance, stability, etc, so that your users can access the application efficiently and without interruptions or problems.\nThis is in contrast to the development stages, where you are constantly changing the code, breaking it and fixing it, stopping and restarting the development server, etc."
+    },
+    {
+      "heading_path": [
+        "Deployment",
+        "Deployment Strategies"
+      ],
+      "page_number": null,
+      "text": "There are several ways to do it depending on your specific use case and the tools that you use.\nYou could deploy a server yourself using a combination of tools, you could use a cloud service that does part of the work for you, or other possible options.\nFor example, we, the team behind FastAPI, built FastAPI Cloud , to make deploying FastAPI apps to the cloud as streamlined as possible, with the same developer experience of working with FastAPI.\nI will show you some of the main concepts you should probably keep in mind when deploying a FastAPI application (although most of it applies to any other type of web application).\nYou will see more details to keep in mind and some of the techniques to do it in the next sections. ✨"
+    }
+  ]
+}

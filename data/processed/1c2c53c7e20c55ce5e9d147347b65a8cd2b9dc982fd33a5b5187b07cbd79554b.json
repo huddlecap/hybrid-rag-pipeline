@@ -1,0 +1,95 @@
+{
+  "doc_id": "1c2c53c7e20c55ce5e9d147347b65a8cd2b9dc982fd33a5b5187b07cbd79554b",
+  "content_hash": "1c2c53c7e20c55ce5e9d147347b65a8cd2b9dc982fd33a5b5187b07cbd79554b",
+  "source_file": "tutorial/server-sent-events.md",
+  "source_files": [
+    "tutorial/server-sent-events.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 7482,
+  "sections": [
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)"
+      ],
+      "page_number": null,
+      "text": "You can stream data to the client using Server-Sent Events (SSE).\nThis is similar to Stream JSON Lines , but uses the `text/event-stream` format, which is supported natively by browsers with the EventSource API .\nAdded in FastAPI 0.135.0."
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "What are Server-Sent Events?"
+      ],
+      "page_number": null,
+      "text": "SSE is a standard for streaming data from the server to the client over HTTP.\nEach event is a small text block with \"fields\" like `data` , `event` , `id` , and `retry` , separated by blank lines.\nIt looks like this:\n```text\ndata: {\"name\": \"Portal Gun\", \"price\": 999.99}\n\ndata: {\"name\": \"Plumbus\", \"price\": 32.99}\n```\nSSE is commonly used for AI chat streaming, live notifications, logs and observability, and other cases where the server pushes updates to the client.\nIf you want to stream binary data, for example video or audio, check the advanced guide: Stream Data ."
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "Stream SSE with FastAPI"
+      ],
+      "page_number": null,
+      "text": "To stream SSE with FastAPI, use `yield` in your path operation function and set `response_class=EventSourceResponse` .\nImport `EventSourceResponse` from `fastapi.sse` :\n```python\n from collections.abc import AsyncIterable, Iterable\n \n from fastapi import FastAPI\n from fastapi.sse import EventSourceResponse\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None\n \n \n items = [\n     Item(name=\"Plumbus\", description=\"A multi-purpose household device.\"),\n     Item(name=\"Portal Gun\", description=\"A portal opening device.\"),\n     Item(name=\"Meeseeks Box\", description=\"A box that summons a Meeseeks.\"),\n ]\n \n \n @app.get(\"/items/stream\", response_class=EventSourceResponse)\n async def sse_items() -> AsyncIterable[Item]:\n     for item in items:\n         yield item\n```\nEach yielded item is encoded as JSON and sent in the `data:` field of an SSE event.\nIf you declare the return type as `AsyncIterable[Item]` , FastAPI will use it to validate , document , and serialize the data using Pydantic.\n```python\n from collections.abc import AsyncIterable, Iterable\n \n from fastapi import FastAPI\n from fastapi.sse import EventSourceResponse\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None\n \n \n items = [\n     Item(name=\"Plumbus\", description=\"A multi-purpose household device.\"),\n     Item(name=\"Portal Gun\", description=\"A portal opening device.\"),\n     Item(name=\"Meeseeks Box\", description=\"A box that summons a Meeseeks.\"),\n ]\n \n \n @app.get(\"/items/stream\", response_class=EventSourceResponse)\n async def sse_items() -> AsyncIterable[Item]:\n     for item in items:\n         yield item\n```\nAs Pydantic will serialize it in the Rust side, you will get much higher performance than if you don't declare a return type."
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "Stream SSE with FastAPI",
+        "Non-async path operation functions"
+      ],
+      "page_number": null,
+      "text": "You can also use regular `def` functions (without `async` ), and use `yield` the same way.\nFastAPI will make sure it's run correctly so that it doesn't block the event loop.\nAs in this case the function is not async, the right return type would be `Iterable[Item]` :\n```python\n @app.get(\"/items/stream-no-async\", response_class=EventSourceResponse)\n def sse_items_no_async() -> Iterable[Item]:\n     for item in items:\n         yield item\n```"
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "Stream SSE with FastAPI",
+        "No Return Type"
+      ],
+      "page_number": null,
+      "text": "You can also omit the return type. FastAPI will use the jsonable_encoder to convert the data and send it.\n```python\n @app.get(\"/items/stream-no-annotation\", response_class=EventSourceResponse)\n async def sse_items_no_annotation():\n     for item in items:\n         yield item\n```"
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "ServerSentEvent"
+      ],
+      "page_number": null,
+      "text": "If you need to set SSE fields like `event` , `id` , `retry` , or `comment` , you can yield `ServerSentEvent` objects instead of plain data.\nImport `ServerSentEvent` from `fastapi.sse` :\n```python\n from collections.abc import AsyncIterable\n \n from fastapi import FastAPI\n from fastapi.sse import EventSourceResponse, ServerSentEvent\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     price: float\n \n \n items = [\n     Item(name=\"Plumbus\", price=32.99),\n     Item(name=\"Portal Gun\", price=999.99),\n     Item(name=\"Meeseeks Box\", price=49.99),\n ]\n \n \n @app.get(\"/items/stream\", response_class=EventSourceResponse)\n async def stream_items() -> AsyncIterable[ServerSentEvent]:\n     yield ServerSentEvent(comment=\"stream of item updates\")\n     for i, item in enumerate(items):\n         yield ServerSentEvent(data=item, event=\"item_update\", id=str(i + 1), retry=5000)\n```\nThe `data` field is always encoded as JSON. You can pass any value that can be serialized as JSON, including Pydantic models."
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "Raw Data"
+      ],
+      "page_number": null,
+      "text": "If you need to send data without JSON encoding, use `raw_data` instead of `data` .\nThis is useful for sending pre-formatted text, log lines, or special \"sentinel\" values like `[DONE]` .\n```python\n from collections.abc import AsyncIterable\n \n from fastapi import FastAPI\n from fastapi.sse import EventSourceResponse, ServerSentEvent\n \n app = FastAPI()\n \n \n @app.get(\"/logs/stream\", response_class=EventSourceResponse)\n async def stream_logs() -> AsyncIterable[ServerSentEvent]:\n     logs = [\n         \"2025-01-01 INFO  Application started\",\n         \"2025-01-01 DEBUG Connected to database\",\n         \"2025-01-01 WARN  High memory usage detected\",\n     ]\n     for log_line in logs:\n         yield ServerSentEvent(raw_data=log_line)\n```\n`data` and `raw_data` are mutually exclusive. You can only set one of them on each `ServerSentEvent` ."
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "Resuming with Last-Event-ID"
+      ],
+      "page_number": null,
+      "text": "When a browser reconnects after a connection drop, it sends the last received `id` in the `Last-Event-ID` header.\nYou can read it as a header parameter and use it to resume the stream from where the client left off:\n```python\n from collections.abc import AsyncIterable\n from typing import Annotated\n \n from fastapi import FastAPI, Header\n from fastapi.sse import EventSourceResponse, ServerSentEvent\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     price: float\n \n \n items = [\n     Item(name=\"Plumbus\", price=32.99),\n     Item(name=\"Portal Gun\", price=999.99),\n     Item(name=\"Meeseeks Box\", price=49.99),\n ]\n \n \n @app.get(\"/items/stream\", response_class=EventSourceResponse)\n async def stream_items(\n     last_event_id: Annotated[int | None, Header()] = None,\n ) -> AsyncIterable[ServerSentEvent]:\n     start = last_event_id + 1 if last_event_id is not None else 0\n     for i, item in enumerate(items):\n         if i < start:\n             continue\n         yield ServerSentEvent(data=item, id=str(i))\n```"
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "SSE with POST"
+      ],
+      "page_number": null,
+      "text": "SSE works with any HTTP method , not just `GET` .\nThis is useful for protocols like MCP that stream SSE over `POST` :\n```python\n from collections.abc import AsyncIterable\n \n from fastapi import FastAPI\n from fastapi.sse import EventSourceResponse, ServerSentEvent\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Prompt(BaseModel):\n     text: str\n \n \n @app.post(\"/chat/stream\", response_class=EventSourceResponse)\n async def stream_chat(prompt: Prompt) -> AsyncIterable[ServerSentEvent]:\n     words = prompt.text.split()\n     for word in words:\n         yield ServerSentEvent(data=word, event=\"token\")\n     yield ServerSentEvent(raw_data=\"[DONE]\", event=\"done\")\n```"
+    },
+    {
+      "heading_path": [
+        "Server-Sent Events (SSE)",
+        "Technical Details"
+      ],
+      "page_number": null,
+      "text": "FastAPI implements some SSE best practices out of the box.\n- Send a \"keep alive\" ping comment every 15 seconds when there hasn't been any message, to prevent some proxies from closing the connection, as suggested in the HTML specification: Server-Sent Events .\n- Set the Cache-Control: no-cache header to prevent caching of the stream.\n- Set a special header X-Accel-Buffering: no to prevent buffering in some proxies like Nginx.\nYou don't have to do anything about it, it works out of the box. 🤓"
+    }
+  ]
+}

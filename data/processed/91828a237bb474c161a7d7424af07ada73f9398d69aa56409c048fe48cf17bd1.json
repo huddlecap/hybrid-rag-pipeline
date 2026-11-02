@@ -1,0 +1,90 @@
+{
+  "doc_id": "91828a237bb474c161a7d7424af07ada73f9398d69aa56409c048fe48cf17bd1",
+  "content_hash": "91828a237bb474c161a7d7424af07ada73f9398d69aa56409c048fe48cf17bd1",
+  "source_file": "advanced/path-operation-advanced-configuration.md",
+  "source_files": [
+    "advanced/path-operation-advanced-configuration.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 9,
+  "char_count": 9506,
+  "sections": [
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "OpenAPI operationId"
+      ],
+      "page_number": null,
+      "text": "If you are not an \"expert\" in OpenAPI, you probably don't need this.\nYou can set the OpenAPI `operationId` to be used in your path operation with the parameter `operation_id` .\nYou would have to make sure that it is unique for each operation.\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\", operation_id=\"some_specific_id_you_define\")\n async def read_items():\n     return [{\"item_id\": \"Foo\"}]\n```"
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "OpenAPI operationId",
+        "Using the path operation function name as the operationId"
+      ],
+      "page_number": null,
+      "text": "If you want to use your APIs' function names as `operationId` s, you can pass a custom `generate_unique_id_function` to `FastAPI` .\nThe function receives each `APIRoute` and returns the `operationId` to use for that path operation.\n```python\n from fastapi import FastAPI\n from fastapi.routing import APIRoute\n \n \n def custom_generate_unique_id(route: APIRoute) -> str:\n     return route.name\n \n \n app = FastAPI(generate_unique_id_function=custom_generate_unique_id)\n \n \n @app.get(\"/items/\")\n async def read_items():\n     return [{\"item_id\": \"Foo\"}]\n```\nIf you do this, you have to make sure each one of your path operation functions has a unique name.\nEven if they are in different modules (Python files)."
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "Exclude from OpenAPI"
+      ],
+      "page_number": null,
+      "text": "To exclude a path operation from the generated OpenAPI schema (and thus, from the automatic documentation systems), use the parameter `include_in_schema` and set it to `False` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\", include_in_schema=False)\n async def read_items():\n     return [{\"item_id\": \"Foo\"}]\n```"
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "Advanced description from docstring"
+      ],
+      "page_number": null,
+      "text": "You can limit the lines used from the docstring of a path operation function for OpenAPI.\nAdding an `\\f` (an escaped \"form feed\" character) causes FastAPI to truncate the output used for OpenAPI at this point.\nIt won't show up in the documentation, but other tools (such as Sphinx) will be able to use the rest.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.post(\"/items/\", summary=\"Create an item\")\n async def create_item(item: Item) -> Item:\n     \"\"\"\n     Create an item with all the information:\n \n     - **name**: each item must have a name\n     - **description**: a long description\n     - **price**: required\n     - **tax**: if the item doesn't have tax, you can omit this\n     - **tags**: a set of unique tag strings for this item\n     \\f\n     :param item: User input.\n     \"\"\"\n     return item\n```"
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "Additional Responses"
+      ],
+      "page_number": null,
+      "text": "You probably have seen how to declare the `response_model` and `status_code` for a path operation .\nThat defines the metadata about the main response of a path operation .\nYou can also declare additional responses with their models, status codes, etc.\nThere's a whole chapter here in the documentation about it, you can read it at Additional Responses in OpenAPI ."
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "OpenAPI Extra"
+      ],
+      "page_number": null,
+      "text": "When you declare a path operation in your application, FastAPI automatically generates the relevant metadata about that path operation to be included in the OpenAPI schema.\nTechnical details:\nIn the OpenAPI specification it is called the Operation Object .\nIt has all the information about the path operation and is used to generate the automatic documentation.\nIt includes the `tags` , `parameters` , `requestBody` , `responses` , etc.\nThis path operation -specific OpenAPI schema is normally generated automatically by FastAPI , but you can also extend it.\nThis is a low level extension point.\nIf you only need to declare additional responses, a more convenient way to do it is with Additional Responses in OpenAPI .\nYou can extend the OpenAPI schema for a path operation using the parameter `openapi_extra` ."
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "OpenAPI Extra",
+        "OpenAPI Extensions"
+      ],
+      "page_number": null,
+      "text": "This `openapi_extra` can be helpful, for example, to declare OpenAPI Extensions :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\", openapi_extra={\"x-aperture-labs-portal\": \"blue\"})\n async def read_items():\n     return [{\"item_id\": \"portal-gun\"}]\n```\nIf you open the automatic API docs, your extension will show up at the bottom of the specific path operation .\nAnd if you see the resulting OpenAPI (at `/openapi.json` in your API), you will see your extension as part of the specific path operation too:\n```JSON\n{\n    \"openapi\": \"3.1.0\",\n    \"info\": {\n        \"title\": \"FastAPI\",\n        \"version\": \"0.1.0\"\n    },\n    \"paths\": {\n        \"/items/\": {\n            \"get\": {\n                \"summary\": \"Read Items\",\n                \"operationId\": \"read_items_items__get\",\n                \"responses\": {\n                    \"200\": {\n                        \"description\": \"Successful Response\",\n                        \"content\": {\n                            \"application/json\": {\n                                \"schema\": {}\n                            }\n                        }\n                    }\n                },\n                \"x-aperture-labs-portal\": \"blue\"\n            }\n        }\n    }\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "OpenAPI Extra",
+        "Custom OpenAPI path operation schema"
+      ],
+      "page_number": null,
+      "text": "The dictionary in `openapi_extra` will be deeply merged with the automatically generated OpenAPI schema for the path operation .\nSo, you could add additional data to the automatically generated schema.\nFor example, you could decide to read and validate the request with your own code, without using the automatic features of FastAPI with Pydantic, but you could still want to define the request in the OpenAPI schema.\nYou could do that with `openapi_extra` :\n```python\n from fastapi import FastAPI, Request\n \n app = FastAPI()\n \n \n def magic_data_reader(raw_body: bytes):\n     return {\n         \"size\": len(raw_body),\n         \"content\": {\n             \"name\": \"Maaaagic\",\n             \"price\": 42,\n             \"description\": \"Just kiddin', no magic here. ✨\",\n         },\n     }\n \n \n @app.post(\n     \"/items/\",\n     openapi_extra={\n         \"requestBody\": {\n             \"content\": {\n                 \"application/json\": {\n                     \"schema\": {\n                         \"required\": [\"name\", \"price\"],\n                         \"type\": \"object\",\n                         \"properties\": {\n                             \"name\": {\"type\": \"string\"},\n                             \"price\": {\"type\": \"number\"},\n                             \"description\": {\"type\": \"string\"},\n                         },\n                     }\n                 }\n             },\n             \"required\": True,\n         },\n     },\n )\n async def create_item(request: Request):\n     raw_body = await request.body()\n     data = magic_data_reader(raw_body)\n     return data\n```\nIn this example, we didn't declare any Pydantic model. In fact, the request body is not even parsed as JSON, it is read directly as `bytes` , and the function `magic_data_reader()` would be in charge of parsing it in some way.\nNevertheless, we can declare the expected schema for the request body."
+    },
+    {
+      "heading_path": [
+        "Path Operation Advanced Configuration",
+        "OpenAPI Extra",
+        "Custom OpenAPI content type"
+      ],
+      "page_number": null,
+      "text": "Using this same trick, you could use a Pydantic model to define the JSON Schema that is then included in the custom OpenAPI schema section for the path operation .\nAnd you could do this even if the data type in the request is not JSON.\nFor example, in this application we don't use FastAPI's integrated functionality to extract the JSON Schema from Pydantic models nor the automatic validation for JSON. In fact, we are declaring the request content type as YAML, not JSON:\n```python\n import yaml\n from fastapi import FastAPI, HTTPException, Request\n from pydantic import BaseModel, ValidationError\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     tags: list[str]\n \n \n @app.post(\n     \"/items/\",\n     openapi_extra={\n         \"requestBody\": {\n             \"content\": {\"application/x-yaml\": {\"schema\": Item.model_json_schema()}},\n             \"required\": True,\n         },\n     },\n )\n async def create_item(request: Request):\n     raw_body = await request.body()\n     try:\n         data = yaml.safe_load(raw_body)\n     except yaml.YAMLError:\n         raise HTTPException(status_code=422, detail=\"Invalid YAML\")\n     try:\n         item = Item.model_validate(data)\n     except ValidationError as e:\n         raise HTTPException(status_code=422, detail=e.errors(include_url=False))\n     return item\n```\nNevertheless, although we are not using the default integrated functionality, we are still using a Pydantic model to manually generate the JSON Schema for the data that we want to receive in YAML.\nThen we use the request directly, and extract the body as `bytes` . This means that FastAPI won't even try to parse the request payload as JSON.\nAnd then in our code, we parse that YAML content directly, and then we are again using the same Pydantic model to validate the YAML content:\n```python\n import yaml\n from fastapi import FastAPI, HTTPException, Request\n from pydantic import BaseModel, ValidationError\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     tags: list[str]\n \n \n @app.post(\n     \"/items/\",\n     openapi_extra={\n         \"requestBody\": {\n             \"content\": {\"application/x-yaml\": {\"schema\": Item.model_json_schema()}},\n             \"required\": True,\n         },\n     },\n )\n async def create_item(request: Request):\n     raw_body = await request.body()\n     try:\n         data = yaml.safe_load(raw_body)\n     except yaml.YAMLError:\n         raise HTTPException(status_code=422, detail=\"Invalid YAML\")\n     try:\n         item = Item.model_validate(data)\n     except ValidationError as e:\n         raise HTTPException(status_code=422, detail=e.errors(include_url=False))\n     return item\n```\nHere we reuse the same Pydantic model.\nBut the same way, we could have validated it in some other way."
+    }
+  ]
+}

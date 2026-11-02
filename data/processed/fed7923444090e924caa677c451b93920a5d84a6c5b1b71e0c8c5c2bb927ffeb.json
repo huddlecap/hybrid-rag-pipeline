@@ -1,0 +1,21 @@
+{
+  "doc_id": "fed7923444090e924caa677c451b93920a5d84a6c5b1b71e0c8c5c2bb927ffeb",
+  "content_hash": "fed7923444090e924caa677c451b93920a5d84a6c5b1b71e0c8c5c2bb927ffeb",
+  "source_file": "reference/templating.md",
+  "source_files": [
+    "reference/templating.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 276,
+  "sections": [
+    {
+      "heading_path": [
+        "Templating - Jinja2Templates"
+      ],
+      "page_number": null,
+      "text": "You can use the `Jinja2Templates` class to render Jinja templates.\nRead more about it in the FastAPI docs for Templates .\nYou can import it directly from `fastapi.templating` :\n```python\nfrom fastapi.templating import Jinja2Templates\n```\n::: fastapi.templating.Jinja2Templates"
+    }
+  ]
+}

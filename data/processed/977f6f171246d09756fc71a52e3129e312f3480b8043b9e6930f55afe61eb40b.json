@@ -1,0 +1,21 @@
+{
+  "doc_id": "977f6f171246d09756fc71a52e3129e312f3480b8043b9e6930f55afe61eb40b",
+  "content_hash": "977f6f171246d09756fc71a52e3129e312f3480b8043b9e6930f55afe61eb40b",
+  "source_file": "reference/uploadfile.md",
+  "source_files": [
+    "reference/uploadfile.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 325,
+  "sections": [
+    {
+      "heading_path": [
+        "UploadFile class"
+      ],
+      "page_number": null,
+      "text": "You can define path operation function parameters to be of the type `UploadFile` to receive files from the request.\nYou can import it directly from `fastapi` :\n```python\nfrom fastapi import UploadFile\n```\n::: fastapi.UploadFile\noptions:\nmembers:\n- file\n- filename\n- size\n- headers\n- content_type\n- read\n- write\n- seek\n- close"
+    }
+  ]
+}

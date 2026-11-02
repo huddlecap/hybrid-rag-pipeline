@@ -1,0 +1,21 @@
+{
+  "doc_id": "409cadc3d831c4487ed7b67277cac93f91a8494a7827009cc3150aff264a0f50",
+  "content_hash": "409cadc3d831c4487ed7b67277cac93f91a8494a7827009cc3150aff264a0f50",
+  "source_file": "reference/exceptions.md",
+  "source_files": [
+    "reference/exceptions.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 529,
+  "sections": [
+    {
+      "heading_path": [
+        "Exceptions - HTTPException and WebSocketException"
+      ],
+      "page_number": null,
+      "text": "These are the exceptions that you can raise to show errors to the client.\nWhen you raise an exception, as would happen with normal Python, the rest of the execution is aborted. This way you can raise these exceptions from anywhere in the code to abort a request and show the error to the client.\nYou can use:\n- HTTPException\n- WebSocketException\nThese exceptions can be imported directly from `fastapi` :\n```python\nfrom fastapi import HTTPException, WebSocketException\n```\n::: fastapi.HTTPException\n::: fastapi.WebSocketException"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "doc_id": "218eeb0ab9773ffc01143085b4ade9991c289334f09526a4d74087049a2de445",
+  "content_hash": "218eeb0ab9773ffc01143085b4ade9991c289334f09526a4d74087049a2de445",
+  "source_file": "advanced/additional-status-codes.md",
+  "source_files": [
+    "advanced/additional-status-codes.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 2401,
+  "sections": [
+    {
+      "heading_path": [
+        "Additional Status Codes"
+      ],
+      "page_number": null,
+      "text": "By default, FastAPI will return the responses using a `JSONResponse` , putting the content you return from your path operation inside of that `JSONResponse` .\nIt will use the default status code or the one you set in your path operation ."
+    },
+    {
+      "heading_path": [
+        "Additional Status Codes",
+        "Additional status codes"
+      ],
+      "page_number": null,
+      "text": "If you want to return additional status codes apart from the main one, you can do that by returning a `Response` directly, like a `JSONResponse` , and set the additional status code directly.\nFor example, let's say that you want to have a path operation that allows updating items, and returns HTTP status codes of 200 \"OK\" when successful.\nBut you also want it to accept new items. And when the items didn't exist before, it creates them, and returns an HTTP status code of 201 \"Created\".\nTo achieve that, import `JSONResponse` , and return your content there directly, setting the `status_code` that you want:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI, status\n from fastapi.responses import JSONResponse\n \n app = FastAPI()\n \n items = {\"foo\": {\"name\": \"Fighters\", \"size\": 6}, \"bar\": {\"name\": \"Tenders\", \"size\": 3}}\n \n \n @app.put(\"/items/{item_id}\")\n async def upsert_item(\n     item_id: str,\n     name: Annotated[str | None, Body()] = None,\n     size: Annotated[int | None, Body()] = None,\n ):\n     if item_id in items:\n         item = items[item_id]\n         item[\"name\"] = name\n         item[\"size\"] = size\n         return item\n     else:\n         item = {\"name\": name, \"size\": size}\n         items[item_id] = item\n         return JSONResponse(status_code=status.HTTP_201_CREATED, content=item)\n```\nWhen you return a `Response` directly, like in the example above, it will be returned directly.\nIt won't be serialized with a model, etc.\nMake sure it has the data you want it to have, and that the values are valid JSON (if you are using `JSONResponse` ).\nTechnical Details:\nYou could also use `from starlette.responses import JSONResponse` .\nFastAPI provides the same `starlette.responses` as `fastapi.responses` just as a convenience for you, the developer. But most of the available responses come directly from Starlette. The same with `status` ."
+    },
+    {
+      "heading_path": [
+        "Additional Status Codes",
+        "OpenAPI and API docs"
+      ],
+      "page_number": null,
+      "text": "If you return additional status codes and responses directly, they won't be included in the OpenAPI schema (the API docs), because FastAPI doesn't have a way to know beforehand what you are going to return.\nBut you can document that in your code, using: Additional Responses ."
+    }
+  ]
+}

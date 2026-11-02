@@ -1,0 +1,21 @@
+{
+  "doc_id": "24ae7edeabea12e47165c6026470a201b261c67ea108f762ef4faff756b72504",
+  "content_hash": "24ae7edeabea12e47165c6026470a201b261c67ea108f762ef4faff756b72504",
+  "source_file": "reference/fastapi.md",
+  "source_files": [
+    "reference/fastapi.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 462,
+  "sections": [
+    {
+      "heading_path": [
+        "FastAPI class"
+      ],
+      "page_number": null,
+      "text": "Here's the reference information for the `FastAPI` class, with all its parameters, attributes and methods.\nYou can import the `FastAPI` class directly from `fastapi` :\n```python\nfrom fastapi import FastAPI\n```\n::: fastapi.FastAPI\noptions:\nmembers:\n- openapi_version\n- webhooks\n- state\n- dependency_overrides\n- openapi\n- websocket\n- include_router\n- frontend\n- get\n- put\n- post\n- delete\n- options\n- head\n- patch\n- trace\n- on_event\n- middleware\n- exception_handler"
+    }
+  ]
+}

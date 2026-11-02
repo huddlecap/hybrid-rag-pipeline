@@ -1,0 +1,21 @@
+{
+  "doc_id": "620b83b00fa7bd7c3a6ffa4c1675232f08c7662806847b2bb6769b3ef45e4303",
+  "content_hash": "620b83b00fa7bd7c3a6ffa4c1675232f08c7662806847b2bb6769b3ef45e4303",
+  "source_file": "resources/index.md",
+  "source_files": [
+    "resources/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 50,
+  "sections": [
+    {
+      "heading_path": [
+        "Resources"
+      ],
+      "page_number": null,
+      "text": "Additional resources, external links, and more. ✈️"
+    }
+  ]
+}

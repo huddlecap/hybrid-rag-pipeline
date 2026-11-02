@@ -1,0 +1,79 @@
+{
+  "doc_id": "48c8b930042ac448af3f36a09b13cbf5fb5ad087f30204ae55b61efcea858b44",
+  "content_hash": "48c8b930042ac448af3f36a09b13cbf5fb5ad087f30204ae55b61efcea858b44",
+  "source_file": "tutorial/stream-json-lines.md",
+  "source_files": [
+    "tutorial/stream-json-lines.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 8,
+  "char_count": 4969,
+  "sections": [
+    {
+      "heading_path": [
+        "Stream JSON Lines"
+      ],
+      "page_number": null,
+      "text": "You could have a sequence of data that you would like to send in a \" stream \", you could do it with JSON Lines .\nAdded in FastAPI 0.134.0."
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "What is a Stream?"
+      ],
+      "page_number": null,
+      "text": "\" Streaming \" data means that your app will start sending data items to the client without waiting for the entire sequence of items to be ready.\nSo, it will send the first item, the client will receive and start processing it, and you might still be producing the next item.\n```mermaid\nsequenceDiagram\n    participant App\n    participant Client\n\n    App->>App: Produce Item 1\n    App->>Client: Send Item 1\n    App->>App: Produce Item 2\n    Client->>Client: Process Item 1\n    App->>Client: Send Item 2\n    App->>App: Produce Item 3\n    Client->>Client: Process Item 2\n    App->>Client: Send Item 3\n    Client->>Client: Process Item 3\n    Note over App: Keeps producing...\n    Note over Client: Keeps consuming...\n```\nIt could even be an infinite stream, where you keep sending data."
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "JSON Lines"
+      ],
+      "page_number": null,
+      "text": "In these cases, it's common to send \" JSON Lines \", which is a format where you send one JSON object per line.\nA response would have a content type of `application/jsonl` (instead of `application/json` ) and the body would be something like:\n```json\n{\"name\": \"Plumbus\", \"description\": \"A multi-purpose household device.\"}\n{\"name\": \"Portal Gun\", \"description\": \"A portal opening device.\"}\n{\"name\": \"Meeseeks Box\", \"description\": \"A box that summons a Meeseeks.\"}\n```\nIt's very similar to a JSON array (equivalent of a Python list), but instead of being wrapped in `[]` and having `,` between the items, it has one JSON object per line , they are separated by a new line character.\nThe important point is that your app will be able to produce each line in turn, while the client consumes the previous lines.\nTechnical Details:\nBecause each JSON object will be separated by a new line, they can't contain literal new line characters in their content, but they can contain escaped new lines ( `\\n` ), which is part of the JSON standard.\nBut normally you won't have to worry about it, it's done automatically, continue reading. 🤓"
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "Use Cases"
+      ],
+      "page_number": null,
+      "text": "You could use this to stream data from an AI LLM service, from logs or telemetry , or from other types of data that can be structured in JSON items.\nIf you want to stream binary data, for example video or audio, check the advanced guide: Stream Data ."
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "Stream JSON Lines with FastAPI"
+      ],
+      "page_number": null,
+      "text": "To stream JSON Lines with FastAPI you can, instead of using `return` in your path operation function , use `yield` to produce each item in turn.\n```python\n from collections.abc import AsyncIterable, Iterable\n \n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None\n \n \n items = [\n     Item(name=\"Plumbus\", description=\"A multi-purpose household device.\"),\n     Item(name=\"Portal Gun\", description=\"A portal opening device.\"),\n     Item(name=\"Meeseeks Box\", description=\"A box that summons a Meeseeks.\"),\n ]\n \n \n @app.get(\"/items/stream\")\n async def stream_items() -> AsyncIterable[Item]:\n     for item in items:\n         yield item\n```\nIf each JSON item you want to send back is of type `Item` (a Pydantic model) and it's an async function, you can declare the return type as `AsyncIterable[Item]` :\n```python\n from collections.abc import AsyncIterable, Iterable\n \n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None\n \n \n items = [\n     Item(name=\"Plumbus\", description=\"A multi-purpose household device.\"),\n     Item(name=\"Portal Gun\", description=\"A portal opening device.\"),\n     Item(name=\"Meeseeks Box\", description=\"A box that summons a Meeseeks.\"),\n ]\n \n \n @app.get(\"/items/stream\")\n async def stream_items() -> AsyncIterable[Item]:\n     for item in items:\n         yield item\n```\nIf you declare the return type, FastAPI will use it to validate the data, document it in OpenAPI, filter it, and serialize it using Pydantic.\nAs Pydantic will serialize it in the Rust side, you will get much higher performance than if you don't declare a return type."
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "Stream JSON Lines with FastAPI",
+        "Non-async path operation functions"
+      ],
+      "page_number": null,
+      "text": "You can also use regular `def` functions (without `async` ), and use `yield` the same way.\nFastAPI will make sure it's run correctly so that it doesn't block the event loop.\nAs in this case the function is not async, the right return type would be `Iterable[Item]` :\n```python\n @app.get(\"/items/stream-no-async\")\n def stream_items_no_async() -> Iterable[Item]:\n     for item in items:\n         yield item\n```"
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "Stream JSON Lines with FastAPI",
+        "No Return Type"
+      ],
+      "page_number": null,
+      "text": "You can also omit the return type. FastAPI will then use the jsonable_encoder to convert the data to something that can be serialized to JSON and then send it as JSON Lines.\n```python\n @app.get(\"/items/stream-no-annotation\")\n async def stream_items_no_annotation():\n     for item in items:\n         yield item\n```"
+    },
+    {
+      "heading_path": [
+        "Stream JSON Lines",
+        "Server-Sent Events (SSE)"
+      ],
+      "page_number": null,
+      "text": "FastAPI also has first-class support for Server-Sent Events (SSE), which are quite similar but with a couple of extra details. You can learn about them in the next chapter: Server-Sent Events (SSE) . 🤓"
+    }
+  ]
+}

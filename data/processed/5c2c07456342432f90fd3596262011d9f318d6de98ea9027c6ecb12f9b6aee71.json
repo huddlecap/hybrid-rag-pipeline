@@ -1,0 +1,21 @@
+{
+  "doc_id": "5c2c07456342432f90fd3596262011d9f318d6de98ea9027c6ecb12f9b6aee71",
+  "content_hash": "5c2c07456342432f90fd3596262011d9f318d6de98ea9027c6ecb12f9b6aee71",
+  "source_file": "reference/testclient.md",
+  "source_files": [
+    "reference/testclient.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 367,
+  "sections": [
+    {
+      "heading_path": [
+        "Test Client - TestClient"
+      ],
+      "page_number": null,
+      "text": "You can use the `TestClient` class to test FastAPI applications without creating an actual HTTP and socket connection, just communicating directly with the FastAPI code.\nRead more about it in the FastAPI docs for Testing .\nYou can import it directly from `fastapi.testclient` :\n```python\nfrom fastapi.testclient import TestClient\n```\n::: fastapi.testclient.TestClient"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "doc_id": "fb250ee1cd5cbe32561b356d10c969d140daf43daf7e34d29c9ec2bcff9e8029",
+  "content_hash": "fb250ee1cd5cbe32561b356d10c969d140daf43daf7e34d29c9ec2bcff9e8029",
+  "source_file": "editor-support.md",
+  "source_files": [
+    "editor-support.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 4,
+  "char_count": 1878,
+  "sections": [
+    {
+      "heading_path": [
+        "Editor Support"
+      ],
+      "page_number": null,
+      "text": "The official FastAPI Extension enhances your FastAPI development workflow with path operation discovery, navigation, as well as FastAPI Cloud deployment, and live log streaming.\nFor more details about the extension, refer to the README on the GitHub repository ."
+    },
+    {
+      "heading_path": [
+        "Editor Support",
+        "Setup and Installation"
+      ],
+      "page_number": null,
+      "text": "The FastAPI Extension is available for both VS Code and Cursor . It can be installed directly from the Extensions panel in each editor by searching for \"FastAPI\" and selecting the extension published by FastAPI Labs . The extension also works in browser-based editors such as vscode.dev and github.dev ."
+    },
+    {
+      "heading_path": [
+        "Editor Support",
+        "Setup and Installation",
+        "Application Discovery"
+      ],
+      "page_number": null,
+      "text": "By default, the extension will automatically discover FastAPI applications in your workspace by scanning for files that instantiate `FastAPI()` . If auto-detection doesn't work for your project structure, you can specify an entrypoint via `[tool.fastapi]` in `pyproject.toml` or the `fastapi.entryPoint` VS Code setting using module notation (e.g. `myapp.main:app` )."
+    },
+    {
+      "heading_path": [
+        "Editor Support",
+        "Features"
+      ],
+      "page_number": null,
+      "text": "- Path Operation Explorer - A sidebar tree view of all path operations in your application. Click to jump to any route or router definition.\n- Route Search - Search by path, method, or name with Ctrl + Shift + E (on macOS: Cmd + Shift + E ).\n- CodeLens Navigation - Clickable links above test client calls (e.g. client.get('/items') ) that jump to the matching path operation for quick navigation between tests and implementation.\n- Deploy to FastAPI Cloud - One-click deployment of your app to FastAPI Cloud .\n- Stream Application Logs - Real-time log streaming from your FastAPI Cloud-deployed application with level filtering and text search.\nIf you'd like to familiarize yourself with the extension's features, you can check out the extension walkthrough by opening the Command Palette ( Ctrl + Shift + P or on macOS: Cmd + Shift + P ) and selecting \"Welcome: Open walkthrough...\" and then choosing the \"Get started with FastAPI\" walkthrough."
+    }
+  ]
+}

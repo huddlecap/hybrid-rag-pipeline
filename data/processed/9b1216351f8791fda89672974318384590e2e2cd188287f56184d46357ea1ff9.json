@@ -1,0 +1,37 @@
+{
+  "doc_id": "9b1216351f8791fda89672974318384590e2e2cd188287f56184d46357ea1ff9",
+  "content_hash": "9b1216351f8791fda89672974318384590e2e2cd188287f56184d46357ea1ff9",
+  "source_file": "advanced/wsgi.md",
+  "source_files": [
+    "advanced/wsgi.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 1575,
+  "sections": [
+    {
+      "heading_path": [
+        "Including WSGI - Flask, Django, others"
+      ],
+      "page_number": null,
+      "text": "You can mount WSGI applications as you saw with Sub Applications - Mounts , Behind a Proxy .\nFor that, you can use the `WSGIMiddleware` and use it to wrap your WSGI application, for example, Flask, Django, etc."
+    },
+    {
+      "heading_path": [
+        "Including WSGI - Flask, Django, others",
+        "Using WSGIMiddleware"
+      ],
+      "page_number": null,
+      "text": "This requires adding `a2wsgi` to your project, for example with `uv add a2wsgi` .\nYou need to import `WSGIMiddleware` from `a2wsgi` .\nThen wrap the WSGI (e.g. Flask) app with the middleware.\nAnd then mount that under a path.\n```python\n from a2wsgi import WSGIMiddleware\n from fastapi import FastAPI\n from flask import Flask, request\n from markupsafe import escape\n \n flask_app = Flask(__name__)\n \n \n @flask_app.route(\"/\")\n def flask_main():\n     name = request.args.get(\"name\", \"World\")\n     return f\"Hello, {escape(name)} from Flask!\"\n \n \n app = FastAPI()\n \n \n @app.get(\"/v2\")\n def read_main():\n     return {\"message\": \"Hello World\"}\n \n \n app.mount(\"/v1\", WSGIMiddleware(flask_app))\n```\nPreviously, it was recommended to use `WSGIMiddleware` from `fastapi.middleware.wsgi` , but it is now deprecated.\nIt's advised to use the `a2wsgi` package instead. The usage remains the same.\nJust ensure that you have the `a2wsgi` package installed and import `WSGIMiddleware` correctly from `a2wsgi` ."
+    },
+    {
+      "heading_path": [
+        "Including WSGI - Flask, Django, others",
+        "Check it"
+      ],
+      "page_number": null,
+      "text": "Now, every request under the path `/v1/` will be handled by the Flask application.\nAnd the rest will be handled by FastAPI .\nIf you run it and go to http://localhost:8000/v1/ you will see the response from Flask:\n```txt\nHello, World from Flask!\n```\nAnd if you go to http://localhost:8000/v2 you will see the response from FastAPI:\n```JSON\n{\n    \"message\": \"Hello World\"\n}\n```"
+    }
+  ]
+}

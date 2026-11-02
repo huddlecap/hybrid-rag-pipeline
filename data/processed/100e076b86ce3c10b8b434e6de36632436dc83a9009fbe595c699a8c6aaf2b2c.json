@@ -1,0 +1,29 @@
+{
+  "doc_id": "100e076b86ce3c10b8b434e6de36632436dc83a9009fbe595c699a8c6aaf2b2c",
+  "content_hash": "100e076b86ce3c10b8b434e6de36632436dc83a9009fbe595c699a8c6aaf2b2c",
+  "source_file": "project-generation.md",
+  "source_files": [
+    "project-generation.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 1361,
+  "sections": [
+    {
+      "heading_path": [
+        "Full Stack FastAPI Template"
+      ],
+      "page_number": null,
+      "text": "Templates, while they typically come with a specific setup, are designed to be flexible and customizable. This allows you to modify and adapt them to your project's requirements, making them an excellent starting point. 🏁\nYou can use this template to get started, as it includes a lot of the initial setup, security, database and some API endpoints already done for you.\nGitHub Repository: Full Stack FastAPI Template"
+    },
+    {
+      "heading_path": [
+        "Full Stack FastAPI Template",
+        "Full Stack FastAPI Template - Technology Stack and Features"
+      ],
+      "page_number": null,
+      "text": "- ⚡ FastAPI for the Python backend API. 🧰 SQLModel for the Python SQL database interactions (ORM). 🔍 Pydantic , used by FastAPI, for the data validation and settings management. 💾 PostgreSQL as the SQL database.\n- 🚀 React for the frontend. 💃 Using TypeScript, hooks, Vite, and other parts of a modern frontend stack. 🎨 Tailwind CSS and shadcn/ui for the frontend components. 🤖 An automatically generated frontend client. 🧪 Playwright for End-to-End testing. 🦇 Dark mode support.\n- 🐋 Docker Compose for development and production.\n- 🔒 Secure password hashing by default.\n- 🔑 JWT (JSON Web Token) authentication.\n- 📫 Email based password recovery.\n- ✅ Tests with Pytest .\n- 📞 Traefik as a reverse proxy / load balancer.\n- 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.\n- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "doc_id": "3c0b3bcf377c4701e62dcde0c58194c90885d66f11f1f7fd577e63aada0f9d71",
+  "content_hash": "3c0b3bcf377c4701e62dcde0c58194c90885d66f11f1f7fd577e63aada0f9d71",
+  "source_file": "reference/openapi/index.md",
+  "source_files": [
+    "reference/openapi/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 145,
+  "sections": [
+    {
+      "heading_path": [
+        "OpenAPI"
+      ],
+      "page_number": null,
+      "text": "There are several utilities to handle OpenAPI.\nYou normally don't need to use them unless you have a specific advanced use case that requires it."
+    }
+  ]
+}

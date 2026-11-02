@@ -1,0 +1,45 @@
+{
+  "doc_id": "790d67721fc8000801a48d0e8b4892a152388e12c4b7a2a58780dd73d0c68c28",
+  "content_hash": "790d67721fc8000801a48d0e8b4892a152388e12c4b7a2a58780dd73d0c68c28",
+  "source_file": "tutorial/cookie-params.md",
+  "source_files": [
+    "tutorial/cookie-params.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 4,
+  "char_count": 1678,
+  "sections": [
+    {
+      "heading_path": [
+        "Cookie Parameters"
+      ],
+      "page_number": null,
+      "text": "You can define Cookie parameters the same way you define `Query` and `Path` parameters."
+    },
+    {
+      "heading_path": [
+        "Cookie Parameters",
+        "Import Cookie"
+      ],
+      "page_number": null,
+      "text": "First import `Cookie` :\n```python\n from typing import Annotated\n \n from fastapi import Cookie, FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items(ads_id: Annotated[str | None, Cookie()] = None):\n     return {\"ads_id\": ads_id}\n```"
+    },
+    {
+      "heading_path": [
+        "Cookie Parameters",
+        "Declare Cookie parameters"
+      ],
+      "page_number": null,
+      "text": "Then declare the cookie parameters using the same structure as with `Path` and `Query` .\nYou can define the default value as well as all the extra validation or annotation parameters:\n```python\n from typing import Annotated\n \n from fastapi import Cookie, FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items(ads_id: Annotated[str | None, Cookie()] = None):\n     return {\"ads_id\": ads_id}\n```\nTechnical Details:\n`Cookie` is a \"sister\" class of `Path` and `Query` . It also inherits from the same common `Param` class.\nBut remember that when you import `Query` , `Path` , `Cookie` and others from `fastapi` , those are actually functions that return special classes.\nTo declare cookies, you need to use `Cookie` , because otherwise the parameters would be interpreted as query parameters.\nHave in mind that, as browsers handle cookies in special ways and behind the scenes, they don't easily allow JavaScript to touch them.\nIf you go to the API docs UI at `/docs` you will be able to see the documentation for cookies for your path operations .\nBut even if you fill the data and click \"Execute\", because the docs UI works with JavaScript , the cookies won't be sent, and you will see an error message as if you didn't write any values."
+    },
+    {
+      "heading_path": [
+        "Cookie Parameters",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Declare cookies with `Cookie` , using the same common pattern as `Query` and `Path` ."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "doc_id": "260a8599062431557dda2c3b535d5b49a3b6b7d71c3ce680fad3ade1dfe1eb86",
+  "content_hash": "260a8599062431557dda2c3b535d5b49a3b6b7d71c3ce680fad3ade1dfe1eb86",
+  "source_file": "tutorial/query-params.md",
+  "source_files": [
+    "tutorial/query-params.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 5890,
+  "sections": [
+    {
+      "heading_path": [
+        "Query Parameters"
+      ],
+      "page_number": null,
+      "text": "When you declare other function parameters that are not part of the path parameters, they are automatically interpreted as \"query\" parameters.\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n fake_items_db = [{\"item_name\": \"Foo\"}, {\"item_name\": \"Bar\"}, {\"item_name\": \"Baz\"}]\n \n \n @app.get(\"/items/\")\n async def read_item(skip: int = 0, limit: int = 10):\n     return fake_items_db[skip : skip + limit]\n```\nThe query is the set of key-value pairs that go after the `?` in a URL, separated by `&` characters.\nFor example, in the URL:\n```text\nhttp://127.0.0.1:8000/items/?skip=0&limit=10\n```\n...the query parameters are:\n- skip : with a value of 0\n- limit : with a value of 10\nAs they are part of the URL, they are \"naturally\" strings.\nBut when you declare them with Python types (in the example above, as `int` ), they are converted to that type and validated against it.\nAll the same processes that apply to path parameters also apply to query parameters:\n- Editor support (obviously)\n- Data \"parsing\"\n- Data validation\n- Automatic documentation"
+    },
+    {
+      "heading_path": [
+        "Query Parameters",
+        "Defaults"
+      ],
+      "page_number": null,
+      "text": "As query parameters are not a fixed part of a path, they can be optional and can have default values.\nIn the example above they have default values of `skip=0` and `limit=10` .\nSo, going to the URL:\n```text\nhttp://127.0.0.1:8000/items/\n```\nwould be the same as going to:\n```text\nhttp://127.0.0.1:8000/items/?skip=0&limit=10\n```\nBut if you go to, for example:\n```text\nhttp://127.0.0.1:8000/items/?skip=20\n```\nThe parameter values in your function will be:\n- skip=20 : because you set it in the URL\n- limit=10 : because that was the default value"
+    },
+    {
+      "heading_path": [
+        "Query Parameters",
+        "Optional parameters"
+      ],
+      "page_number": null,
+      "text": "The same way, you can declare optional query parameters, by setting their default to `None` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_item(item_id: str, q: str | None = None):\n     if q:\n         return {\"item_id\": item_id, \"q\": q}\n     return {\"item_id\": item_id}\n```\nIn this case, the function parameter `q` will be optional, and will be `None` by default.\nAlso notice that FastAPI is smart enough to notice that the path parameter `item_id` is a path parameter and `q` is not, so, it's a query parameter."
+    },
+    {
+      "heading_path": [
+        "Query Parameters",
+        "Query parameter type conversion"
+      ],
+      "page_number": null,
+      "text": "You can also declare `bool` types, and they will be converted:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_item(item_id: str, q: str | None = None, short: bool = False):\n     item = {\"item_id\": item_id}\n     if q:\n         item.update({\"q\": q})\n     if not short:\n         item.update(\n             {\"description\": \"This is an amazing item that has a long description\"}\n         )\n     return item\n```\nIn this case, if you go to:\n```text\nhttp://127.0.0.1:8000/items/foo?short=1\n```\nor\n```text\nhttp://127.0.0.1:8000/items/foo?short=True\n```\nor\n```text\nhttp://127.0.0.1:8000/items/foo?short=true\n```\nor\n```text\nhttp://127.0.0.1:8000/items/foo?short=on\n```\nor\n```text\nhttp://127.0.0.1:8000/items/foo?short=yes\n```\nor any other case variation (uppercase, first letter in uppercase, etc), your function will see the parameter `short` with a `bool` value of `True` .\nValues such as `0` , `false` , `off` , and `no` (including case variations) are converted to `False` .\nIf `short` is omitted, FastAPI uses its default value, which is `False` in this example.\nAn empty value ( `?short=` ) or an unrecognized value (for example, `?short=maybe` ) produces a `422` validation error."
+    },
+    {
+      "heading_path": [
+        "Query Parameters",
+        "Multiple path and query parameters"
+      ],
+      "page_number": null,
+      "text": "You can declare multiple path parameters and query parameters at the same time, FastAPI knows which is which.\nAnd you don't have to declare them in any specific order.\nThey will be detected by name:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/users/{user_id}/items/{item_id}\")\n async def read_user_item(\n     user_id: int, item_id: str, q: str | None = None, short: bool = False\n ):\n     item = {\"item_id\": item_id, \"owner_id\": user_id}\n     if q:\n         item.update({\"q\": q})\n     if not short:\n         item.update(\n             {\"description\": \"This is an amazing item that has a long description\"}\n         )\n     return item\n```"
+    },
+    {
+      "heading_path": [
+        "Query Parameters",
+        "Required query parameters"
+      ],
+      "page_number": null,
+      "text": "When you declare a default value for non-path parameters (for now, we have only seen query parameters), then it is not required.\nIf you don't want to add a specific value but just make it optional, set the default as `None` .\nBut when you want to make a query parameter required, you can just not declare any default value:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_user_item(item_id: str, needy: str):\n     item = {\"item_id\": item_id, \"needy\": needy}\n     return item\n```\nHere the query parameter `needy` is a required query parameter of type `str` .\nIf you open in your browser a URL like:\n```text\nhttp://127.0.0.1:8000/items/foo-item\n```\n...without adding the required parameter `needy` , you will see an error like:\n```JSON\n{\n  \"detail\": [\n    {\n      \"type\": \"missing\",\n      \"loc\": [\n        \"query\",\n        \"needy\"\n      ],\n      \"msg\": \"Field required\",\n      \"input\": null\n    }\n  ]\n}\n```\nAs `needy` is a required parameter, you would need to set it in the URL:\n```text\nhttp://127.0.0.1:8000/items/foo-item?needy=sooooneedy\n```\n...this would work:\n```JSON\n{\n    \"item_id\": \"foo-item\",\n    \"needy\": \"sooooneedy\"\n}\n```\nAnd of course, you can define some parameters as required, some as having a default value, and some entirely optional:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_user_item(\n     item_id: str, needy: str, skip: int = 0, limit: int | None = None\n ):\n     item = {\"item_id\": item_id, \"needy\": needy, \"skip\": skip, \"limit\": limit}\n     return item\n```\nIn this case, there are 3 query parameters:\n- needy , a required str .\n- skip , an int with a default value of 0 .\n- limit , an optional int .\nYou could also use `Enum` s the same way as with Path Parameters ."
+    }
+  ]
+}

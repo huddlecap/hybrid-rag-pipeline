@@ -1,0 +1,21 @@
+{
+  "doc_id": "b33fe420bac7a66e3ed06f242d5001c47f0d35be5fcd8bea9e43e2a7f829865d",
+  "content_hash": "b33fe420bac7a66e3ed06f242d5001c47f0d35be5fcd8bea9e43e2a7f829865d",
+  "source_file": "reference/openapi/docs.md",
+  "source_files": [
+    "reference/openapi/docs.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 339,
+  "sections": [
+    {
+      "heading_path": [
+        "OpenAPI docs"
+      ],
+      "page_number": null,
+      "text": "Utilities to handle OpenAPI automatic UI documentation, including Swagger UI (by default at `/docs` ) and ReDoc (by default at `/redoc` ).\n::: fastapi.openapi.docs.get_swagger_ui_html\n::: fastapi.openapi.docs.get_redoc_html\n::: fastapi.openapi.docs.get_swagger_ui_oauth2_redirect_html\n::: fastapi.openapi.docs.swagger_ui_default_parameters"
+    }
+  ]
+}

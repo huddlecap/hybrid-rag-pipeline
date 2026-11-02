@@ -1,0 +1,30 @@
+{
+  "doc_id": "533f365dfe52ab453074e3ccf4e551a5dad6620028aa7ab1787cc24f5dc5e415",
+  "content_hash": "533f365dfe52ab453074e3ccf4e551a5dad6620028aa7ab1787cc24f5dc5e415",
+  "source_file": "advanced/security/index.md",
+  "source_files": [
+    "advanced/security/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 405,
+  "sections": [
+    {
+      "heading_path": [
+        "Advanced Security",
+        "Additional Features"
+      ],
+      "page_number": null,
+      "text": "There are some extra features to handle security apart from the ones covered in the Tutorial - User Guide: Security .\nThe next sections are not necessarily \"advanced\" .\nAnd it's possible that for your use case, the solution is in one of them."
+    },
+    {
+      "heading_path": [
+        "Advanced Security",
+        "Read the Tutorial first"
+      ],
+      "page_number": null,
+      "text": "The next sections assume you already read the main Tutorial - User Guide: Security .\nThey are all based on the same concepts, but allow some extra functionalities."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "doc_id": "ef4e360d8647fea43b25ce6da4a7eb97f8577789f1445d20968ea7334a652e72",
+  "content_hash": "ef4e360d8647fea43b25ce6da4a7eb97f8577789f1445d20968ea7334a652e72",
+  "source_file": "how-to/graphql.md",
+  "source_files": [
+    "how-to/graphql.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 2209,
+  "sections": [
+    {
+      "heading_path": [
+        "GraphQL"
+      ],
+      "page_number": null,
+      "text": "As FastAPI is based on the ASGI standard, it's very easy to integrate any GraphQL library also compatible with ASGI.\nYou can combine normal FastAPI path operations with GraphQL on the same application.\nGraphQL solves some very specific use cases.\nIt has advantages and disadvantages when compared to common web APIs .\nMake sure you evaluate if the benefits for your use case compensate the drawbacks . 🤓"
+    },
+    {
+      "heading_path": [
+        "GraphQL",
+        "GraphQL Libraries"
+      ],
+      "page_number": null,
+      "text": "Here are some of the GraphQL libraries that have ASGI support. You could use them with FastAPI :\n- Strawberry 🍓 With docs for FastAPI\n- Ariadne With docs for FastAPI\n- Tartiflette With Tartiflette ASGI to provide ASGI integration\n- Graphene With starlette-graphene3"
+    },
+    {
+      "heading_path": [
+        "GraphQL",
+        "GraphQL with Strawberry"
+      ],
+      "page_number": null,
+      "text": "If you need or want to work with GraphQL , Strawberry is the recommended library as it has the design closest to FastAPI's design, it's all based on type annotations .\nDepending on your use case, you might prefer to use a different library, but if you asked me, I would probably suggest you try Strawberry .\nHere's a small preview of how you could integrate Strawberry with FastAPI:\n```python\n import strawberry\n from fastapi import FastAPI\n from strawberry.fastapi import GraphQLRouter\n \n \n @strawberry.type\n class User:\n     name: str\n     age: int\n \n \n @strawberry.type\n class Query:\n     @strawberry.field\n     def user(self) -> User:\n         return User(name=\"Patrick\", age=100)\n \n \n schema = strawberry.Schema(query=Query)\n \n \n graphql_app = GraphQLRouter(schema)\n \n app = FastAPI()\n app.include_router(graphql_app, prefix=\"/graphql\")\n```\nYou can learn more about Strawberry in the Strawberry documentation .\nAnd also the docs about Strawberry with FastAPI ."
+    },
+    {
+      "heading_path": [
+        "GraphQL",
+        "Older GraphQLApp from Starlette"
+      ],
+      "page_number": null,
+      "text": "Previous versions of Starlette included a `GraphQLApp` class to integrate with Graphene .\nIt was deprecated from Starlette, but if you have code that used it, you can easily migrate to starlette-graphene3 , that covers the same use case and has an almost identical interface .\nIf you need GraphQL, I still would recommend you check out Strawberry , as it's based on type annotations instead of custom classes and types."
+    },
+    {
+      "heading_path": [
+        "GraphQL",
+        "Learn More"
+      ],
+      "page_number": null,
+      "text": "You can learn more about GraphQL in the official GraphQL documentation .\nYou can also read more about each of those libraries described above in their links."
+    }
+  ]
+}

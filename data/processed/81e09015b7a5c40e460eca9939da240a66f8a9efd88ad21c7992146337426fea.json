@@ -1,0 +1,185 @@
+{
+  "doc_id": "81e09015b7a5c40e460eca9939da240a66f8a9efd88ad21c7992146337426fea",
+  "content_hash": "81e09015b7a5c40e460eca9939da240a66f8a9efd88ad21c7992146337426fea",
+  "source_file": "tutorial/path-params.md",
+  "source_files": [
+    "tutorial/path-params.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 20,
+  "char_count": 10217,
+  "sections": [
+    {
+      "heading_path": [
+        "Path Parameters"
+      ],
+      "page_number": null,
+      "text": "You can declare path \"parameters\" or \"variables\" with the same syntax used by Python format strings:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_item(item_id):\n     return {\"item_id\": item_id}\n```\nThe value of the path parameter `item_id` will be passed to your function as the argument `item_id` .\nSo, if you run this example and go to http://127.0.0.1:8000/items/foo , you will see a response of:\n```JSON\n{\"item_id\":\"foo\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Path parameters with types"
+      ],
+      "page_number": null,
+      "text": "You can declare the type of a path parameter in the function, using standard Python type annotations:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/items/{item_id}\")\n async def read_item(item_id: int):\n     return {\"item_id\": item_id}\n```\nIn this case, `item_id` is declared to be an `int` .\nThis will give you editor support inside of your function, with error checks, completion, etc."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Data conversion"
+      ],
+      "page_number": null,
+      "text": "If you run this example and open your browser at http://127.0.0.1:8000/items/3 , you will see a response of:\n```JSON\n{\"item_id\":3}\n```\nNotice that the value your function received (and returned) is `3` , as a Python `int` , not a string `\"3\"` .\nSo, with that type declaration, FastAPI gives you automatic request \"parsing\" ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Data validation"
+      ],
+      "page_number": null,
+      "text": "But if you go to the browser at http://127.0.0.1:8000/items/foo , you will see a nice HTTP error of:\n```JSON\n{\n  \"detail\": [\n    {\n      \"type\": \"int_parsing\",\n      \"loc\": [\n        \"path\",\n        \"item_id\"\n      ],\n      \"msg\": \"Input should be a valid integer, unable to parse string as an integer\",\n      \"input\": \"foo\"\n    }\n  ]\n}\n```\nbecause the path parameter `item_id` had a value of `\"foo\"` , which is not an `int` .\nThe same error would appear if you provided a `float` instead of an `int` , as in: http://127.0.0.1:8000/items/4.2\nSo, with the same Python type declaration, FastAPI gives you data validation.\nNotice that the error also clearly states exactly the point where the validation didn't pass.\nThis is incredibly helpful while developing and debugging code that interacts with your API."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Documentation"
+      ],
+      "page_number": null,
+      "text": "And when you open your browser at http://127.0.0.1:8000/docs , you will see an automatic, interactive, API documentation like:\nAgain, just with that same Python type declaration, FastAPI gives you automatic, interactive documentation (integrating Swagger UI).\nNotice that the path parameter is declared to be an integer."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Standards-based benefits, alternative documentation"
+      ],
+      "page_number": null,
+      "text": "And because the generated schema is from the OpenAPI standard, there are many compatible tools.\nBecause of this, FastAPI itself provides an alternative API documentation (using ReDoc), which you can access at http://127.0.0.1:8000/redoc :\nThe same way, there are many compatible tools. Including code generation tools for many languages."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Pydantic"
+      ],
+      "page_number": null,
+      "text": "All the data validation is performed under the hood by Pydantic , so you get all the benefits from it. And you know you are in good hands.\nYou can use the same type declarations with `str` , `float` , `bool` and many other complex data types.\nSeveral of these are explored in the next chapters of the tutorial."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Order matters"
+      ],
+      "page_number": null,
+      "text": "When creating path operations , you can find situations where you have a fixed path.\nLike `/users/me` , let's say that it's to get data about the current user.\nAnd then you can also have a path `/users/` to get data about a specific user by some user ID.\nBecause path operations are evaluated in order, you need to make sure that the path for `/users/me` is declared before the one for `/users/` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/users/me\")\n async def read_user_me():\n     return {\"user_id\": \"the current user\"}\n \n \n @app.get(\"/users/{user_id}\")\n async def read_user(user_id: str):\n     return {\"user_id\": user_id}\n```\nOtherwise, the path for `/users/` would match also for `/users/me` , \"thinking\" that it's receiving a parameter `user_id` with a value of `\"me\"` .\nSimilarly, you cannot redefine a path operation:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/users\")\n async def read_users():\n     return [\"Rick\", \"Morty\"]\n \n \n @app.get(\"/users\")\n async def read_users2():\n     return [\"Bean\", \"Elfo\"]\n```\nThe first one will always be used since the path matches first."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values"
+      ],
+      "page_number": null,
+      "text": "If you have a path operation that receives a path parameter , but you want the possible valid path parameter values to be predefined, you can use a standard Python `Enum` ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Create an Enum class"
+      ],
+      "page_number": null,
+      "text": "Import `Enum` and create a sub-class that inherits from `str` and from `Enum` .\nBy inheriting from `str` the API docs will be able to know that the values must be of type `string` and will be able to render correctly.\nThen create class attributes with fixed values, which will be the available valid values:\n```python\n from enum import Enum\n \n from fastapi import FastAPI\n \n \n class ModelName(str, Enum):\n     alexnet = \"alexnet\"\n     resnet = \"resnet\"\n     lenet = \"lenet\"\n \n \n app = FastAPI()\n \n \n @app.get(\"/models/{model_name}\")\n async def get_model(model_name: ModelName):\n     if model_name is ModelName.alexnet:\n         return {\"model_name\": model_name, \"message\": \"Deep Learning FTW!\"}\n \n     if model_name.value == \"lenet\":\n         return {\"model_name\": model_name, \"message\": \"LeCNN all the images\"}\n \n     return {\"model_name\": model_name, \"message\": \"Have some residuals\"}\n```\nIf you are wondering, \"AlexNet\", \"ResNet\", and \"LeNet\" are just names of Machine Learning models ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Declare a path parameter"
+      ],
+      "page_number": null,
+      "text": "Then create a path parameter with a type annotation using the enum class you created ( `ModelName` ):\n```python\n from enum import Enum\n \n from fastapi import FastAPI\n \n \n class ModelName(str, Enum):\n     alexnet = \"alexnet\"\n     resnet = \"resnet\"\n     lenet = \"lenet\"\n \n \n app = FastAPI()\n \n \n @app.get(\"/models/{model_name}\")\n async def get_model(model_name: ModelName):\n     if model_name is ModelName.alexnet:\n         return {\"model_name\": model_name, \"message\": \"Deep Learning FTW!\"}\n \n     if model_name.value == \"lenet\":\n         return {\"model_name\": model_name, \"message\": \"LeCNN all the images\"}\n \n     return {\"model_name\": model_name, \"message\": \"Have some residuals\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Check the docs"
+      ],
+      "page_number": null,
+      "text": "Because the available values for the path parameter are predefined, the interactive docs can show them nicely:"
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Working with Python enumerations"
+      ],
+      "page_number": null,
+      "text": "The value of the path parameter will be an enumeration member ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Working with Python enumerations",
+        "Compare enumeration members"
+      ],
+      "page_number": null,
+      "text": "You can compare it with the enumeration member in your created enum `ModelName` :\n```python\n from enum import Enum\n \n from fastapi import FastAPI\n \n \n class ModelName(str, Enum):\n     alexnet = \"alexnet\"\n     resnet = \"resnet\"\n     lenet = \"lenet\"\n \n \n app = FastAPI()\n \n \n @app.get(\"/models/{model_name}\")\n async def get_model(model_name: ModelName):\n     if model_name is ModelName.alexnet:\n         return {\"model_name\": model_name, \"message\": \"Deep Learning FTW!\"}\n \n     if model_name.value == \"lenet\":\n         return {\"model_name\": model_name, \"message\": \"LeCNN all the images\"}\n \n     return {\"model_name\": model_name, \"message\": \"Have some residuals\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Working with Python enumerations",
+        "Get the enumeration value"
+      ],
+      "page_number": null,
+      "text": "You can get the actual value (a `str` in this case) using `model_name.value` , or in general, `your_enum_member.value` :\n```python\n from enum import Enum\n \n from fastapi import FastAPI\n \n \n class ModelName(str, Enum):\n     alexnet = \"alexnet\"\n     resnet = \"resnet\"\n     lenet = \"lenet\"\n \n \n app = FastAPI()\n \n \n @app.get(\"/models/{model_name}\")\n async def get_model(model_name: ModelName):\n     if model_name is ModelName.alexnet:\n         return {\"model_name\": model_name, \"message\": \"Deep Learning FTW!\"}\n \n     if model_name.value == \"lenet\":\n         return {\"model_name\": model_name, \"message\": \"LeCNN all the images\"}\n \n     return {\"model_name\": model_name, \"message\": \"Have some residuals\"}\n```\nYou could also access the value `\"lenet\"` with `ModelName.lenet.value` ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Predefined values",
+        "Working with Python enumerations",
+        "Return enumeration members"
+      ],
+      "page_number": null,
+      "text": "You can return enum members from your path operation , even nested in a JSON body (e.g. a `dict` ).\nThey will be converted to their corresponding values (strings in this case) before returning them to the client:\n```python\n from enum import Enum\n \n from fastapi import FastAPI\n \n \n class ModelName(str, Enum):\n     alexnet = \"alexnet\"\n     resnet = \"resnet\"\n     lenet = \"lenet\"\n \n \n app = FastAPI()\n \n \n @app.get(\"/models/{model_name}\")\n async def get_model(model_name: ModelName):\n     if model_name is ModelName.alexnet:\n         return {\"model_name\": model_name, \"message\": \"Deep Learning FTW!\"}\n \n     if model_name.value == \"lenet\":\n         return {\"model_name\": model_name, \"message\": \"LeCNN all the images\"}\n \n     return {\"model_name\": model_name, \"message\": \"Have some residuals\"}\n```\nIn your client you will get a JSON response like:\n```JSON\n{\n  \"model_name\": \"alexnet\",\n  \"message\": \"Deep Learning FTW!\"\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Path parameters containing paths"
+      ],
+      "page_number": null,
+      "text": "Let's say you have a path operation with a path `/files/` .\nBut you need `file_path` itself to contain a path , like `home/johndoe/myfile.txt` .\nSo, the URL for that file would be something like: `/files/home/johndoe/myfile.txt` ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Path parameters containing paths",
+        "OpenAPI support"
+      ],
+      "page_number": null,
+      "text": "OpenAPI doesn't support a way to declare a path parameter to contain a path inside, as that could lead to scenarios that are difficult to test and define.\nNevertheless, you can still do it in FastAPI , using one of the internal tools from Starlette.\nAnd the docs would still work, although not adding any documentation telling that the parameter should contain a path."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Path parameters containing paths",
+        "Path convertor"
+      ],
+      "page_number": null,
+      "text": "Using an option directly from Starlette you can declare a path parameter containing a path using a URL like:\n```text\n/files/{file_path:path}\n```\nIn this case, the name of the parameter is `file_path` , and the last part, `:path` , tells it that the parameter should match any path .\nSo, you can use it with:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/files/{file_path:path}\")\n async def read_file(file_path: str):\n     return {\"file_path\": file_path}\n```\nYou might need the parameter to contain `/home/johndoe/myfile.txt` , with a leading slash ( `/` ).\nIn that case, the URL would be: `/files//home/johndoe/myfile.txt` , with a double slash ( `//` ) between `files` and `home` ."
+    },
+    {
+      "heading_path": [
+        "Path Parameters",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "With FastAPI , by using short, intuitive and standard Python type declarations, you get:\n- Editor support: error checks, autocompletion, etc.\n- Data \" parsing \"\n- Data validation\n- API annotation and automatic documentation\nAnd you only have to declare them once.\nThat's probably the main visible advantage of FastAPI compared to alternative frameworks (apart from the raw performance)."
+    }
+  ]
+}

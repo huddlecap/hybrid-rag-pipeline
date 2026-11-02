@@ -1,0 +1,69 @@
+{
+  "doc_id": "051ef9c6cd54a566be9192e0e4b6667b0e84604db7a3cffea8d970f874d72014",
+  "content_hash": "051ef9c6cd54a566be9192e0e4b6667b0e84604db7a3cffea8d970f874d72014",
+  "source_file": "advanced/middleware.md",
+  "source_files": [
+    "advanced/middleware.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 7,
+  "char_count": 4033,
+  "sections": [
+    {
+      "heading_path": [
+        "Advanced Middleware"
+      ],
+      "page_number": null,
+      "text": "In the main tutorial you read how to add Custom Middleware to your application.\nAnd then you also read how to handle CORS with the CORSMiddleware .\nIn this section we'll see how to use other middlewares."
+    },
+    {
+      "heading_path": [
+        "Advanced Middleware",
+        "Adding ASGI middlewares"
+      ],
+      "page_number": null,
+      "text": "As FastAPI is based on Starlette and implements the ASGI specification, you can use any ASGI middleware.\nA middleware doesn't have to be made for FastAPI or Starlette to work, as long as it follows the ASGI spec.\nIn general, ASGI middlewares are classes that expect to receive an ASGI app as the first argument.\nSo, in the documentation for third-party ASGI middlewares they will probably tell you to do something like:\n```Python\nfrom unicorn import UnicornMiddleware\n\napp = SomeASGIApp()\n\nnew_app = UnicornMiddleware(app, some_config=\"rainbow\")\n```\nBut FastAPI (actually Starlette) provides a simpler way to do it that makes sure that the internal middlewares handle server errors and custom exception handlers work properly.\nFor that, you use `app.add_middleware()` (as in the example for CORS).\n```Python\nfrom fastapi import FastAPI\nfrom unicorn import UnicornMiddleware\n\napp = FastAPI()\n\napp.add_middleware(UnicornMiddleware, some_config=\"rainbow\")\n```\n`app.add_middleware()` receives a middleware class as the first argument and any additional arguments to be passed to the middleware."
+    },
+    {
+      "heading_path": [
+        "Advanced Middleware",
+        "Integrated middlewares"
+      ],
+      "page_number": null,
+      "text": "FastAPI includes several middlewares for common use cases, we'll see next how to use them.\nTechnical Details:\nFor the next examples, you could also use `from starlette.middleware.something import SomethingMiddleware` .\nFastAPI provides several middlewares in `fastapi.middleware` just as a convenience for you, the developer. But most of the available middlewares come directly from Starlette."
+    },
+    {
+      "heading_path": [
+        "Advanced Middleware",
+        "HTTPSRedirectMiddleware"
+      ],
+      "page_number": null,
+      "text": "Enforces that all incoming requests must either be `https` or `wss` .\nAny incoming request to `http` or `ws` will be redirected to the secure scheme instead.\n```python\n from fastapi import FastAPI\n from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware\n \n app = FastAPI()\n \n app.add_middleware(HTTPSRedirectMiddleware)\n \n \n @app.get(\"/\")\n async def main():\n     return {\"message\": \"Hello World\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Advanced Middleware",
+        "TrustedHostMiddleware"
+      ],
+      "page_number": null,
+      "text": "Enforces that all incoming requests have a correctly set `Host` header, in order to guard against HTTP Host Header attacks.\n```python\n from fastapi import FastAPI\n from fastapi.middleware.trustedhost import TrustedHostMiddleware\n \n app = FastAPI()\n \n app.add_middleware(\n     TrustedHostMiddleware, allowed_hosts=[\"example.com\", \"*.example.com\"]\n )\n \n \n @app.get(\"/\")\n async def main():\n     return {\"message\": \"Hello World\"}\n```\nThe following arguments are supported:\n- allowed_hosts - A list of domain names that should be allowed as hostnames. Wildcard domains such as *.example.com are supported for matching subdomains. To allow any hostname either use allowed_hosts=[\"*\"] or omit the middleware.\n- www_redirect - If set to True, requests to non-www versions of the allowed hosts will be redirected to their www counterparts. Defaults to True .\nIf an incoming request does not validate correctly then a `400` response will be sent."
+    },
+    {
+      "heading_path": [
+        "Advanced Middleware",
+        "GZipMiddleware"
+      ],
+      "page_number": null,
+      "text": "Handles GZip responses for any request that includes `\"gzip\"` in the `Accept-Encoding` header.\nThe middleware will handle both standard and streaming responses.\n```python\n from fastapi import FastAPI\n from fastapi.middleware.gzip import GZipMiddleware\n \n app = FastAPI()\n \n app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)\n \n \n @app.get(\"/\")\n async def main():\n     return \"somebigcontent\"\n```\nThe following arguments are supported:\n- minimum_size - Do not GZip responses that are smaller than this minimum size in bytes. Defaults to 500 .\n- compresslevel - Used during GZip compression. It is an integer ranging from 1 to 9. Defaults to 9 . Lower value results in faster compression but larger file sizes, while higher value results in slower compression but smaller file sizes."
+    },
+    {
+      "heading_path": [
+        "Advanced Middleware",
+        "Other middlewares"
+      ],
+      "page_number": null,
+      "text": "There are many other ASGI middlewares.\nFor example:\n- Uvicorn's ProxyHeadersMiddleware\n- MessagePack\nTo see other available middlewares check Starlette's Middleware docs and the ASGI Awesome List ."
+    }
+  ]
+}

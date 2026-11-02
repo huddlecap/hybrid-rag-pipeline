@@ -1,0 +1,54 @@
+{
+  "doc_id": "5ac99c21eaad3bc474811457e6f1f03d553f7da217a22f20d4b743f6d637d23e",
+  "content_hash": "5ac99c21eaad3bc474811457e6f1f03d553f7da217a22f20d4b743f6d637d23e",
+  "source_file": "advanced/openapi-webhooks.md",
+  "source_files": [
+    "advanced/openapi-webhooks.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 2959,
+  "sections": [
+    {
+      "heading_path": [
+        "OpenAPI Webhooks"
+      ],
+      "page_number": null,
+      "text": "There are cases where you want to tell your API users that your app could call their app (sending a request) with some data, normally to notify of some type of event .\nThis means that instead of the normal process of your users sending requests to your API, it's your API (or your app) that could send requests to their system (to their API, their app).\nThis is normally called a webhook ."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Webhooks",
+        "Webhooks steps"
+      ],
+      "page_number": null,
+      "text": "The process normally is that you define in your code what is the message that you will send, the body of the request .\nYou also define in some way at which moments your app will send those requests or events.\nAnd your users define in some way (for example in a web dashboard somewhere) the URL where your app should send those requests.\nAll the logic about how to register the URLs for webhooks and the code to actually send those requests is up to you. You write it however you want to in your own code ."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Webhooks",
+        "Documenting webhooks with FastAPI and OpenAPI"
+      ],
+      "page_number": null,
+      "text": "With FastAPI , using OpenAPI, you can define the names of these webhooks, the types of HTTP operations that your app can send (e.g. `POST` , `PUT` , etc.) and the request bodies that your app would send.\nThis can make it a lot easier for your users to implement their APIs to receive your webhook requests, they might even be able to autogenerate some of their own API code.\nWebhooks are available in OpenAPI 3.1.0 and above, supported by FastAPI `0.99.0` and above."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Webhooks",
+        "An app with webhooks"
+      ],
+      "page_number": null,
+      "text": "When you create a FastAPI application, there is a `webhooks` attribute that you can use to define webhooks , the same way you would define path operations , for example with `@app.webhooks.post()` .\n```python\n from datetime import datetime\n \n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Subscription(BaseModel):\n     username: str\n     monthly_fee: float\n     start_date: datetime\n \n \n @app.webhooks.post(\"new-subscription\")\n def new_subscription(body: Subscription):\n     \"\"\"\n     When a new user subscribes to your service we'll send you a POST request with this\n     data to the URL that you register for the event `new-subscription` in the dashboard.\n     \"\"\"\n \n \n @app.get(\"/users/\")\n def read_users():\n     return [\"Rick\", \"Morty\"]\n```\nThe webhooks that you define will end up in the OpenAPI schema and the automatic docs UI .\nThe `app.webhooks` object is actually just an `APIRouter` , the same type you would use when structuring your app with multiple files.\nNotice that with webhooks you are actually not declaring a path (like `/items/` ), the text you pass there is just an identifier of the webhook (the name of the event), for example in `@app.webhooks.post(\"new-subscription\")` , the webhook name is `new-subscription` .\nThis is because it is expected that your users would define the actual URL path where they want to receive the webhook request in some other way (e.g. a web dashboard)."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Webhooks",
+        "An app with webhooks",
+        "Check the docs"
+      ],
+      "page_number": null,
+      "text": "Now you can start your app and go to http://127.0.0.1:8000/docs .\nYou will see your docs have the normal path operations and now also some webhooks :"
+    }
+  ]
+}

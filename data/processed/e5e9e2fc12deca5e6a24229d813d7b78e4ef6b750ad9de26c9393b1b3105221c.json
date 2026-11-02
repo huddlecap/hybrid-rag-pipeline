@@ -1,0 +1,98 @@
+{
+  "doc_id": "e5e9e2fc12deca5e6a24229d813d7b78e4ef6b750ad9de26c9393b1b3105221c",
+  "content_hash": "e5e9e2fc12deca5e6a24229d813d7b78e4ef6b750ad9de26c9393b1b3105221c",
+  "source_file": "advanced/openapi-callbacks.md",
+  "source_files": [
+    "advanced/openapi-callbacks.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 11935,
+  "sections": [
+    {
+      "heading_path": [
+        "OpenAPI Callbacks"
+      ],
+      "page_number": null,
+      "text": "You could create an API with a path operation that could trigger a request to an external API created by someone else (probably the same developer that would be using your API).\nThe process that happens when your API app calls the external API is named a \"callback\". Because the software that the external developer wrote sends a request to your API and then your API calls back , sending a request to an external API (that was probably created by the same developer).\nIn this case, you could want to document how that external API should look. What path operation it should have, what body it should expect, what response it should return, etc."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "An app with callbacks"
+      ],
+      "page_number": null,
+      "text": "Let's see all this with an example.\nImagine you develop an app that allows creating invoices.\nThese invoices will have an `id` , `title` (optional), `customer` , and `total` .\nThe user of your API (an external developer) will create an invoice in your API with a POST request.\nThen your API will (let's imagine):\n- Send the invoice to some customer of the external developer.\n- Collect the money.\n- Send a notification back to the API user (the external developer). This will be done by sending a POST request (from your API ) to some external API provided by that external developer (this is the \"callback\")."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "The normal FastAPI app"
+      ],
+      "page_number": null,
+      "text": "Let's first see how the normal API app would look before adding the callback.\nIt will have a path operation that will receive an `Invoice` body, and a query parameter `callback_url` that will contain the URL for the callback.\nThis part is pretty normal, most of the code is probably already familiar to you:\n```python\n from fastapi import APIRouter, FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Invoice(BaseModel):\n     id: str\n     title: str | None = None\n     customer: str\n     total: float\n \n \n class InvoiceEvent(BaseModel):\n     description: str\n     paid: bool\n \n \n class InvoiceEventReceived(BaseModel):\n     ok: bool\n \n \n invoices_callback_router = APIRouter()\n \n \n @invoices_callback_router.post(\n     \"{$callback_url}/invoices/{$request.body.id}\", response_model=InvoiceEventReceived\n )\n def invoice_notification(body: InvoiceEvent):\n     pass\n \n \n @app.post(\"/invoices/\", callbacks=invoices_callback_router.routes)\n def create_invoice(invoice: Invoice, callback_url: HttpUrl | None = None):\n     \"\"\"\n     Create an invoice.\n \n     This will (let's imagine) let the API user (some external developer) create an\n     invoice.\n \n     And this path operation will:\n \n     * Send the invoice to the client.\n     * Collect the money from the client.\n     * Send a notification back to the API user (the external developer), as a callback.\n         * At this point is that the API will somehow send a POST request to the\n             external API with the notification of the invoice event\n             (e.g. \"payment successful\").\n     \"\"\"\n     # Send the invoice, collect the money, send the notification (the callback)\n     return {\"msg\": \"Invoice received\"}\n```\nThe `callback_url` query parameter uses a Pydantic Url type.\nThe only new thing is the `callbacks=invoices_callback_router.routes` as an argument to the path operation decorator . We'll see what that is next."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Documenting the callback"
+      ],
+      "page_number": null,
+      "text": "The actual callback code will depend heavily on your own API app.\nAnd it will probably vary a lot from one app to the next.\nIt could be just one or two lines of code, like:\n```Python\ncallback_url = \"https://example.com/api/v1/invoices/events/\"\nhttpx.post(callback_url, json={\"description\": \"Invoice paid\", \"paid\": True})\n```\nBut possibly the most important part of the callback is making sure that your API user (the external developer) implements the external API correctly, according to the data that your API is going to send in the request body of the callback, etc.\nSo, what we will do next is add the code to document how that external API should look to receive the callback from your API .\nThat documentation will show up in the Swagger UI at `/docs` in your API, and it will let external developers know how to build the external API .\nThis example doesn't implement the callback itself (that could be just a line of code), only the documentation part.\nThe actual callback is just an HTTP request.\nWhen implementing the callback yourself, you could use something like HTTPX or Requests ."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Write the callback documentation code"
+      ],
+      "page_number": null,
+      "text": "This code won't be executed in your app, we only need it to document how that external API should look.\nBut, you already know how to easily create automatic documentation for an API with FastAPI .\nSo we are going to use that same knowledge to document how the external API should look... by creating the path operation(s) that the external API should implement (the ones your API will call).\nWhen writing the code to document a callback, it might be useful to imagine that you are that external developer . And that you are currently implementing the external API , not your API .\nTemporarily adopting this point of view (of the external developer ) can help you feel like it's more obvious where to put the parameters, the Pydantic model for the body, for the response, etc. for that external API ."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Write the callback documentation code",
+        "Create a callback APIRouter"
+      ],
+      "page_number": null,
+      "text": "First create a new `APIRouter` that will contain one or more callbacks.\n```python\n from fastapi import APIRouter, FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Invoice(BaseModel):\n     id: str\n     title: str | None = None\n     customer: str\n     total: float\n \n \n class InvoiceEvent(BaseModel):\n     description: str\n     paid: bool\n \n \n class InvoiceEventReceived(BaseModel):\n     ok: bool\n \n \n invoices_callback_router = APIRouter()\n \n \n @invoices_callback_router.post(\n     \"{$callback_url}/invoices/{$request.body.id}\", response_model=InvoiceEventReceived\n )\n def invoice_notification(body: InvoiceEvent):\n     pass\n \n \n @app.post(\"/invoices/\", callbacks=invoices_callback_router.routes)\n def create_invoice(invoice: Invoice, callback_url: HttpUrl | None = None):\n     \"\"\"\n     Create an invoice.\n \n     This will (let's imagine) let the API user (some external developer) create an\n     invoice.\n \n     And this path operation will:\n \n     * Send the invoice to the client.\n     * Collect the money from the client.\n     * Send a notification back to the API user (the external developer), as a callback.\n         * At this point is that the API will somehow send a POST request to the\n             external API with the notification of the invoice event\n             (e.g. \"payment successful\").\n     \"\"\"\n     # Send the invoice, collect the money, send the notification (the callback)\n     return {\"msg\": \"Invoice received\"}\n```"
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Write the callback documentation code",
+        "Create the callback path operation"
+      ],
+      "page_number": null,
+      "text": "To create the callback path operation use the same `APIRouter` you created above.\nIt should look just like a normal FastAPI path operation :\n- It should probably have a declaration of the body it should receive, e.g. body: InvoiceEvent .\n- And it could also have a declaration of the response it should return, e.g. response_model=InvoiceEventReceived .\n```python\n from fastapi import APIRouter, FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Invoice(BaseModel):\n     id: str\n     title: str | None = None\n     customer: str\n     total: float\n \n \n class InvoiceEvent(BaseModel):\n     description: str\n     paid: bool\n \n \n class InvoiceEventReceived(BaseModel):\n     ok: bool\n \n \n invoices_callback_router = APIRouter()\n \n \n @invoices_callback_router.post(\n     \"{$callback_url}/invoices/{$request.body.id}\", response_model=InvoiceEventReceived\n )\n def invoice_notification(body: InvoiceEvent):\n     pass\n \n \n @app.post(\"/invoices/\", callbacks=invoices_callback_router.routes)\n def create_invoice(invoice: Invoice, callback_url: HttpUrl | None = None):\n     \"\"\"\n     Create an invoice.\n \n     This will (let's imagine) let the API user (some external developer) create an\n     invoice.\n \n     And this path operation will:\n \n     * Send the invoice to the client.\n     * Collect the money from the client.\n     * Send a notification back to the API user (the external developer), as a callback.\n         * At this point is that the API will somehow send a POST request to the\n             external API with the notification of the invoice event\n             (e.g. \"payment successful\").\n     \"\"\"\n     # Send the invoice, collect the money, send the notification (the callback)\n     return {\"msg\": \"Invoice received\"}\n```\nThere are 2 main differences from a normal path operation :\n- It doesn't need to have any actual code, because your app will never call this code. It's only used to document the external API . So, the function could just have pass .\n- The path can contain an OpenAPI 3 expression (see more below) where it can use variables with parameters and parts of the original request sent to your API ."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Write the callback documentation code",
+        "The callback path expression"
+      ],
+      "page_number": null,
+      "text": "The callback path can have an OpenAPI 3 expression that can contain parts of the original request sent to your API .\nIn this case, it's the `str` :\n```Python\n\"{$callback_url}/invoices/{$request.body.id}\"\n```\nSo, if your API user (the external developer) sends a request to your API to:\n```text\nhttps://yourapi.com/invoices/?callback_url=https://www.external.org/events\n```\nwith a JSON body of:\n```JSON\n{\n    \"id\": \"2expen51ve\",\n    \"customer\": \"Mr. Richie Rich\",\n    \"total\": \"9999\"\n}\n```\nthen your API will process the invoice, and at some point later, send a callback request to the `callback_url` (the external API ):\n```text\nhttps://www.external.org/events/invoices/2expen51ve\n```\nwith a JSON body containing something like:\n```JSON\n{\n    \"description\": \"Payment celebration\",\n    \"paid\": true\n}\n```\nand it would expect a response from that external API with a JSON body like:\n```JSON\n{\n    \"ok\": true\n}\n```\nNotice how the callback URL used contains the URL received as a query parameter in `callback_url` ( `https://www.external.org/events` ) and also the invoice `id` from inside of the JSON body ( `2expen51ve` )."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Write the callback documentation code",
+        "Add the callback router"
+      ],
+      "page_number": null,
+      "text": "At this point you have the callback path operation(s) needed (the one(s) that the external developer should implement in the external API ) in the callback router you created above.\nNow use the parameter `callbacks` in your API's path operation decorator to pass the attribute `.routes` from that callback router:\n```python\n from fastapi import APIRouter, FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Invoice(BaseModel):\n     id: str\n     title: str | None = None\n     customer: str\n     total: float\n \n \n class InvoiceEvent(BaseModel):\n     description: str\n     paid: bool\n \n \n class InvoiceEventReceived(BaseModel):\n     ok: bool\n \n \n invoices_callback_router = APIRouter()\n \n \n @invoices_callback_router.post(\n     \"{$callback_url}/invoices/{$request.body.id}\", response_model=InvoiceEventReceived\n )\n def invoice_notification(body: InvoiceEvent):\n     pass\n \n \n @app.post(\"/invoices/\", callbacks=invoices_callback_router.routes)\n def create_invoice(invoice: Invoice, callback_url: HttpUrl | None = None):\n     \"\"\"\n     Create an invoice.\n \n     This will (let's imagine) let the API user (some external developer) create an\n     invoice.\n \n     And this path operation will:\n \n     * Send the invoice to the client.\n     * Collect the money from the client.\n     * Send a notification back to the API user (the external developer), as a callback.\n         * At this point is that the API will somehow send a POST request to the\n             external API with the notification of the invoice event\n             (e.g. \"payment successful\").\n     \"\"\"\n     # Send the invoice, collect the money, send the notification (the callback)\n     return {\"msg\": \"Invoice received\"}\n```\nNotice that you are not passing the router itself ( `invoices_callback_router` ) to `callbacks=` , but its `.routes` , as in `invoices_callback_router.routes` . FastAPI will use those routes to generate the callback OpenAPI documentation."
+    },
+    {
+      "heading_path": [
+        "OpenAPI Callbacks",
+        "Write the callback documentation code",
+        "Check the docs"
+      ],
+      "page_number": null,
+      "text": "Now you can start your app and go to http://127.0.0.1:8000/docs .\nYou will see your docs including a \"Callbacks\" section for your path operation that shows how the external API should look:"
+    }
+  ]
+}

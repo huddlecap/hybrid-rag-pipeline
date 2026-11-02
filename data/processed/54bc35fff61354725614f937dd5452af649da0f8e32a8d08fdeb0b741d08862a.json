@@ -1,0 +1,21 @@
+{
+  "doc_id": "54bc35fff61354725614f937dd5452af649da0f8e32a8d08fdeb0b741d08862a",
+  "content_hash": "54bc35fff61354725614f937dd5452af649da0f8e32a8d08fdeb0b741d08862a",
+  "source_file": "advanced/testing-events.md",
+  "source_files": [
+    "advanced/testing-events.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 2113,
+  "sections": [
+    {
+      "heading_path": [
+        "Testing Events: lifespan and startup - shutdown"
+      ],
+      "page_number": null,
+      "text": "When you need `lifespan` to run in your tests, you can use the `TestClient` with a `with` statement:\n```python\n from contextlib import asynccontextmanager\n \n from fastapi import FastAPI\n from fastapi.testclient import TestClient\n \n items = {}\n \n \n @asynccontextmanager\n async def lifespan(app: FastAPI):\n     items[\"foo\"] = {\"name\": \"Fighters\"}\n     items[\"bar\"] = {\"name\": \"Tenders\"}\n     yield\n     # clean up items\n     items.clear()\n \n \n app = FastAPI(lifespan=lifespan)\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(item_id: str):\n     return items[item_id]\n \n \n def test_read_items():\n     # Before the lifespan starts, \"items\" is still empty\n     assert items == {}\n \n     with TestClient(app) as client:\n         # Inside the \"with TestClient\" block, the lifespan starts and items added\n         assert items == {\"foo\": {\"name\": \"Fighters\"}, \"bar\": {\"name\": \"Tenders\"}}\n \n         response = client.get(\"/items/foo\")\n         assert response.status_code == 200\n         assert response.json() == {\"name\": \"Fighters\"}\n \n         # After the requests is done, the items are still there\n         assert items == {\"foo\": {\"name\": \"Fighters\"}, \"bar\": {\"name\": \"Tenders\"}}\n \n     # The end of the \"with TestClient\" block simulates terminating the app, so\n     # the lifespan ends and items are cleaned up\n     assert items == {}\n```\nYou can read more details about the \"Running lifespan in tests in the official Starlette documentation site.\"\nFor the deprecated `startup` and `shutdown` events, you can use the `TestClient` as follows:\n```python\n from fastapi import FastAPI\n from fastapi.testclient import TestClient\n \n app = FastAPI()\n \n items = {}\n \n \n @app.on_event(\"startup\")\n async def startup_event():\n     items[\"foo\"] = {\"name\": \"Fighters\"}\n     items[\"bar\"] = {\"name\": \"Tenders\"}\n \n \n @app.get(\"/items/{item_id}\")\n async def read_items(item_id: str):\n     return items[item_id]\n \n \n def test_read_items():\n     with TestClient(app) as client:\n         response = client.get(\"/items/foo\")\n         assert response.status_code == 200\n         assert response.json() == {\"name\": \"Fighters\"}\n```"
+    }
+  ]
+}

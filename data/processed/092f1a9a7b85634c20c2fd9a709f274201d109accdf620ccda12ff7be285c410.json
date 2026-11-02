@@ -1,0 +1,62 @@
+{
+  "doc_id": "092f1a9a7b85634c20c2fd9a709f274201d109accdf620ccda12ff7be285c410",
+  "content_hash": "092f1a9a7b85634c20c2fd9a709f274201d109accdf620ccda12ff7be285c410",
+  "source_file": "deployment/manually.md",
+  "source_files": [
+    "deployment/manually.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 4339,
+  "sections": [
+    {
+      "heading_path": [
+        "Run a Server Manually",
+        "Use the fastapi run Command"
+      ],
+      "page_number": null,
+      "text": "In short, use `fastapi run` to serve your FastAPI application:\n```console\n$ fastapi run main.py\n\n   FastAPI   Starting production server 🚀\n\n             Searching for package file structure from directories\n             with __init__.py files\n             Importing from /home/user/code/awesomeapp\n\n    module   🐍 main.py\n\n      code   Importing the FastAPI app object from the module with\n             the following code:\n\n             from main import app\n\n       app   Using import string: main:app\n\n    server   Server started at http://0.0.0.0:8000\n    server   Documentation at http://0.0.0.0:8000/docs\n\n             Logs:\n\n      INFO   Started server process [2306215]\n      INFO   Waiting for application startup.\n      INFO   Application startup complete.\n      INFO   Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C\n             to quit)\n```\nThat would work for most of the cases. 😎\nYou could use that command for example to start your FastAPI app in a container, in a server, etc."
+    },
+    {
+      "heading_path": [
+        "Run a Server Manually",
+        "ASGI Servers"
+      ],
+      "page_number": null,
+      "text": "Let's go a little deeper into the details.\nFastAPI uses a standard for building Python web frameworks and servers called ASGI . FastAPI is an ASGI web framework.\nThe main thing you need to run a FastAPI application (or any other ASGI application) in a remote server machine is an ASGI server program like Uvicorn , this is the one that comes by default in the `fastapi` command.\nThere are several alternatives, including:\n- Uvicorn : a high performance ASGI server.\n- Hypercorn : an ASGI server compatible with HTTP/2 and Trio among other features.\n- Daphne : the ASGI server built for Django Channels.\n- Granian : A Rust HTTP server for Python applications."
+    },
+    {
+      "heading_path": [
+        "Run a Server Manually",
+        "Server Machine and Server Program"
+      ],
+      "page_number": null,
+      "text": "There's a small detail about names to keep in mind. 💡\nThe word \" server \" is commonly used to refer to both the remote/cloud computer (the physical or virtual machine) and also the program that is running on that machine (e.g. Uvicorn).\nJust keep in mind that when you read \"server\" in general, it could refer to one of those two things.\nWhen referring to the remote machine, it's common to call it server , but also machine , VM (virtual machine), node . Those all refer to some type of remote machine, normally running Linux, where you run programs."
+    },
+    {
+      "heading_path": [
+        "Run a Server Manually",
+        "Install the Server Program"
+      ],
+      "page_number": null,
+      "text": "When you install FastAPI, it comes with a production server, Uvicorn, and you can start it with the `fastapi run` command.\nBut you can also install an ASGI server manually.\nAdd the server application to your project.\nFor example, to install Uvicorn:\n```console\n$ uv add \"uvicorn[standard]\"\n\n---> 100%\n```\nA similar process would apply to any other ASGI server program.\nBy adding the `standard` , Uvicorn will install and use some recommended extra dependencies.\nThat includes `uvloop` , the high-performance drop-in replacement for `asyncio` , that provides the big concurrency performance boost.\nWhen you add FastAPI with something like `uv add \"fastapi[standard]\"` you already get `uvicorn[standard]` as well."
+    },
+    {
+      "heading_path": [
+        "Run a Server Manually",
+        "Run the Server Program"
+      ],
+      "page_number": null,
+      "text": "If you installed an ASGI server manually, you would normally need to pass an import string in a special format for it to import your FastAPI application:\n```console\n$ uv run uvicorn main:app --host 0.0.0.0 --port 80\n\nINFO:     Uvicorn running on http://0.0.0.0:80 (Press CTRL+C to quit)\n```\nThe command `uvicorn main:app` refers to:\n- main : the file main.py (the Python \"module\").\n- app : the object created inside of main.py with the line app = FastAPI() .\nIt is equivalent to:\n```Python\nfrom main import app\n```\nEach alternative ASGI server program would have a similar command, you can read more in their respective documentation.\nUvicorn and other servers support a `--reload` option that is useful during development.\nThe `--reload` option consumes much more resources, is more unstable, etc.\nIt helps a lot during development , but you shouldn't use it in production ."
+    },
+    {
+      "heading_path": [
+        "Run a Server Manually",
+        "Deployment Concepts"
+      ],
+      "page_number": null,
+      "text": "These examples run the server program (e.g Uvicorn), starting a single process , listening on all the IPs ( `0.0.0.0` ) on a predefined port (e.g. `80` ).\nThis is the basic idea. But you will probably want to take care of some additional things, like:\n- Security - HTTPS\n- Running on startup\n- Restarts\n- Replication (the number of processes running)\n- Memory\n- Previous steps before starting\nI'll tell you more about each of these concepts, how to think about them, and some concrete examples with strategies to handle them in the next chapters. 🚀"
+    }
+  ]
+}

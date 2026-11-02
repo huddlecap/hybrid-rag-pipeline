@@ -1,0 +1,29 @@
+{
+  "doc_id": "a2e41b48587953b605929203b7ab6c4cec51e6bec79c22e8b2c55aa37b356277",
+  "content_hash": "a2e41b48587953b605929203b7ab6c4cec51e6bec79c22e8b2c55aa37b356277",
+  "source_file": "environment-variables.md",
+  "source_files": [
+    "environment-variables.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 599,
+  "sections": [
+    {
+      "heading_path": [
+        "Environment Variables"
+      ],
+      "page_number": null,
+      "text": "An environment variable (also known as an env var ) is a value that lives outside of your Python code, in the operating system, and can be read by your application and other programs.\nFastAPI applications commonly use environment variables for configuration such as database URLs, email credentials, and secret keys.\nYou will learn how to use them for application configuration in Settings and Environment Variables ."
+    },
+    {
+      "heading_path": [
+        "Environment Variables",
+        "Learn More"
+      ],
+      "page_number": null,
+      "text": "Read the Environment Variables guide for a detailed, cross-platform explanation, including how to create and read environment variables and how the `PATH` environment variable works."
+    }
+  ]
+}

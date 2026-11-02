@@ -1,0 +1,93 @@
+{
+  "doc_id": "a43425a4ae5265230a5d08fb73a2e251d1fe9c3ca5fcc9107d55fe90013654eb",
+  "content_hash": "a43425a4ae5265230a5d08fb73a2e251d1fe9c3ca5fcc9107d55fe90013654eb",
+  "source_file": "tutorial/request-form-models.md",
+  "source_files": [
+    "tutorial/request-form-models.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 6673,
+  "sections": [
+    {
+      "heading_path": [
+        "Form Models"
+      ],
+      "page_number": null,
+      "text": "You can use Pydantic models to declare form fields in FastAPI.\nTo use forms, first install python-multipart .\nAdd it to your project:\n```console\n$ uv add python-multipart\n```\nThis is supported since FastAPI version `0.113.0` . 🤓"
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Pydantic Models for Forms"
+      ],
+      "page_number": null,
+      "text": "You just need to declare a Pydantic model with the fields you want to receive as form fields , and then declare the parameter as `Form` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class FormData(BaseModel):\n     username: str\n     password: str\n \n \n @app.post(\"/login/\")\n async def login(data: Annotated[FormData, Form()]):\n     return data\n```\nFastAPI will extract the data for each field from the form data in the request and give you the Pydantic model you defined.\nFor HTML checkboxes , declare boolean fields with a default of `False` ."
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Check the Docs"
+      ],
+      "page_number": null,
+      "text": "You can verify it in the docs UI at `/docs` :"
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Forbid Extra Form Fields"
+      ],
+      "page_number": null,
+      "text": "In some special use cases (probably not very common), you might want to restrict the form fields to only those declared in the Pydantic model. And forbid any extra fields.\nThis is supported since FastAPI version `0.114.0` . 🤓\nYou can use Pydantic's model configuration to `forbid` any `extra` fields:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class FormData(BaseModel):\n     username: str\n     password: str\n     model_config = {\"extra\": \"forbid\"}\n \n \n @app.post(\"/login/\")\n async def login(data: Annotated[FormData, Form()]):\n     return data\n```\nIf a client tries to send some extra data, they will receive an error response.\nFor example, if the client tries to send the form fields:\n- username : Rick\n- password : Portal Gun\n- extra : Mr. Poopybutthole\nThey will receive an error response telling them that the field `extra` is not allowed:\n```json\n{\n    \"detail\": [\n        {\n            \"type\": \"extra_forbidden\",\n            \"loc\": [\"body\", \"extra\"],\n            \"msg\": \"Extra inputs are not permitted\",\n            \"input\": \"Mr. Poopybutthole\"\n        }\n    ]\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Combine Form Models"
+      ],
+      "page_number": null,
+      "text": "You can combine multiple form models with individual `Form` parameters.\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Profile(BaseModel):\n     name: str\n \n \n class Preferences(BaseModel):\n     tags: list[str] = []\n \n \n @app.post(\"/profiles/\")\n async def create_profile(\n     profile: Annotated[Profile, Form()],\n     preferences: Annotated[Preferences, Form()],\n     token: Annotated[str, Form()],\n ):\n     return {\"profile\": profile, \"preferences\": preferences, \"token\": token}\n```\nThe client sends `name` , `tags` , and `token` as form fields. Each model validates the form fields independently.\nEach model's `extra` configuration applies to all form fields, including fields and files declared in other parameters or dependencies. With `extra=\"forbid\"` , any field outside that model is rejected. With `extra=\"allow\"` , those fields are included as model extras.\nIf multiple declarations use the same form field name, each validates that field's value. Use compatible types and constraints for shared fields so the OpenAPI schema can describe them consistently."
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Optional Form Models"
+      ],
+      "page_number": null,
+      "text": "Declare a form model with `| None` and a default of `None` to make the group optional.\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Profile(BaseModel):\n     name: str\n     age: int\n \n \n @app.post(\"/profiles/\")\n async def create_profile(\n     token: Annotated[str, Form()],\n     profile: Annotated[Profile | None, Form()] = None,\n ):\n     return {\"token\": token, \"profile\": profile}\n```\nIf neither `name` nor `age` is sent, `profile` is `None` . If either is sent, FastAPI validates the model and requires both fields. An empty submitted value also counts as supplying a field.\nUsing `| None` without a default still makes the parameter required.\nExtra fields follow the model's `extra` configuration. Ignored extras do not make the model present.\nAn optional model containing only unchecked checkboxes is omitted. Send a value such as `enabled=false` to supply it explicitly."
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Optional Unions of Form Models"
+      ],
+      "page_number": null,
+      "text": "You can also use an optional union of models.\n```python\n from typing import Annotated, Literal\n \n from fastapi import FastAPI, Form\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Person(BaseModel):\n     kind: Literal[\"person\"]\n     name: str\n \n \n class Company(BaseModel):\n     kind: Literal[\"company\"]\n     company_name: str\n \n \n @app.post(\"/contacts/\")\n async def create_contact(\n     contact: Annotated[Person | Company | None, Form(discriminator=\"kind\")] = None,\n ):\n     return contact\n```\nIf no form fields are sent, `contact` is `None` . Send `kind=person` with `name` , or `kind=company` with `company_name` . The discriminator selects which model to validate."
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Combine Unions of Form Models"
+      ],
+      "page_number": null,
+      "text": "You can combine unions with other form models, individual `Form` parameters, and `File` parameters. Each union is validated independently.\n```python\n from typing import Annotated, Literal\n \n from fastapi import FastAPI, Form\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Person(BaseModel):\n     contact_type: Literal[\"person\"]\n     name: str\n \n \n class Company(BaseModel):\n     contact_type: Literal[\"company\"]\n     company_name: str\n \n \n class Email(BaseModel):\n     notification_type: Literal[\"email\"]\n     email: str\n \n \n class SMS(BaseModel):\n     notification_type: Literal[\"sms\"]\n     phone: str\n \n \n @app.post(\"/contacts/\")\n async def create_contact(\n     contact: Annotated[Person | Company, Form(discriminator=\"contact_type\")],\n     token: Annotated[str, Form()],\n     notification: Annotated[\n         Email | SMS | None, Form(discriminator=\"notification_type\")\n     ] = None,\n ):\n     return {\"contact\": contact, \"notification\": notification, \"token\": token}\n```\nSend all fields in the same form. For example, send `contact_type=person` , `name=Rick` , `notification_type=email` , `email=rick@example.com` , and `token=secret` .\nOmit the notification fields to leave `notification` as `None` ."
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Form Models and Files"
+      ],
+      "page_number": null,
+      "text": "You can also combine a form model with file parameters .\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form, UploadFile\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Profile(BaseModel):\n     name: str\n \n \n @app.post(\"/profiles/\")\n async def create_profile(profile: Annotated[Profile, Form()], avatar: UploadFile):\n     return {\"profile\": profile, \"filename\": avatar.filename}\n```\nHere the client sends the `name` field and the `avatar` file using `multipart/form-data` ."
+    },
+    {
+      "heading_path": [
+        "Form Models",
+        "Summary"
+      ],
+      "page_number": null,
+      "text": "You can use Pydantic models to declare form fields in FastAPI. 😎"
+    }
+  ]
+}

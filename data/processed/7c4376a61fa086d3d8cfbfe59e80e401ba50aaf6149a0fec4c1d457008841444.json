@@ -1,0 +1,30 @@
+{
+  "doc_id": "7c4376a61fa086d3d8cfbfe59e80e401ba50aaf6149a0fec4c1d457008841444",
+  "content_hash": "7c4376a61fa086d3d8cfbfe59e80e401ba50aaf6149a0fec4c1d457008841444",
+  "source_file": "reference/dependencies.md",
+  "source_files": [
+    "reference/dependencies.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 2,
+  "char_count": 584,
+  "sections": [
+    {
+      "heading_path": [
+        "Dependencies - Depends() and Security()",
+        "Depends()"
+      ],
+      "page_number": null,
+      "text": "Dependencies are handled mainly with the special function `Depends()` that takes a callable.\nHere is the reference for it and its parameters.\nYou can import it directly from `fastapi` :\n```python\nfrom fastapi import Depends\n```\n::: fastapi.Depends"
+    },
+    {
+      "heading_path": [
+        "Dependencies - Depends() and Security()",
+        "Security()"
+      ],
+      "page_number": null,
+      "text": "For many scenarios, you can handle security (authorization, authentication, etc.) with dependencies, using `Depends()` .\nBut when you want to also declare OAuth2 scopes, you can use `Security()` instead of `Depends()` .\nYou can import `Security()` directly from `fastapi` :\n```python\nfrom fastapi import Security\n```\n::: fastapi.Security"
+    }
+  ]
+}

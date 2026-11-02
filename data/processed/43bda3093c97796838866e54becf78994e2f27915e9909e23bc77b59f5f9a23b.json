@@ -1,0 +1,202 @@
+{
+  "doc_id": "43bda3093c97796838866e54becf78994e2f27915e9909e23bc77b59f5f9a23b",
+  "content_hash": "43bda3093c97796838866e54becf78994e2f27915e9909e23bc77b59f5f9a23b",
+  "source_file": "tutorial/bigger-applications.md",
+  "source_files": [
+    "tutorial/bigger-applications.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 22,
+  "char_count": 24278,
+  "sections": [
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files"
+      ],
+      "page_number": null,
+      "text": "If you are building an application or a web API, it's rarely the case that you can put everything in a single file.\nFastAPI provides a convenience tool to structure your application while keeping all the flexibility.\nIf you come from Flask, this would be the equivalent of Flask's Blueprints."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "An example file structure"
+      ],
+      "page_number": null,
+      "text": "Let's say you have a file structure like this:\n```text\n.\n├── app\n│   ├── __init__.py\n│   ├── main.py\n│   ├── dependencies.py\n│   └── routers\n│   │   ├── __init__.py\n│   │   ├── items.py\n│   │   └── users.py\n│   └── internal\n│       ├── __init__.py\n│       └── admin.py\n```\nThere are several `__init__.py` files: one in each directory or subdirectory.\nThis is what allows importing code from one file into another.\nFor example, in `app/main.py` you could have a line like:\n```text\nfrom app.routers import items\n```\n- The app directory contains everything. And it has an empty file app/__init__.py , so it is a \"Python package\" (a collection of \"Python modules\"): app .\n- It contains an app/main.py file. As it is inside a Python package (a directory with a file __init__.py ), it is a \"module\" of that package: app.main .\n- There's also an app/dependencies.py file, just like app/main.py , it is a \"module\": app.dependencies .\n- There's a subdirectory app/routers/ with another file __init__.py , so it's a \"Python subpackage\": app.routers .\n- The file app/routers/items.py is inside a package, app/routers/ , so, it's a submodule: app.routers.items .\n- The same with app/routers/users.py , it's another submodule: app.routers.users .\n- There's also a subdirectory app/internal/ with another file __init__.py , so it's another \"Python subpackage\": app.internal .\n- And the file app/internal/admin.py is another submodule: app.internal.admin .\nThe same file structure with comments:\n```bash\n.\n├── app                  # \"app\" is a Python package\n│   ├── __init__.py      # this file makes \"app\" a \"Python package\"\n│   ├── main.py          # \"main\" module, e.g. import app.main\n│   ├── dependencies.py  # \"dependencies\" module, e.g. import app.dependencies\n│   └── routers          # \"routers\" is a \"Python subpackage\"\n│   │   ├── __init__.py  # makes \"routers\" a \"Python subpackage\"\n│   │   ├── items.py     # \"items\" submodule, e.g. import app.routers.items\n│   │   └── users.py     # \"users\" submodule, e.g. import app.routers.users\n│   └── internal         # \"internal\" is a \"Python subpackage\"\n│       ├── __init__.py  # makes \"internal\" a \"Python subpackage\"\n│       └── admin.py     # \"admin\" submodule, e.g. import app.internal.admin\n```"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "APIRouter"
+      ],
+      "page_number": null,
+      "text": "Let's say the file dedicated to handling just users is the submodule at `/app/routers/users.py` .\nYou want to have the path operations related to your users separated from the rest of the code, to keep it organized.\nBut it's still part of the same FastAPI application/web API (it's part of the same \"Python Package\").\nYou can create the path operations for that module using `APIRouter` ."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "APIRouter",
+        "Import APIRouter"
+      ],
+      "page_number": null,
+      "text": "You import it and create an \"instance\" the same way you would with the class `FastAPI` :\n```python\n from fastapi import APIRouter\n \n router = APIRouter()\n \n \n @router.get(\"/users/\", tags=[\"users\"])\n async def read_users():\n     return [{\"username\": \"Rick\"}, {\"username\": \"Morty\"}]\n \n \n @router.get(\"/users/me\", tags=[\"users\"])\n async def read_user_me():\n     return {\"username\": \"fakecurrentuser\"}\n \n \n @router.get(\"/users/{username}\", tags=[\"users\"])\n async def read_user(username: str):\n     return {\"username\": username}\n```"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "APIRouter",
+        "Path operations with APIRouter"
+      ],
+      "page_number": null,
+      "text": "And then you use it to declare your path operations .\nUse it the same way you would use the `FastAPI` class:\n```python\n from fastapi import APIRouter\n \n router = APIRouter()\n \n \n @router.get(\"/users/\", tags=[\"users\"])\n async def read_users():\n     return [{\"username\": \"Rick\"}, {\"username\": \"Morty\"}]\n \n \n @router.get(\"/users/me\", tags=[\"users\"])\n async def read_user_me():\n     return {\"username\": \"fakecurrentuser\"}\n \n \n @router.get(\"/users/{username}\", tags=[\"users\"])\n async def read_user(username: str):\n     return {\"username\": username}\n```\nYou can think of `APIRouter` as a \"mini `FastAPI` \" class.\nAll the same options are supported.\nAll the same `parameters` , `responses` , `dependencies` , `tags` , etc.\nIn this example, the variable is called `router` , but you can name it however you want.\nWe are going to include this `APIRouter` in the main `FastAPI` app, but first, let's check the dependencies and another `APIRouter` ."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Dependencies"
+      ],
+      "page_number": null,
+      "text": "We see that we are going to need some dependencies used in several places of the application.\nSo we put them in their own `dependencies` module ( `app/dependencies.py` ).\nWe will now use a simple dependency to read a custom `X-Token` header:\n```python\n from typing import Annotated\n \n from fastapi import Header, HTTPException\n \n \n async def get_token_header(x_token: Annotated[str, Header()]):\n     if x_token != \"fake-super-secret-token\":\n         raise HTTPException(status_code=400, detail=\"X-Token header invalid\")\n \n \n async def get_query_token(token: str):\n     if token != \"jessica\":\n         raise HTTPException(status_code=400, detail=\"No Jessica token provided\")\n```\nWe are using an invented header to simplify this example.\nBut in real cases you will get better results using the integrated Security utilities ."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Another module with APIRouter"
+      ],
+      "page_number": null,
+      "text": "Let's say you also have the endpoints dedicated to handling \"items\" from your application in the module at `app/routers/items.py` .\nYou have path operations for:\n- /items/\n- /items/\nIt's all the same structure as with `app/routers/users.py` .\nBut we want to be smarter and simplify the code a bit.\nWe know all the path operations in this module have the same:\n- Path prefix : /items .\n- tags : (just one tag: items ).\n- Extra responses .\n- dependencies : they all need that X-Token dependency we created.\nSo, instead of adding all that to each path operation , we can add it to the `APIRouter` .\n```python\n from fastapi import APIRouter, Depends, HTTPException\n \n from ..dependencies import get_token_header\n \n router = APIRouter(\n     prefix=\"/items\",\n     tags=[\"items\"],\n     dependencies=[Depends(get_token_header)],\n     responses={404: {\"description\": \"Not found\"}},\n )\n \n \n fake_items_db = {\"plumbus\": {\"name\": \"Plumbus\"}, \"gun\": {\"name\": \"Portal Gun\"}}\n \n \n @router.get(\"/\")\n async def read_items():\n     return fake_items_db\n \n \n @router.get(\"/{item_id}\")\n async def read_item(item_id: str):\n     if item_id not in fake_items_db:\n         raise HTTPException(status_code=404, detail=\"Item not found\")\n     return {\"name\": fake_items_db[item_id][\"name\"], \"item_id\": item_id}\n \n \n @router.put(\n     \"/{item_id}\",\n     tags=[\"custom\"],\n     responses={403: {\"description\": \"Operation forbidden\"}},\n )\n async def update_item(item_id: str):\n     if item_id != \"plumbus\":\n         raise HTTPException(\n             status_code=403, detail=\"You can only update the item: plumbus\"\n         )\n     return {\"item_id\": item_id, \"name\": \"The great Plumbus\"}\n```\nAs the path of each path operation has to start with `/` , like in:\n```Python\n@router.get(\"/{item_id}\")\nasync def read_item(item_id: str): ...\n```\n...the prefix must not include a final `/` .\nSo, the prefix in this case is `/items` .\nWe can also add a list of `tags` and extra `responses` that will be applied to all the path operations included in this router.\nAnd we can add a list of `dependencies` that will be added to all the path operations in the router and will be executed/solved for each request made to them.\nNote that, much like dependencies in path operation decorators , no value will be passed to your path operation function .\nThe end result is that the item paths are now:\n- /items/\n- /items/\n...as we intended.\n- They will be marked with a list of tags that contain a single string \"items\" . These \"tags\" are especially useful for the automatic interactive documentation systems (using OpenAPI).\n- All of them will include the predefined responses .\n- All these path operations will have the list of dependencies evaluated/executed before them. If you also declare dependencies in a specific path operation , they will be executed too . The router dependencies are executed first, then the dependencies in the decorator , and then the normal parameter dependencies. You can also add Security dependencies with scopes .\nHaving `dependencies` in the `APIRouter` can be used, for example, to require authentication for a whole group of path operations . Even if the dependencies are not added individually to each one of them.\nThe `prefix` , `tags` , `responses` , and `dependencies` parameters are (as in many other cases) just a feature from FastAPI to help you avoid code duplication."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Another module with APIRouter",
+        "Import the dependencies"
+      ],
+      "page_number": null,
+      "text": "This code lives in the module `app.routers.items` , the file `app/routers/items.py` .\nAnd we need to get the dependency function from the module `app.dependencies` , the file `app/dependencies.py` .\nSo we use a relative import with `..` for the dependencies:\n```python\n from fastapi import APIRouter, Depends, HTTPException\n \n from ..dependencies import get_token_header\n \n router = APIRouter(\n     prefix=\"/items\",\n     tags=[\"items\"],\n     dependencies=[Depends(get_token_header)],\n     responses={404: {\"description\": \"Not found\"}},\n )\n \n \n fake_items_db = {\"plumbus\": {\"name\": \"Plumbus\"}, \"gun\": {\"name\": \"Portal Gun\"}}\n \n \n @router.get(\"/\")\n async def read_items():\n     return fake_items_db\n \n \n @router.get(\"/{item_id}\")\n async def read_item(item_id: str):\n     if item_id not in fake_items_db:\n         raise HTTPException(status_code=404, detail=\"Item not found\")\n     return {\"name\": fake_items_db[item_id][\"name\"], \"item_id\": item_id}\n \n \n @router.put(\n     \"/{item_id}\",\n     tags=[\"custom\"],\n     responses={403: {\"description\": \"Operation forbidden\"}},\n )\n async def update_item(item_id: str):\n     if item_id != \"plumbus\":\n         raise HTTPException(\n             status_code=403, detail=\"You can only update the item: plumbus\"\n         )\n     return {\"item_id\": item_id, \"name\": \"The great Plumbus\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Another module with APIRouter",
+        "Import the dependencies",
+        "How relative imports work"
+      ],
+      "page_number": null,
+      "text": "If you know perfectly how imports work, continue to the next section below.\nA single dot `.` , like in:\n```Python\nfrom .dependencies import get_token_header\n```\nwould mean:\n- Starting in the same package that this module (the file app/routers/items.py ) lives in (the directory app/routers/ )...\n- find the module dependencies (an imaginary file at app/routers/dependencies.py )...\n- and from it, import the function get_token_header .\nBut that file doesn't exist, our dependencies are in a file at `app/dependencies.py` .\nRemember what our app/file structure looks like:\n---\nThe two dots `..` , like in:\n```Python\nfrom ..dependencies import get_token_header\n```\nmean:\n- Starting in the same package that this module (the file app/routers/items.py ) lives in (the directory app/routers/ )...\n- go to the parent package (the directory app/ )...\n- and in there, find the module dependencies (the file at app/dependencies.py )...\n- and from it, import the function get_token_header .\nThat works correctly! 🎉\n---\nThe same way, if we had used three dots `...` , like in:\n```Python\nfrom ...dependencies import get_token_header\n```\nthat would mean:\n- Starting in the same package that this module (the file app/routers/items.py ) lives in (the directory app/routers/ )...\n- go to the parent package (the directory app/ )...\n- then go to the parent of that package (there's no parent package, app is the top level 😱)...\n- and in there, find the module dependencies (the file at app/dependencies.py )...\n- and from it, import the function get_token_header .\nThat would refer to some package above `app/` , with its own file `__init__.py` , etc. But we don't have that. So, that would throw an error in our example. 🚨\nBut now you know how it works, so you can use relative imports in your own apps no matter how complex they are. 🤓"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Another module with APIRouter",
+        "Add some custom tags , responses , and dependencies"
+      ],
+      "page_number": null,
+      "text": "We are not adding the prefix `/items` nor the `tags=[\"items\"]` to each path operation because we added them to the `APIRouter` .\nBut we can still add more `tags` that will be applied to a specific path operation , and also some extra `responses` specific to that path operation :\n```python\n from fastapi import APIRouter, Depends, HTTPException\n \n from ..dependencies import get_token_header\n \n router = APIRouter(\n     prefix=\"/items\",\n     tags=[\"items\"],\n     dependencies=[Depends(get_token_header)],\n     responses={404: {\"description\": \"Not found\"}},\n )\n \n \n fake_items_db = {\"plumbus\": {\"name\": \"Plumbus\"}, \"gun\": {\"name\": \"Portal Gun\"}}\n \n \n @router.get(\"/\")\n async def read_items():\n     return fake_items_db\n \n \n @router.get(\"/{item_id}\")\n async def read_item(item_id: str):\n     if item_id not in fake_items_db:\n         raise HTTPException(status_code=404, detail=\"Item not found\")\n     return {\"name\": fake_items_db[item_id][\"name\"], \"item_id\": item_id}\n \n \n @router.put(\n     \"/{item_id}\",\n     tags=[\"custom\"],\n     responses={403: {\"description\": \"Operation forbidden\"}},\n )\n async def update_item(item_id: str):\n     if item_id != \"plumbus\":\n         raise HTTPException(\n             status_code=403, detail=\"You can only update the item: plumbus\"\n         )\n     return {\"item_id\": item_id, \"name\": \"The great Plumbus\"}\n```\nThis last path operation will have the combination of tags: `[\"items\", \"custom\"]` .\nAnd it will also have both responses in the documentation, one for `404` and one for `403` ."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI"
+      ],
+      "page_number": null,
+      "text": "Now, let's see the module at `app/main.py` .\nHere's where you import and use the class `FastAPI` .\nThis will be the main file in your application that ties everything together.\nAnd as most of your logic will now live in its own specific module, the main file will be quite simple."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "Import FastAPI"
+      ],
+      "page_number": null,
+      "text": "You import and create a `FastAPI` class as normally.\nAnd we can even declare global dependencies that will be combined with the dependencies for each `APIRouter` :\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "Import the APIRouter"
+      ],
+      "page_number": null,
+      "text": "Now we import the other submodules that have `APIRouter` s:\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```\nAs the files `app/routers/users.py` and `app/routers/items.py` are submodules that are part of the same Python package `app` , we can use a single dot `.` to import them using \"relative imports\"."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "How the importing works"
+      ],
+      "page_number": null,
+      "text": "The section:\n```Python\nfrom .routers import items, users\n```\nmeans:\n- Starting in the same package that this module (the file app/main.py ) lives in (the directory app/ )...\n- look for the subpackage routers (the directory at app/routers/ )...\n- and from it, import the submodule items (the file at app/routers/items.py ) and users (the file at app/routers/users.py )...\nThe module `items` will have a variable `router` ( `items.router` ). This is the same one we created in the file `app/routers/items.py` , it's an `APIRouter` object.\nAnd then we do the same for the module `users` .\nWe could also import them like:\n```Python\nfrom app.routers import items, users\n```\nThe first version is a \"relative import\":\n```Python\nfrom .routers import items, users\n```\nThe second version is an \"absolute import\":\n```Python\nfrom app.routers import items, users\n```\nTo learn more about Python Packages and Modules, read the official Python documentation about Modules ."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "Avoid name collisions"
+      ],
+      "page_number": null,
+      "text": "We are importing the submodule `items` directly, instead of importing just its variable `router` .\nThis is because we also have another variable named `router` in the submodule `users` .\nIf we had imported one after the other, like:\n```Python\nfrom .routers.items import router\nfrom .routers.users import router\n```\nthe `router` from `users` would overwrite the one from `items` and we wouldn't be able to use them at the same time.\nSo, to be able to use both of them in the same file, we import the submodules directly:\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "Include the APIRouter s for users and items"
+      ],
+      "page_number": null,
+      "text": "Now, let's include the `router` s from the submodules `users` and `items` :\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```\n`users.router` contains the `APIRouter` inside of the file `app/routers/users.py` .\nAnd `items.router` contains the `APIRouter` inside of the file `app/routers/items.py` .\nWith `app.include_router()` we can add each `APIRouter` to the main `FastAPI` application.\nIt will include all the routes from that router as part of it.\nTechnical Details:\nFastAPI keeps the original `APIRouter` and its `APIRoute` s active when the router is included in the main application.\nThat means custom `APIRouter` and `APIRoute` subclasses can still participate after the router is included.\nYou don't have to worry about performance when including routers.\nThis is designed to be lightweight and to avoid adding overhead to each request.\nSo it won't affect performance. ⚡"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "Include an APIRouter with a custom prefix , tags , responses , and dependencies"
+      ],
+      "page_number": null,
+      "text": "Now, let's imagine your organization gave you the `app/internal/admin.py` file.\nIt contains an `APIRouter` with some admin path operations that your organization shares between several projects.\nFor this example it will be super simple. But let's say that because it is shared with other projects in the organization, we cannot modify it and add a `prefix` , `dependencies` , `tags` , etc. directly to the `APIRouter` :\n```python\n from fastapi import APIRouter\n \n router = APIRouter()\n \n \n @router.post(\"/\")\n async def update_admin():\n     return {\"message\": \"Admin getting schwifty\"}\n```\nBut we still want to set a custom `prefix` when including the `APIRouter` so that all its path operations start with `/admin` , we want to secure it with the `dependencies` we already have for this project, and we want to include `tags` and `responses` .\nWe can declare all that without having to modify the original `APIRouter` by passing those parameters to `app.include_router()` :\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```\nThat way, the original `APIRouter` will stay unmodified, so we can still share that same `app/internal/admin.py` file with other projects in the organization.\nThe result is that in our app, each of the path operations from the `admin` module will have:\n- The prefix /admin .\n- The tag admin .\n- The dependency get_token_header .\n- The response 418 . 🍵\nBut that will only affect that `APIRouter` in our app, not in any other code that uses it.\nSo, for example, other projects could use the same `APIRouter` with a different authentication method."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "The main FastAPI",
+        "Include a path operation"
+      ],
+      "page_number": null,
+      "text": "We can also add path operations directly to the `FastAPI` app.\nHere we do it... just to show that we can 🤷:\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```\nand it will work correctly, together with all the other path operations added with `app.include_router()` .\nVery Technical Details:\nNote : this is a very technical detail that you probably can just skip .\n---\nThe `APIRouter` s are not \"mounted\", they are not isolated from the rest of the application.\nThis is because we want to include their path operations in the OpenAPI schema and the user interfaces.\nFastAPI keeps the original routers and path operations active, and combines the router prefixes, dependencies, tags, responses, and other metadata when handling requests and generating OpenAPI."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Configure the entrypoint in pyproject.toml"
+      ],
+      "page_number": null,
+      "text": "As your FastAPI `app` object lives in `app/main.py` , you can configure the `entrypoint` in your `pyproject.toml` file like this:\n```toml\n[tool.fastapi]\nentrypoint = \"app.main:app\"\n```\nthat is equivalent to importing like:\n```python\nfrom app.main import app\n```\nThat way the `fastapi` command will know where to find your app.\nYou could also pass the path to the command, like:\n```console\n$ uv run fastapi dev app/main.py\n```\nBut you would have to remember to pass the correct path every time you call the `fastapi` command.\nAdditionally, other tools might not be able to find it, for example the VS Code Extension or FastAPI Cloud , so it is recommended to use the `entrypoint` in `pyproject.toml` ."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Check the automatic API docs"
+      ],
+      "page_number": null,
+      "text": "Now, run your app:\n```console\n$ uv run fastapi dev\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nAnd open the docs at http://127.0.0.1:8000/docs .\nYou will see the automatic API docs, including the paths from all the submodules, using the correct paths (and prefixes) and the correct tags:"
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Include the same router multiple times with different prefix"
+      ],
+      "page_number": null,
+      "text": "You can also use `.include_router()` multiple times with the same router using different prefixes.\nThis could be useful, for example, to expose the same API under different prefixes, e.g. `/api/v1` and `/api/latest` .\nThis is an advanced usage that you might not really need, but it's there in case you do."
+    },
+    {
+      "heading_path": [
+        "Bigger Applications - Multiple Files",
+        "Include an APIRouter in another"
+      ],
+      "page_number": null,
+      "text": "The same way you can include an `APIRouter` in a `FastAPI` application, you can include an `APIRouter` in another `APIRouter` using:\n```Python\nrouter.include_router(other_router)\n```\nYou can do this before or after including `router` in the `FastAPI` app. FastAPI will still include the path operations from `other_router` in routing and OpenAPI.\nThe same applies to path operations added later to the routers. They will be visible through the earlier inclusion too.\nTechnical Details:\nAvoid directly mutating `router.routes` after including a router. FastAPI treats router inclusion as live, so the original router and its routes remain part of routing and OpenAPI generation.\nUse documented APIs such as path operation decorators and `.include_router()` to add routes and routers.\nTreat `router.routes` as a lower-level route tree that can contain route definitions and included routers, and avoid relying on it as a flat list of final path operations."
+    }
+  ]
+}

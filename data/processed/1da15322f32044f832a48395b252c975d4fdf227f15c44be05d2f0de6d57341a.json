@@ -1,0 +1,21 @@
+{
+  "doc_id": "1da15322f32044f832a48395b252c975d4fdf227f15c44be05d2f0de6d57341a",
+  "content_hash": "1da15322f32044f832a48395b252c975d4fdf227f15c44be05d2f0de6d57341a",
+  "source_file": "reference/encoders.md",
+  "source_files": [
+    "reference/encoders.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 37,
+  "sections": [
+    {
+      "heading_path": [
+        "Encoders - jsonable_encoder"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.encoders.jsonable_encoder"
+    }
+  ]
+}

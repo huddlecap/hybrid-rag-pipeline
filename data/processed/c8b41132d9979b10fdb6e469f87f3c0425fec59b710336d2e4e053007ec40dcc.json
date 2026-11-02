@@ -1,0 +1,37 @@
+{
+  "doc_id": "c8b41132d9979b10fdb6e469f87f3c0425fec59b710336d2e4e053007ec40dcc",
+  "content_hash": "c8b41132d9979b10fdb6e469f87f3c0425fec59b710336d2e4e053007ec40dcc",
+  "source_file": "virtual-environments.md",
+  "source_files": [
+    "virtual-environments.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 804,
+  "sections": [
+    {
+      "heading_path": [
+        "Virtual Environments"
+      ],
+      "page_number": null,
+      "text": "When you work with Python projects, you should use a virtual environment to isolate the packages installed for each project.\nFor FastAPI projects, I recommend using uv to manage the project, its dependencies, and its virtual environment."
+    },
+    {
+      "heading_path": [
+        "Virtual Environments",
+        "Create a Project"
+      ],
+      "page_number": null,
+      "text": "Install `uv` using the official installation guide , and then create a project:\n```console\n$ uv init awesome-project --bare\n$ cd awesome-project\n$ uv add \"fastapi[standard]\"\n```\n`uv` creates a virtual environment for the project automatically. You don't need to create or activate one yourself.\nRun commands inside the project environment with `uv run` , for example:\n```console\n$ uv run fastapi dev\n```"
+    },
+    {
+      "heading_path": [
+        "Virtual Environments",
+        "Learn More"
+      ],
+      "page_number": null,
+      "text": "Read the Virtual Environments guide to learn how virtual environments work underneath, including activation and the alternative `python -m venv` and `pip` workflow."
+    }
+  ]
+}

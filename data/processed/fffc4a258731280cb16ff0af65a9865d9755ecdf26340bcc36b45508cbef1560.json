@@ -1,0 +1,21 @@
+{
+  "doc_id": "fffc4a258731280cb16ff0af65a9865d9755ecdf26340bcc36b45508cbef1560",
+  "content_hash": "fffc4a258731280cb16ff0af65a9865d9755ecdf26340bcc36b45508cbef1560",
+  "source_file": "reference/response.md",
+  "source_files": [
+    "reference/response.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 443,
+  "sections": [
+    {
+      "heading_path": [
+        "Response class"
+      ],
+      "page_number": null,
+      "text": "You can declare a parameter in a path operation function or dependency to be of type `Response` and then you can set data for the response like headers or cookies.\nYou can also use it directly to create an instance of it and return it from your path operations .\nRead more about it in the FastAPI docs about returning a custom Response\nYou can import it directly from `fastapi` :\n```python\nfrom fastapi import Response\n```\n::: fastapi.Response"
+    }
+  ]
+}

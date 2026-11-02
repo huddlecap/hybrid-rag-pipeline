@@ -1,0 +1,54 @@
+{
+  "doc_id": "ad3860dd30364ab774324d61580dd2b7b175e28a0a3fbd3fc1b2c5ec779ffe3f",
+  "content_hash": "ad3860dd30364ab774324d61580dd2b7b175e28a0a3fbd3fc1b2c5ec779ffe3f",
+  "source_file": "fastapi-cli.md",
+  "source_files": [
+    "fastapi-cli.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 4416,
+  "sections": [
+    {
+      "heading_path": [
+        "FastAPI CLI"
+      ],
+      "page_number": null,
+      "text": "FastAPI CLI is a command line program that you can use to serve your FastAPI app, manage your FastAPI project, and more.\nWhen you add FastAPI to your project (e.g. with `uv add \"fastapi[standard]\"` ), it comes with a command line program you can run in the terminal.\nTo run your FastAPI app for development, you can use the `fastapi dev` command:\n```console\n$ fastapi dev\n\n   FastAPI   Starting development server 🚀\n\n             Searching for package file structure from directories with\n             __init__.py files\n             Importing from /home/user/code/awesomeapp\n\n    module   🐍 main.py\n\n      code   Importing the FastAPI app object from the module with the\n             following code:\n\n             from main import app\n\n       app   Using import string: main:app\n\n    server   Server started at http://127.0.0.1:8000\n    server   Documentation at http://127.0.0.1:8000/docs\n\n       tip   Running in development mode, for production use:\n             fastapi run\n\n             Logs:\n\n      INFO   Will watch for changes in these directories:\n             ['/home/user/code/awesomeapp']\n      INFO   Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to\n             quit)\n      INFO   Started reloader process [383138] using WatchFiles\n      INFO   Started server process [383153]\n      INFO   Waiting for application startup.\n      INFO   Application startup complete.\n```\nFor production you would use `fastapi run` instead of `fastapi dev` . 🚀\nInternally, FastAPI CLI uses Uvicorn , a high-performance, production-ready, ASGI server. 😎\nThe `fastapi` CLI will try to detect automatically the FastAPI app to run, assuming it's an object called `app` in a file `main.py` (or a couple other variants).\nBut you can configure explicitly the app to use."
+    },
+    {
+      "heading_path": [
+        "FastAPI CLI",
+        "Configure the app entrypoint in pyproject.toml"
+      ],
+      "page_number": null,
+      "text": "You can configure where your app is located in a `pyproject.toml` file like:\n```toml\n[tool.fastapi]\nentrypoint = \"main:app\"\n```\nThat `entrypoint` will tell the `fastapi` command that it should import the app like:\n```python\nfrom main import app\n```\nIf your code was structured like:\n```text\n.\n├── backend\n│   ├── main.py\n│   ├── __init__.py\n```\nThen you would set the `entrypoint` as:\n```toml\n[tool.fastapi]\nentrypoint = \"backend.main:app\"\n```\nwhich would be equivalent to:\n```python\nfrom backend.main import app\n```"
+    },
+    {
+      "heading_path": [
+        "FastAPI CLI",
+        "Configure the app entrypoint in pyproject.toml",
+        "fastapi dev with path or with --entrypoint CLI option"
+      ],
+      "page_number": null,
+      "text": "You can also pass the file path to the `fastapi dev` command, and it will guess the FastAPI app object to use:\n```console\n$ uv run fastapi dev main.py\n```\nOr, you can also pass the `--entrypoint` option to the `fastapi dev` command:\n```console\n$ uv run fastapi dev --entrypoint main:app\n```\nBut you would have to remember to pass the correct path\\entrypoint every time you call the `fastapi` command.\nAdditionally, other tools might not be able to find it, for example the VS Code Extension or FastAPI Cloud , so it is recommended to use the `entrypoint` in `pyproject.toml` ."
+    },
+    {
+      "heading_path": [
+        "FastAPI CLI",
+        "fastapi dev"
+      ],
+      "page_number": null,
+      "text": "Running `fastapi dev` initiates development mode.\nBy default, auto-reload is enabled, automatically reloading the server when you make changes to your code. This is resource-intensive and could be less stable than when it's disabled. You should only use it for development. It also listens on the IP address `127.0.0.1` , which is the IP for your machine to communicate with itself alone ( `localhost` ).\nBefore importing your app, `fastapi dev` sets the `FASTAPI_ENV` environment variable to `development` . If `FASTAPI_ENV` is already set, its existing value is preserved. This lets app startup code choose development-friendly behavior while allowing you to provide an app-specific environment such as `staging` .\nThe conventional `FASTAPI_ENV` values are `development` and `production` . `fastapi run` currently leaves `FASTAPI_ENV` unchanged, so set it explicitly if your app needs to detect production mode."
+    },
+    {
+      "heading_path": [
+        "FastAPI CLI",
+        "fastapi run"
+      ],
+      "page_number": null,
+      "text": "Executing `fastapi run` starts FastAPI in production mode.\nBy default, auto-reload is disabled. It also listens on the IP address `0.0.0.0` , which means all the available IP addresses, this way it will be publicly accessible to anyone that can communicate with the machine. This is how you would normally run it in production, for example, in a container.\nIn most cases you would (and should) have a \"termination proxy\" handling HTTPS for you on top, this will depend on how you deploy your application, your provider might do this for you, or you might need to set it up yourself.\nYou can learn more about it in the deployment documentation ."
+    }
+  ]
+}

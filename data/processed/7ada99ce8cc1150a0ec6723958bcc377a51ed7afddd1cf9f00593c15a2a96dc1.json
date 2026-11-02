@@ -1,0 +1,77 @@
+{
+  "doc_id": "7ada99ce8cc1150a0ec6723958bcc377a51ed7afddd1cf9f00593c15a2a96dc1",
+  "content_hash": "7ada99ce8cc1150a0ec6723958bcc377a51ed7afddd1cf9f00593c15a2a96dc1",
+  "source_file": "reference/security/index.md",
+  "source_files": [
+    "reference/security/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 8,
+  "char_count": 1490,
+  "sections": [
+    {
+      "heading_path": [
+        "Security Tools"
+      ],
+      "page_number": null,
+      "text": "When you need to declare dependencies with OAuth2 scopes you use `Security()` .\nBut you still need to define what is the dependable, the callable that you pass as a parameter to `Depends()` or `Security()` .\nThere are multiple tools that you can use to create those dependables, and they get integrated into OpenAPI so they are shown in the automatic docs UI, they can be used by automatically generated clients and SDKs, etc.\nYou can import them from `fastapi.security` :\n```python\nfrom fastapi.security import (\n    APIKeyCookie,\n    APIKeyHeader,\n    APIKeyQuery,\n    HTTPAuthorizationCredentials,\n    HTTPBasic,\n    HTTPBasicCredentials,\n    HTTPBearer,\n    HTTPDigest,\n    OAuth2,\n    OAuth2AuthorizationCodeBearer,\n    OAuth2PasswordBearer,\n    OAuth2PasswordRequestForm,\n    OAuth2PasswordRequestFormStrict,\n    OpenIdConnect,\n    SecurityScopes,\n)\n```\nRead more about them in the FastAPI docs about Security ."
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "API Key Security Schemes"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.APIKeyCookie\n::: fastapi.security.APIKeyHeader\n::: fastapi.security.APIKeyQuery"
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "HTTP Authentication Schemes"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.HTTPBasic\n::: fastapi.security.HTTPBearer\n::: fastapi.security.HTTPDigest"
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "HTTP Credentials"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.HTTPAuthorizationCredentials\n::: fastapi.security.HTTPBasicCredentials"
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "OAuth2 Authentication"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.OAuth2\n::: fastapi.security.OAuth2AuthorizationCodeBearer\n::: fastapi.security.OAuth2PasswordBearer"
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "OAuth2 Password Form"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.OAuth2PasswordRequestForm\n::: fastapi.security.OAuth2PasswordRequestFormStrict"
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "OAuth2 Security Scopes in Dependencies"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.SecurityScopes"
+    },
+    {
+      "heading_path": [
+        "Security Tools",
+        "OpenID Connect"
+      ],
+      "page_number": null,
+      "text": "::: fastapi.security.OpenIdConnect"
+    }
+  ]
+}

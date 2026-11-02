@@ -1,0 +1,94 @@
+{
+  "doc_id": "e62936152a7bd13f0736c9232b88e26bf793426b2480888024a15740b17b2b2f",
+  "content_hash": "e62936152a7bd13f0736c9232b88e26bf793426b2480888024a15740b17b2b2f",
+  "source_file": "help-fastapi.md",
+  "source_files": [
+    "help-fastapi.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 10,
+  "char_count": 2308,
+  "sections": [
+    {
+      "heading_path": [
+        "Help"
+      ],
+      "page_number": null,
+      "text": "Would you like to help FastAPI or get help about FastAPI?\nThere are very simple ways to help and get help."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Subscribe to the newsletter"
+      ],
+      "page_number": null,
+      "text": "You can subscribe to the (infrequent) FastAPI and friends newsletter to stay updated about:\n- News about FastAPI and friends 🚀\n- Guides 📝\n- Features ✨\n- Breaking changes 🚨\n- Tips and tricks ✅"
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Follow FastAPI online"
+      ],
+      "page_number": null,
+      "text": "You can follow FastAPI online in several places:\n- @fastapi on X / Twitter\n- @fastapi.tiangolo.com on Bluesky\n- FastAPI on LinkedIn"
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Star FastAPI in GitHub"
+      ],
+      "page_number": null,
+      "text": "You can \"star\" FastAPI in GitHub (clicking the star button at the top right): https://github.com/fastapi/fastapi . ⭐️\nBy adding a star, other users will be able to find it more easily and see that it has already been useful for others."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Watch the GitHub repository for releases"
+      ],
+      "page_number": null,
+      "text": "You can \"watch\" FastAPI in GitHub (clicking the \"watch\" button at the top right): https://github.com/fastapi/fastapi . 👀\nThere you can select \"Releases only\".\nBy doing it, you will receive notifications (in your email) whenever there's a new release (a new version) of FastAPI with bug fixes and new features."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Follow the author"
+      ],
+      "page_number": null,
+      "text": "You can follow me (Sebastián Ramírez / tiangolo ) , the author in a few places, to hear when I have news to share about FastAPI and friends:\n- @tiangolo on GitHub .\n- @tiangolo on X (Twitter)\n- @tiangolo.com on Bluesky\n- @tiangolo on LinkedIn ."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Ask Questions"
+      ],
+      "page_number": null,
+      "text": "You can create a new question in the GitHub repository, for example to:\n- Ask a question or ask about a problem .\n- Suggest a new feature ."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Join the Chat"
+      ],
+      "page_number": null,
+      "text": "Join the 👥 Discord chat server 👥 and hang out with others in the FastAPI community.\nFor questions, ask them in GitHub Discussions, there's a much better chance you will receive help.\nUse the chat only for other general conversations."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Join the Chat",
+        "Don't use the Chat for Questions"
+      ],
+      "page_number": null,
+      "text": "Keep in mind that as chats allow more \"free conversation\", it's easy to ask questions that are too general and more difficult to answer, so, you might not receive answers.\nIn GitHub, the template will guide you to write the right question so that you can more easily get a good answer, or even solve the problem yourself even before asking.\nConversations in the chat systems are also not as easily searchable as in GitHub, they get lost."
+    },
+    {
+      "heading_path": [
+        "Help",
+        "Try FastAPI Cloud"
+      ],
+      "page_number": null,
+      "text": "The main funding for FastAPI and friends comes from FastAPI Cloud , a platform to deploy FastAPI applications in a simple and fast way, with a single command, `fastapi deploy` .\nFastAPI Cloud is built by the same team behind FastAPI. You can try it and consider it for your projects."
+    }
+  ]
+}

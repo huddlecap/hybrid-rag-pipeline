@@ -1,0 +1,37 @@
+{
+  "doc_id": "dbd7b0dfca7df7e9dc2fd864050e1c88ff5c2cc54ecea77ae5626b1041423974",
+  "content_hash": "dbd7b0dfca7df7e9dc2fd864050e1c88ff5c2cc54ecea77ae5626b1041423974",
+  "source_file": "deployment/cloud.md",
+  "source_files": [
+    "deployment/cloud.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 3,
+  "char_count": 687,
+  "sections": [
+    {
+      "heading_path": [
+        "Deploy FastAPI on Cloud Providers"
+      ],
+      "page_number": null,
+      "text": "You can use virtually any cloud provider to deploy your FastAPI application.\nIn most of the cases, the main cloud providers have guides to deploy FastAPI with them."
+    },
+    {
+      "heading_path": [
+        "Deploy FastAPI on Cloud Providers",
+        "FastAPI Cloud"
+      ],
+      "page_number": null,
+      "text": "FastAPI Cloud is built by the same author and team behind FastAPI .\nIt streamlines the process of building , deploying , and accessing an API with minimal effort.\nIt brings the same developer experience of building apps with FastAPI to deploying them to the cloud. 🎉\nFastAPI Cloud is the primary sponsor and funding provider for the FastAPI and friends open source projects. ✨"
+    },
+    {
+      "heading_path": [
+        "Deploy FastAPI on Cloud Providers",
+        "Cloud Providers - Sponsors"
+      ],
+      "page_number": null,
+      "text": "Some other cloud providers ✨ sponsor FastAPI ✨ too. 🙇\nYou might also want to consider them to follow their guides and try their services:\n- Railway"
+    }
+  ]
+}

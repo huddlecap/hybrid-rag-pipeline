@@ -1,0 +1,45 @@
+{
+  "doc_id": "44c62f134437997178668480503cc1cdfc55b45367ce8a66beff89c839aa896a",
+  "content_hash": "44c62f134437997178668480503cc1cdfc55b45367ce8a66beff89c839aa896a",
+  "source_file": "tutorial/response-status-code.md",
+  "source_files": [
+    "tutorial/response-status-code.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 4,
+  "char_count": 3564,
+  "sections": [
+    {
+      "heading_path": [
+        "Response Status Code"
+      ],
+      "page_number": null,
+      "text": "The same way you can specify a response model, you can also declare the HTTP status code used for the response with the parameter `status_code` in any of the path operations :\n- @app.get()\n- @app.post()\n- @app.put()\n- @app.delete()\n- etc.\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.post(\"/items/\", status_code=201)\n async def create_item(name: str):\n     return {\"name\": name}\n```\nNotice that `status_code` is a parameter of the \"decorator\" method ( `get` , `post` , etc). Not of your path operation function , like all the parameters and body.\nThe `status_code` parameter receives a number with the HTTP status code.\n`status_code` can alternatively also receive an `IntEnum` , such as Python's http.HTTPStatus .\nIt will:\n- Return that status code in the response.\n- Document it as such in the OpenAPI schema (and so, in the user interfaces):\nSome response codes (see the next section) indicate that the response does not have a body.\nFastAPI knows this, and will produce OpenAPI docs that state there is no response body."
+    },
+    {
+      "heading_path": [
+        "Response Status Code",
+        "About HTTP status codes"
+      ],
+      "page_number": null,
+      "text": "If you already know what HTTP status codes are, skip to the next section.\nIn HTTP, you send a numeric status code of 3 digits as part of the response.\nThese status codes have an associated name to help recognize them, but the important part is the number.\nIn short:\n- 100 - 199 are for \"Information\". You rarely use them directly.  Responses with these status codes cannot have a body.\n- 200 - 299 are for \"Successful\" responses. These are the ones you would use the most. 200 is the default status code, which means everything was \"OK\". Another example would be 201 , \"Created\". It is commonly used after creating a new record in the database. A special case is 204 , \"No Content\".  This response is used when there is no content to return to the client, and so the response must not have a body.\n- 300 - 399 are for \"Redirection\".  Responses with these status codes may or may not have a body, except for 304 , \"Not Modified\", which must not have one.\n- 400 - 499 are for \"Client error\" responses. These are the second type you would probably use the most. An example is 404 , for a \"Not Found\" response. For generic errors from the client, you can just use 400 .\n- 500 - 599 are for server errors. You almost never use them directly. When something goes wrong at some part in your application code, or server, it will automatically return one of these status codes.\nTo know more about each status code and which code is for what, check the MDN documentation about HTTP status codes ."
+    },
+    {
+      "heading_path": [
+        "Response Status Code",
+        "Shortcut to remember the names"
+      ],
+      "page_number": null,
+      "text": "Let's see the previous example again:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.post(\"/items/\", status_code=201)\n async def create_item(name: str):\n     return {\"name\": name}\n```\n`201` is the status code for \"Created\".\nBut you don't have to memorize what each of these codes mean.\nYou can use the convenience variables from `fastapi.status` .\n```python\n from fastapi import FastAPI, status\n \n app = FastAPI()\n \n \n @app.post(\"/items/\", status_code=status.HTTP_201_CREATED)\n async def create_item(name: str):\n     return {\"name\": name}\n```\nThey are just a convenience, they hold the same number, but that way you can use the editor's autocomplete to find them:\nTechnical Details:\nYou could also use `from starlette import status` .\nFastAPI provides the same `starlette.status` as `fastapi.status` just as a convenience for you, the developer. But it comes directly from Starlette."
+    },
+    {
+      "heading_path": [
+        "Response Status Code",
+        "Changing the default"
+      ],
+      "page_number": null,
+      "text": "Later, in the Advanced User Guide , you will see how to return a different status code than the default you are declaring here."
+    }
+  ]
+}

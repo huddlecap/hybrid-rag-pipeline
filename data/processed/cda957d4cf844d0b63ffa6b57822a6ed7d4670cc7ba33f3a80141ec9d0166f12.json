@@ -1,0 +1,21 @@
+{
+  "doc_id": "cda957d4cf844d0b63ffa6b57822a6ed7d4670cc7ba33f3a80141ec9d0166f12",
+  "content_hash": "cda957d4cf844d0b63ffa6b57822a6ed7d4670cc7ba33f3a80141ec9d0166f12",
+  "source_file": "newsletter.md",
+  "source_files": [
+    "newsletter.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 70,
+  "sections": [
+    {
+      "heading_path": [
+        "FastAPI and friends newsletter"
+      ],
+      "page_number": null,
+      "text": "Read previous issues or subscribe on the FastAPI and friends website ."
+    }
+  ]
+}

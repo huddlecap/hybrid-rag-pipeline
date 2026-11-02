@@ -1,0 +1,69 @@
+{
+  "doc_id": "b6dc2cf33e9cbee9892882953d6b8ddac55937fb664fed320e55f79fa82d57a3",
+  "content_hash": "b6dc2cf33e9cbee9892882953d6b8ddac55937fb664fed320e55f79fa82d57a3",
+  "source_file": "tutorial/cookie-param-models.md",
+  "source_files": [
+    "tutorial/cookie-param-models.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 7,
+  "char_count": 3970,
+  "sections": [
+    {
+      "heading_path": [
+        "Cookie Parameter Models"
+      ],
+      "page_number": null,
+      "text": "If you have a group of cookies that are related, you can create a Pydantic model to declare them. 🍪\nThis would allow you to re-use the model in multiple places and also to declare validations and metadata for all the parameters at once. 😎\nThis is supported since FastAPI version `0.115.0` . 🤓\nThis same technique applies to `Query` , `Cookie` , and `Header` . 😎"
+    },
+    {
+      "heading_path": [
+        "Cookie Parameter Models",
+        "Cookies with a Pydantic Model"
+      ],
+      "page_number": null,
+      "text": "Declare the cookie parameters that you need in a Pydantic model , and then declare the parameter as `Cookie` :\n```python\n from typing import Annotated\n \n from fastapi import Cookie, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Cookies(BaseModel):\n     session_id: str\n     fatebook_tracker: str | None = None\n     googall_tracker: str | None = None\n \n \n @app.get(\"/items/\")\n async def read_items(cookies: Annotated[Cookies, Cookie()]):\n     return cookies\n```\nFastAPI will extract the data for each field from the cookies received in the request and give you the Pydantic model you defined."
+    },
+    {
+      "heading_path": [
+        "Cookie Parameter Models",
+        "Check the Docs"
+      ],
+      "page_number": null,
+      "text": "You can see the defined cookies in the docs UI at `/docs` :\nHave in mind that, as browsers handle cookies in special ways and behind the scenes, they don't easily allow JavaScript to touch them.\nIf you go to the API docs UI at `/docs` you will be able to see the documentation for cookies for your path operations .\nBut even if you fill the data and click \"Execute\", because the docs UI works with JavaScript , the cookies won't be sent, and you will see an error message as if you didn't write any values."
+    },
+    {
+      "heading_path": [
+        "Cookie Parameter Models",
+        "Forbid Extra Cookies"
+      ],
+      "page_number": null,
+      "text": "In some special use cases (probably not very common), you might want to restrict the cookies that you want to receive.\nYour API now has the power to control its own cookie consent . 🤪🍪\nYou can use Pydantic's model configuration to `forbid` any `extra` fields:\n```python\n from typing import Annotated\n \n from fastapi import Cookie, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Cookies(BaseModel):\n     model_config = {\"extra\": \"forbid\"}\n \n     session_id: str\n     fatebook_tracker: str | None = None\n     googall_tracker: str | None = None\n \n \n @app.get(\"/items/\")\n async def read_items(cookies: Annotated[Cookies, Cookie()]):\n     return cookies\n```\nIf a client tries to send some extra cookies , they will receive an error response.\nPoor cookie banners with all their effort to get your consent for the API to reject it . 🍪\nFor example, if the client tries to send a `santa_tracker` cookie with a value of `good-list-please` , the client will receive an error response telling them that the `santa_tracker` cookie is not allowed :\n```json\n{\n    \"detail\": [\n        {\n            \"type\": \"extra_forbidden\",\n            \"loc\": [\"cookie\", \"santa_tracker\"],\n            \"msg\": \"Extra inputs are not permitted\",\n            \"input\": \"good-list-please\",\n        }\n    ]\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Cookie Parameter Models",
+        "Combine Parameter Models"
+      ],
+      "page_number": null,
+      "text": "You can combine multiple cookie parameter models with individual cookie parameters and dependencies. Each model is extracted and validated independently, as explained for query parameter models .\nEach model's `extra` configuration applies to all cookie parameters, including those declared in other models or dependencies. With `extra=\"forbid\"` , any cookie outside that model is rejected. With `extra=\"allow\"` , those cookies are included as model extras."
+    },
+    {
+      "heading_path": [
+        "Cookie Parameter Models",
+        "Optional Cookie Parameter Models"
+      ],
+      "page_number": null,
+      "text": "Declare a cookie parameter model with `| None` and a default of `None` to make the group optional.\n```python\n from typing import Annotated\n \n from fastapi import Cookie, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Preferences(BaseModel):\n     theme: str\n     locale: str\n \n \n @app.get(\"/items/\")\n async def read_items(preferences: Annotated[Preferences | None, Cookie()] = None):\n     return preferences\n```\nIf neither `theme` nor `locale` is sent, `preferences` is `None` . If either is sent, FastAPI validates the model and requires both fields.\nThe same rules for defaults, extra fields, and OpenAPI apply as for optional query parameter models ."
+    },
+    {
+      "heading_path": [
+        "Cookie Parameter Models",
+        "Summary"
+      ],
+      "page_number": null,
+      "text": "You can use Pydantic models to declare cookies in FastAPI . 😎"
+    }
+  ]
+}

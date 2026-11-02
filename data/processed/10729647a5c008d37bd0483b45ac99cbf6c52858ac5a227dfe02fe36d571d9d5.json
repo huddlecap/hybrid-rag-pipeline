@@ -1,0 +1,61 @@
+{
+  "doc_id": "10729647a5c008d37bd0483b45ac99cbf6c52858ac5a227dfe02fe36d571d9d5",
+  "content_hash": "10729647a5c008d37bd0483b45ac99cbf6c52858ac5a227dfe02fe36d571d9d5",
+  "source_file": "tutorial/request-forms.md",
+  "source_files": [
+    "tutorial/request-forms.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 3081,
+  "sections": [
+    {
+      "heading_path": [
+        "Form Data"
+      ],
+      "page_number": null,
+      "text": "When you need to receive form fields instead of JSON, you can use `Form` .\nTo use forms, first install python-multipart .\nAdd it to your project:\n```console\n$ uv add python-multipart\n```"
+    },
+    {
+      "heading_path": [
+        "Form Data",
+        "Import Form"
+      ],
+      "page_number": null,
+      "text": "Import `Form` from `fastapi` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n \n app = FastAPI()\n \n \n @app.post(\"/login/\")\n async def login(username: Annotated[str, Form()], password: Annotated[str, Form()]):\n     return {\"username\": username}\n```"
+    },
+    {
+      "heading_path": [
+        "Form Data",
+        "Define Form parameters"
+      ],
+      "page_number": null,
+      "text": "Create form parameters the same way you would for `Body` or `Query` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n \n app = FastAPI()\n \n \n @app.post(\"/login/\")\n async def login(username: Annotated[str, Form()], password: Annotated[str, Form()]):\n     return {\"username\": username}\n```\nFor example, in one of the ways the OAuth2 specification can be used (called \"password flow\") it is required to send a `username` and `password` as form fields.\nThe spec requires the fields to be exactly named `username` and `password` , and to be sent as form fields, not JSON.\nWith `Form` you can declare the same configurations as with `Body` (and `Query` , `Path` , `Cookie` ), including validation, examples, an alias (e.g. `user-name` instead of `username` ), etc.\n`Form` is a class that inherits directly from `Body` .\nTo declare form bodies, you need to use `Form` explicitly, because without it the parameters would be interpreted as query parameters or body (JSON) parameters."
+    },
+    {
+      "heading_path": [
+        "Form Data",
+        "Boolean Form Fields"
+      ],
+      "page_number": null,
+      "text": "Browsers omit unchecked checkboxes when submitting HTML forms. Declare a boolean form parameter with a default of `False` to receive `False` when unchecked:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Form\n \n app = FastAPI()\n \n \n @app.post(\"/preferences/\")\n async def update_preferences(subscribe: Annotated[bool, Form()] = False):\n     return {\"subscribe\": subscribe}\n```\nA checked checkbox sends its value, which defaults to `\"on\"` . FastAPI accepts `\"on\"` as `True` ."
+    },
+    {
+      "heading_path": [
+        "Form Data",
+        "About \"Form Fields\""
+      ],
+      "page_number": null,
+      "text": "The way HTML forms ( `<form></form>` ) send the data to the server normally uses a \"special\" encoding for that data, it's different from JSON.\nFastAPI will make sure to read that data from the right place instead of JSON.\nTechnical Details:\nData from forms is normally encoded using the \"media type\" `application/x-www-form-urlencoded` .\nBut when the form includes files, it is encoded as `multipart/form-data` . You'll read about handling files in the next chapter.\nYou can use `Form(media_type=\"multipart/form-data\")` to describe a multipart form in OpenAPI. Setting it on one parameter is enough when combining form parameters or models.\nIf you want to read more about these encodings and form fields, head to the MDN web docs for POST .\nYou can declare multiple `Form` parameters in a path operation , but you can't also declare `Body` fields that you expect to receive as JSON, as the request will have the body encoded using `application/x-www-form-urlencoded` instead of `application/json` .\nThis is not a limitation of FastAPI , it's part of the HTTP protocol."
+    },
+    {
+      "heading_path": [
+        "Form Data",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Use `Form` to declare form data input parameters."
+    }
+  ]
+}

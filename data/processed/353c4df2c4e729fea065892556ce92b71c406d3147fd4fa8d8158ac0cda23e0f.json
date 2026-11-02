@@ -1,0 +1,61 @@
+{
+  "doc_id": "353c4df2c4e729fea065892556ce92b71c406d3147fd4fa8d8158ac0cda23e0f",
+  "content_hash": "353c4df2c4e729fea065892556ce92b71c406d3147fd4fa8d8158ac0cda23e0f",
+  "source_file": "tutorial/header-params.md",
+  "source_files": [
+    "tutorial/header-params.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 3461,
+  "sections": [
+    {
+      "heading_path": [
+        "Header Parameters"
+      ],
+      "page_number": null,
+      "text": "You can define Header parameters the same way you define `Query` , `Path` and `Cookie` parameters."
+    },
+    {
+      "heading_path": [
+        "Header Parameters",
+        "Import Header"
+      ],
+      "page_number": null,
+      "text": "First import `Header` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Header\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items(user_agent: Annotated[str | None, Header()] = None):\n     return {\"User-Agent\": user_agent}\n```"
+    },
+    {
+      "heading_path": [
+        "Header Parameters",
+        "Declare Header parameters"
+      ],
+      "page_number": null,
+      "text": "Then declare the header parameters using the same structure as with `Path` , `Query` and `Cookie` .\nYou can define the default value as well as all the extra validation or annotation parameters:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Header\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items(user_agent: Annotated[str | None, Header()] = None):\n     return {\"User-Agent\": user_agent}\n```\nTechnical Details:\n`Header` is a \"sister\" class of `Path` , `Query` and `Cookie` . It also inherits from the same common `Param` class.\nBut remember that when you import `Query` , `Path` , `Header` , and others from `fastapi` , those are actually functions that return special classes.\nTo declare headers, you need to use `Header` , because otherwise the parameters would be interpreted as query parameters."
+    },
+    {
+      "heading_path": [
+        "Header Parameters",
+        "Automatic conversion"
+      ],
+      "page_number": null,
+      "text": "`Header` has a little extra functionality on top of what `Path` , `Query` and `Cookie` provide.\nMost of the standard headers are separated by a \"hyphen\" character, also known as the \"minus symbol\" ( `-` ).\nBut a variable like `user-agent` is invalid in Python.\nSo, by default, `Header` will convert the parameter names characters from underscore ( `_` ) to hyphen ( `-` ) to extract and document the headers.\nAlso, HTTP headers are case-insensitive, so, you can declare them with standard Python style (also known as \"snake_case\").\nSo, you can use `user_agent` as you normally would in Python code, instead of needing to capitalize the first letters as `User_Agent` or something similar.\nIf for some reason you need to disable automatic conversion of underscores to hyphens, set the parameter `convert_underscores` of `Header` to `False` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Header\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items(\n     strange_header: Annotated[str | None, Header(convert_underscores=False)] = None,\n ):\n     return {\"strange_header\": strange_header}\n```\nBefore setting `convert_underscores` to `False` , bear in mind that some HTTP proxies and servers disallow the usage of headers with underscores."
+    },
+    {
+      "heading_path": [
+        "Header Parameters",
+        "Duplicate headers"
+      ],
+      "page_number": null,
+      "text": "It is possible to receive duplicate headers. That means, the same header with multiple values.\nYou can define those cases using a list in the type declaration.\nYou will receive all the values from the duplicate header as a Python `list` .\nFor example, to declare a header of `X-Token` that can appear more than once, you can write:\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Header\n \n app = FastAPI()\n \n \n @app.get(\"/items/\")\n async def read_items(x_token: Annotated[list[str] | None, Header()] = None):\n     return {\"X-Token values\": x_token}\n```\nIf you communicate with that path operation sending two HTTP headers like:\n```text\nX-Token: foo\nX-Token: bar\n```\nThe response would be like:\n```JSON\n{\n    \"X-Token values\": [\n        \"bar\",\n        \"foo\"\n    ]\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Header Parameters",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Declare headers with `Header` , using the same common pattern as `Query` , `Path` and `Cookie` .\nAnd don't worry about underscores in your variables, FastAPI will take care of converting them."
+    }
+  ]
+}

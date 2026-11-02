@@ -1,0 +1,53 @@
+{
+  "doc_id": "c826ba83421489edb760ea62f8e3891f18dfd658fe2d7be2f26cc5598447f251",
+  "content_hash": "c826ba83421489edb760ea62f8e3891f18dfd658fe2d7be2f26cc5598447f251",
+  "source_file": "tutorial/body-fields.md",
+  "source_files": [
+    "tutorial/body-fields.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 3174,
+  "sections": [
+    {
+      "heading_path": [
+        "Body - Fields"
+      ],
+      "page_number": null,
+      "text": "The same way you can declare additional validation and metadata in path operation function parameters with `Query` , `Path` and `Body` , you can declare validation and metadata inside of Pydantic models using Pydantic's `Field` ."
+    },
+    {
+      "heading_path": [
+        "Body - Fields",
+        "Import Field"
+      ],
+      "page_number": null,
+      "text": "First, you have to import it:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel, Field\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = Field(\n         default=None, title=\"The description of the item\", max_length=300\n     )\n     price: float = Field(gt=0, description=\"The price must be greater than zero\")\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Annotated[Item, Body(embed=True)]):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nNotice that `Field` is imported directly from `pydantic` , not from `fastapi` as are all the rest ( `Query` , `Path` , `Body` , etc)."
+    },
+    {
+      "heading_path": [
+        "Body - Fields",
+        "Declare model attributes"
+      ],
+      "page_number": null,
+      "text": "You can then use `Field` with model attributes:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel, Field\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = Field(\n         default=None, title=\"The description of the item\", max_length=300\n     )\n     price: float = Field(gt=0, description=\"The price must be greater than zero\")\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Annotated[Item, Body(embed=True)]):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\n`Field` works the same way as `Query` , `Path` and `Body` , it has all the same parameters, etc.\nTechnical Details:\nActually, `Query` , `Path` and others you'll see next create objects of subclasses of a common `Param` class, which is itself a subclass of Pydantic's `FieldInfo` class.\nAnd Pydantic's `Field` returns an instance of `FieldInfo` as well.\n`Body` also returns objects of a subclass of `FieldInfo` directly. And there are others you will see later that are subclasses of the `Body` class.\nRemember that when you import `Query` , `Path` , and others from `fastapi` , those are actually functions that return special classes.\nNotice how each model's attribute with a type, default value and `Field` has the same structure as a path operation function's parameter, with `Field` instead of `Path` , `Query` and `Body` ."
+    },
+    {
+      "heading_path": [
+        "Body - Fields",
+        "Add extra information"
+      ],
+      "page_number": null,
+      "text": "You can declare extra information with `json_schema_extra` in `Field` , `Query` , `Body` , etc. And it will be included in the generated JSON Schema.\nYou will learn more about adding extra information later in the docs, when learning to declare examples.\nExtra keys passed in `json_schema_extra` will also be present in the resulting OpenAPI schema for your application.\nAs these keys may not necessarily be part of the OpenAPI specification, some OpenAPI tools, for example the OpenAPI validator , may not work with your generated schema."
+    },
+    {
+      "heading_path": [
+        "Body - Fields",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "You can use Pydantic's `Field` to declare extra validations and metadata for model attributes.\nYou can also use `json_schema_extra` to pass additional JSON Schema metadata."
+    }
+  ]
+}

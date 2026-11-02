@@ -1,0 +1,61 @@
+{
+  "doc_id": "9900c54685fac0b5376ba3f0d2f000f19feadd42f605003fef9f3be304d82970",
+  "content_hash": "9900c54685fac0b5376ba3f0d2f000f19feadd42f605003fef9f3be304d82970",
+  "source_file": "tutorial/dependencies/sub-dependencies.md",
+  "source_files": [
+    "tutorial/dependencies/sub-dependencies.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 6,
+  "char_count": 4611,
+  "sections": [
+    {
+      "heading_path": [
+        "Sub-dependencies"
+      ],
+      "page_number": null,
+      "text": "You can create dependencies that have sub-dependencies .\nThey can be as deep as you need them to be.\nFastAPI will take care of solving them."
+    },
+    {
+      "heading_path": [
+        "Sub-dependencies",
+        "First dependency \"dependable\""
+      ],
+      "page_number": null,
+      "text": "You could create a first dependency (\"dependable\") like:\n```python\n from typing import Annotated\n \n from fastapi import Cookie, Depends, FastAPI\n \n app = FastAPI()\n \n \n def query_extractor(q: str | None = None):\n     return q\n \n \n def query_or_cookie_extractor(\n     q: Annotated[str, Depends(query_extractor)],\n     last_query: Annotated[str | None, Cookie()] = None,\n ):\n     if not q:\n         return last_query\n     return q\n \n \n @app.get(\"/items/\")\n async def read_query(\n     query_or_default: Annotated[str, Depends(query_or_cookie_extractor)],\n ):\n     return {\"q_or_cookie\": query_or_default}\n```\nIt declares an optional query parameter `q` as a `str` , and then it just returns it.\nThis is quite simple (not very useful), but will help us focus on how the sub-dependencies work."
+    },
+    {
+      "heading_path": [
+        "Sub-dependencies",
+        "Second dependency, \"dependable\" and \"dependant\""
+      ],
+      "page_number": null,
+      "text": "Then you can create another dependency function (a \"dependable\") that at the same time declares a dependency of its own (so it is a \"dependant\" too):\n```python\n from typing import Annotated\n \n from fastapi import Cookie, Depends, FastAPI\n \n app = FastAPI()\n \n \n def query_extractor(q: str | None = None):\n     return q\n \n \n def query_or_cookie_extractor(\n     q: Annotated[str, Depends(query_extractor)],\n     last_query: Annotated[str | None, Cookie()] = None,\n ):\n     if not q:\n         return last_query\n     return q\n \n \n @app.get(\"/items/\")\n async def read_query(\n     query_or_default: Annotated[str, Depends(query_or_cookie_extractor)],\n ):\n     return {\"q_or_cookie\": query_or_default}\n```\nLet's focus on the parameters declared:\n- Even though this function is a dependency (\"dependable\") itself, it also declares another dependency (it \"depends\" on something else). It depends on the query_extractor , and assigns the value returned by it to the parameter q .\n- It also declares an optional last_query cookie, as a str . If the user didn't provide any query q , we use the last query used, which we saved to a cookie before."
+    },
+    {
+      "heading_path": [
+        "Sub-dependencies",
+        "Use the dependency"
+      ],
+      "page_number": null,
+      "text": "Then we can use the dependency with:\n```python\n from typing import Annotated\n \n from fastapi import Cookie, Depends, FastAPI\n \n app = FastAPI()\n \n \n def query_extractor(q: str | None = None):\n     return q\n \n \n def query_or_cookie_extractor(\n     q: Annotated[str, Depends(query_extractor)],\n     last_query: Annotated[str | None, Cookie()] = None,\n ):\n     if not q:\n         return last_query\n     return q\n \n \n @app.get(\"/items/\")\n async def read_query(\n     query_or_default: Annotated[str, Depends(query_or_cookie_extractor)],\n ):\n     return {\"q_or_cookie\": query_or_default}\n```\nNotice that we are only declaring one dependency in the path operation function , the `query_or_cookie_extractor` .\nBut FastAPI will know that it has to solve `query_extractor` first, to pass the results of that to `query_or_cookie_extractor` while calling it.\n```mermaid\ngraph TB\n\nquery_extractor([\"query_extractor\"])\nquery_or_cookie_extractor([\"query_or_cookie_extractor\"])\n\nread_query[\"/items/\"]\n\nquery_extractor --> query_or_cookie_extractor --> read_query\n```"
+    },
+    {
+      "heading_path": [
+        "Sub-dependencies",
+        "Using the same dependency multiple times"
+      ],
+      "page_number": null,
+      "text": "If one of your dependencies is declared multiple times for the same path operation , for example, multiple dependencies have a common sub-dependency, FastAPI will know to call that sub-dependency only once per request.\nAnd it will save the returned value in a \"cache\" and pass it to all the \"dependants\" that need it in that specific request, instead of calling the dependency multiple times for the same request.\nIn an advanced scenario where you know you need the dependency to be called at every step (possibly multiple times) in the same request instead of using the \"cached\" value, you can set the parameter `use_cache=False` when using `Depends` :\nPython 3.10+:\n```Python\nasync def needy_dependency(\n    fresh_value: Annotated[str, Depends(get_value, use_cache=False)],\n):\n    return {\"fresh_value\": fresh_value}\n```\nPython 3.10+ non-Annotated:\nPrefer to use the `Annotated` version if possible.\n```Python\nasync def needy_dependency(fresh_value: str = Depends(get_value, use_cache=False)):\n    return {\"fresh_value\": fresh_value}\n```"
+    },
+    {
+      "heading_path": [
+        "Sub-dependencies",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Apart from all the fancy words used here, the Dependency Injection system is quite simple.\nJust functions that look the same as the path operation functions .\nBut still, it is very powerful, and allows you to declare arbitrarily deeply nested dependency \"graphs\" (trees).\nAll this might not seem as useful with these simple examples.\nBut you will see how useful it is in the chapters about security .\nAnd you will also see the amounts of code it will save you."
+    }
+  ]
+}

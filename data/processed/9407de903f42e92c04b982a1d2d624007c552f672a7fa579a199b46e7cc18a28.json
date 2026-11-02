@@ -1,0 +1,53 @@
+{
+  "doc_id": "9407de903f42e92c04b982a1d2d624007c552f672a7fa579a199b46e7cc18a28",
+  "content_hash": "9407de903f42e92c04b982a1d2d624007c552f672a7fa579a199b46e7cc18a28",
+  "source_file": "advanced/json-base64-bytes.md",
+  "source_files": [
+    "advanced/json-base64-bytes.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 5,
+  "char_count": 2823,
+  "sections": [
+    {
+      "heading_path": [
+        "JSON with Bytes as Base64"
+      ],
+      "page_number": null,
+      "text": "If your app needs to receive and send JSON data, but you need to include binary data in it, you can encode it as base64."
+    },
+    {
+      "heading_path": [
+        "JSON with Bytes as Base64",
+        "Base64 vs Files"
+      ],
+      "page_number": null,
+      "text": "Consider first if you can use Request Files for uploading binary data and Custom Response - FileResponse for sending binary data, instead of encoding it in JSON.\nJSON can only contain UTF-8 encoded strings, so it can't contain raw bytes.\nBase64 can encode binary data in strings, but to do it, it needs to use more characters than the original binary data, so it would normally be less efficient than regular files.\nUse base64 only if you definitely need to include binary data in JSON, and you can't use files for that."
+    },
+    {
+      "heading_path": [
+        "JSON with Bytes as Base64",
+        "Pydantic bytes"
+      ],
+      "page_number": null,
+      "text": "You can declare a Pydantic model with `bytes` fields, and then use `val_json_bytes` in the model config to tell it to use base64 to validate input JSON data, as part of that validation it will decode the base64 string into bytes.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n \n class DataInput(BaseModel):\n     description: str\n     data: bytes\n \n     model_config = {\"val_json_bytes\": \"base64\"}\n app = FastAPI()\n \n \n @app.post(\"/data\")\n def post_data(body: DataInput):\n     content = body.data.decode(\"utf-8\")\n     return {\"description\": body.description, \"content\": content}\n```\nIf you check the `/docs` , they will show that the field `data` expects base64 encoded bytes:\nYou could send a request like:\n```json\n{\n    \"description\": \"Some data\",\n    \"data\": \"aGVsbG8=\"\n}\n```\n`aGVsbG8=` is the base64 encoding of `hello` .\nAnd then Pydantic will decode the base64 string and give you the original bytes in the `data` field of the model.\nYou will receive a response like:\n```json\n{\n  \"description\": \"Some data\",\n  \"content\": \"hello\"\n}\n```"
+    },
+    {
+      "heading_path": [
+        "JSON with Bytes as Base64",
+        "Pydantic bytes for Output Data"
+      ],
+      "page_number": null,
+      "text": "You can also use `bytes` fields with `ser_json_bytes` in the model config for output data, and Pydantic will serialize the bytes as base64 when generating the JSON response.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n class DataOutput(BaseModel):\n     description: str\n     data: bytes\n \n     model_config = {\"ser_json_bytes\": \"base64\"}\n app = FastAPI()\n @app.get(\"/data\")\n def get_data() -> DataOutput:\n     data = \"hello\".encode(\"utf-8\")\n     return DataOutput(description=\"A plumbus\", data=data)\n```"
+    },
+    {
+      "heading_path": [
+        "JSON with Bytes as Base64",
+        "Pydantic bytes for Input and Output Data"
+      ],
+      "page_number": null,
+      "text": "And of course, you can use the same model configured to use base64 to handle both input ( validate ) with `val_json_bytes` and output ( serialize ) with `ser_json_bytes` when receiving and sending JSON data.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n class DataInputOutput(BaseModel):\n     description: str\n     data: bytes\n \n     model_config = {\n         \"val_json_bytes\": \"base64\",\n         \"ser_json_bytes\": \"base64\",\n     }\n app = FastAPI()\n @app.post(\"/data-in-out\")\n def post_data_in_out(body: DataInputOutput) -> DataInputOutput:\n     return body\n```"
+    }
+  ]
+}

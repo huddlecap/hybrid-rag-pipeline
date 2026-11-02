@@ -1,0 +1,145 @@
+{
+  "doc_id": "313417d3319baae4d9e13592c3c48f12cecd2df6473feeaea11eabb71c40a02e",
+  "content_hash": "313417d3319baae4d9e13592c3c48f12cecd2df6473feeaea11eabb71c40a02e",
+  "source_file": "how-to/custom-docs-ui-assets.md",
+  "source_files": [
+    "how-to/custom-docs-ui-assets.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 15,
+  "char_count": 13784,
+  "sections": [
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)"
+      ],
+      "page_number": null,
+      "text": "The API docs use Swagger UI and ReDoc , and each of those need some JavaScript and CSS files.\nBy default, those files are served from a CDN .\nBut it's possible to customize it, you can set a specific CDN, or serve the files yourself."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Custom CDN for JavaScript and CSS"
+      ],
+      "page_number": null,
+      "text": "Let's say that you want to use a different CDN , for example you want to use `https://unpkg.com/` .\nThis could be useful if for example you live in a country that restricts some URLs."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Custom CDN for JavaScript and CSS",
+        "Disable the automatic docs"
+      ],
+      "page_number": null,
+      "text": "The first step is to disable the automatic docs, as by default, those use the default CDN.\nTo disable them, set their URLs to `None` when creating your `FastAPI` app:\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js\",\n         swagger_css_url=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"https://unpkg.com/redoc@2/bundles/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Custom CDN for JavaScript and CSS",
+        "Include the custom docs"
+      ],
+      "page_number": null,
+      "text": "Now you can create the path operations for the custom docs.\nYou can reuse FastAPI's internal functions to create the HTML pages for the docs, and pass them the needed arguments:\n- openapi_url : the URL where the HTML page for the docs can get the OpenAPI schema for your API. You can use here the attribute app.openapi_url .\n- title : the title of your API.\n- oauth2_redirect_url : you can use app.swagger_ui_oauth2_redirect_url here to use the default.\n- swagger_js_url : the URL where the HTML for your Swagger UI docs can get the JavaScript file. This is the custom CDN URL.\n- swagger_css_url : the URL where the HTML for your Swagger UI docs can get the CSS file. This is the custom CDN URL.\nAnd similarly for ReDoc...\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js\",\n         swagger_css_url=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"https://unpkg.com/redoc@2/bundles/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```\nThe path operation for `swagger_ui_redirect` is a helper for when you use OAuth2.\nIf you integrate your API with an OAuth2 provider, you will be able to authenticate and come back to the API docs with the acquired credentials. And interact with it using the real OAuth2 authentication.\nSwagger UI will handle it behind the scenes for you, but it needs this \"redirect\" helper."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Custom CDN for JavaScript and CSS",
+        "Create a path operation to test it"
+      ],
+      "page_number": null,
+      "text": "Now, to be able to test that everything works, create a path operation :\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js\",\n         swagger_css_url=\"https://unpkg.com/swagger-ui-dist@5/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"https://unpkg.com/redoc@2/bundles/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Custom CDN for JavaScript and CSS",
+        "Test it"
+      ],
+      "page_number": null,
+      "text": "Now, you should be able to go to your docs at http://127.0.0.1:8000/docs , and reload the page, it will load those assets from the new CDN."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs"
+      ],
+      "page_number": null,
+      "text": "Self-hosting the JavaScript and CSS could be useful if, for example, you need your app to keep working even while offline, without open Internet access, or in a local network.\nHere you'll see how to serve those files yourself, in the same FastAPI app, and configure the docs to use them."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Project file structure"
+      ],
+      "page_number": null,
+      "text": "Let's say your project file structure looks like this:\n```text\n.\n├── app\n│   ├── __init__.py\n│   ├── main.py\n```\nNow create a directory to store those static files.\nYour new file structure could look like this:\n```text\n.\n├── app\n│   ├── __init__.py\n│   ├── main.py\n└── static/\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Download the files"
+      ],
+      "page_number": null,
+      "text": "Download the static files needed for the docs and put them on that `static/` directory.\nYou can probably right-click each link and select an option similar to \"Save link as...\".\nSwagger UI uses the files:\n- swagger-ui-bundle.js\n- swagger-ui.css\nAnd ReDoc uses the file:\n- redoc.standalone.js\nAfter that, your file structure could look like:\n```text\n.\n├── app\n│   ├── __init__.py\n│   ├── main.py\n└── static\n    ├── redoc.standalone.js\n    ├── swagger-ui-bundle.js\n    └── swagger-ui.css\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Serve the static files"
+      ],
+      "page_number": null,
+      "text": "- Import StaticFiles .\n- \"Mount\" a StaticFiles() instance in a specific path.\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Test the static files"
+      ],
+      "page_number": null,
+      "text": "Start your application and go to http://127.0.0.1:8000/static/redoc.standalone.js .\nYou should see a very long JavaScript file for ReDoc .\nIt could start with something like:\n```JavaScript\n/*! For license information please see redoc.standalone.js.LICENSE.txt */\n!function(e,t){\"object\"==typeof exports&&\"object\"==typeof module?module.exports=t(require(\"null\")):\n...\n```\nThat confirms that you are being able to serve static files from your app, and that you placed the static files for the docs in the correct place.\nNow we can configure the app to use those static files for the docs."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Disable the automatic docs for static files"
+      ],
+      "page_number": null,
+      "text": "The same as when using a custom CDN, the first step is to disable the automatic docs, as those use the CDN by default.\nTo disable them, set their URLs to `None` when creating your `FastAPI` app:\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Include the custom docs for static files"
+      ],
+      "page_number": null,
+      "text": "And the same way as with a custom CDN, now you can create the path operations for the custom docs.\nAgain, you can reuse FastAPI's internal functions to create the HTML pages for the docs, and pass them the needed arguments:\n- openapi_url : the URL where the HTML page for the docs can get the OpenAPI schema for your API. You can use here the attribute app.openapi_url .\n- title : the title of your API.\n- oauth2_redirect_url : you can use app.swagger_ui_oauth2_redirect_url here to use the default.\n- swagger_js_url : the URL where the HTML for your Swagger UI docs can get the JavaScript file. This is the one that your own app is now serving .\n- swagger_css_url : the URL where the HTML for your Swagger UI docs can get the CSS file. This is the one that your own app is now serving .\nAnd similarly for ReDoc...\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```\nThe path operation for `swagger_ui_redirect` is a helper for when you use OAuth2.\nIf you integrate your API with an OAuth2 provider, you will be able to authenticate and come back to the API docs with the acquired credentials. And interact with it using the real OAuth2 authentication.\nSwagger UI will handle it behind the scenes for you, but it needs this \"redirect\" helper."
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Create a path operation to test static files"
+      ],
+      "page_number": null,
+      "text": "Now, to be able to test that everything works, create a path operation :\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```"
+    },
+    {
+      "heading_path": [
+        "Custom Docs UI Static Assets (Self-Hosting)",
+        "Self-hosting JavaScript and CSS for docs",
+        "Test Static Files UI"
+      ],
+      "page_number": null,
+      "text": "Now, you should be able to disconnect your WiFi, go to your docs at http://127.0.0.1:8000/docs , and reload the page.\nAnd even without Internet, you would be able to see the docs for your API and interact with it."
+    }
+  ]
+}

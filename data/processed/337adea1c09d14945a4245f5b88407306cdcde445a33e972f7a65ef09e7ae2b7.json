@@ -1,0 +1,69 @@
+{
+  "doc_id": "337adea1c09d14945a4245f5b88407306cdcde445a33e972f7a65ef09e7ae2b7",
+  "content_hash": "337adea1c09d14945a4245f5b88407306cdcde445a33e972f7a65ef09e7ae2b7",
+  "source_file": "tutorial/query-param-models.md",
+  "source_files": [
+    "tutorial/query-param-models.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 7,
+  "char_count": 5262,
+  "sections": [
+    {
+      "heading_path": [
+        "Query Parameter Models"
+      ],
+      "page_number": null,
+      "text": "If you have a group of query parameters that are related, you can create a Pydantic model to declare them.\nThis would allow you to re-use the model in multiple places and also to declare validations and metadata for all the parameters at once. 😎\nThis is supported since FastAPI version `0.115.0` . 🤓"
+    },
+    {
+      "heading_path": [
+        "Query Parameter Models",
+        "Query Parameters with a Pydantic Model"
+      ],
+      "page_number": null,
+      "text": "Declare the query parameters that you need in a Pydantic model , and then declare the parameter as `Query` :\n```python\n from typing import Annotated, Literal\n \n from fastapi import FastAPI, Query\n from pydantic import BaseModel, Field\n \n app = FastAPI()\n \n \n class FilterParams(BaseModel):\n     limit: int = Field(100, gt=0, le=100)\n     offset: int = Field(0, ge=0)\n     order_by: Literal[\"created_at\", \"updated_at\"] = \"created_at\"\n     tags: list[str] = []\n \n \n @app.get(\"/items/\")\n async def read_items(filter_query: Annotated[FilterParams, Query()]):\n     return filter_query\n```\nFastAPI will extract the data for each field from the query parameters in the request and give you the Pydantic model you defined."
+    },
+    {
+      "heading_path": [
+        "Query Parameter Models",
+        "Check the Docs"
+      ],
+      "page_number": null,
+      "text": "You can see the query parameters in the docs UI at `/docs` :"
+    },
+    {
+      "heading_path": [
+        "Query Parameter Models",
+        "Forbid Extra Query Parameters"
+      ],
+      "page_number": null,
+      "text": "In some special use cases (probably not very common), you might want to restrict the query parameters that you want to receive.\nYou can use Pydantic's model configuration to `forbid` any `extra` fields:\n```python\n from typing import Annotated, Literal\n \n from fastapi import FastAPI, Query\n from pydantic import BaseModel, Field\n \n app = FastAPI()\n \n \n class FilterParams(BaseModel):\n     model_config = {\"extra\": \"forbid\"}\n \n     limit: int = Field(100, gt=0, le=100)\n     offset: int = Field(0, ge=0)\n     order_by: Literal[\"created_at\", \"updated_at\"] = \"created_at\"\n     tags: list[str] = []\n \n \n @app.get(\"/items/\")\n async def read_items(filter_query: Annotated[FilterParams, Query()]):\n     return filter_query\n```\nIf a client tries to send some extra data in the query parameters , they will receive an error response.\nFor example, if the client tries to send a `tool` query parameter with a value of `plumbus` , like:\n```http\nhttps://example.com/items/?limit=10&tool=plumbus\n```\nThey will receive an error response telling them that the query parameter `tool` is not allowed:\n```json\n{\n    \"detail\": [\n        {\n            \"type\": \"extra_forbidden\",\n            \"loc\": [\"query\", \"tool\"],\n            \"msg\": \"Extra inputs are not permitted\",\n            \"input\": \"plumbus\"\n        }\n    ]\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Query Parameter Models",
+        "Combine Parameter Models"
+      ],
+      "page_number": null,
+      "text": "You can declare multiple query parameter models, and combine them with individual query parameters or dependencies.\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, Query\n from pydantic import BaseModel, Field\n \n app = FastAPI()\n \n \n class Pagination(BaseModel):\n     limit: int = Field(10, ge=1)\n     offset: int = Field(0, ge=0)\n \n \n class Filters(BaseModel):\n     tags: list[str] = []\n \n \n @app.get(\"/items/\")\n def read_items(\n     pagination: Annotated[Pagination, Query()],\n     filters: Annotated[Filters, Query()],\n     search: str | None = None,\n ):\n     return {\"pagination\": pagination, \"filters\": filters, \"search\": search}\n```\nThe request parameters stay at the same level.\n```http\nhttps://example.com/items/?limit=5&offset=10&tags=red&tags=blue&search=shirt\n```\nThere are no `pagination` or `filters` keys in the query string. Each model validates the query parameters independently, with its own defaults, field validators, and model validators. The same applies when the models or individual parameters are declared in dependencies.\nIf models share a parameter name or alias, each model validates that request parameter independently. Use distinct names or aliases for independent values. OpenAPI lists a shared parameter once, as it does for parameters shared with dependencies, so shared declarations should describe the same type and constraints.\nEach model's `extra` configuration applies to all query parameters, including those declared in other models or dependencies. With `extra=\"forbid\"` , any parameter outside that model is rejected. With `extra=\"allow\"` , those parameters are included as model extras.\nThis also works for `Header` and `Cookie` models."
+    },
+    {
+      "heading_path": [
+        "Query Parameter Models",
+        "Optional Query Parameter Models"
+      ],
+      "page_number": null,
+      "text": "Declare a query parameter model with `| None` and a default of `None` to make the group optional.\n```python\n from datetime import date\n from typing import Annotated\n \n from fastapi import FastAPI, Query\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class DateRange(BaseModel):\n     start: date\n     end: date\n \n \n @app.get(\"/items/\")\n async def read_items(\n     limit: int = 10,\n     date_range: Annotated[DateRange | None, Query()] = None,\n ):\n     return {\"limit\": limit, \"date_range\": date_range}\n```\nIf neither `start` nor `end` is sent, `date_range` is `None` . If either is sent, FastAPI validates the model and requires both fields.\nUsing `| None` without a default still makes the parameter required.\nExtra parameters follow the model's `extra` configuration. Ignored extras do not make the model present.\nOpenAPI lists the group's fields individually and marks them as optional.\nYou can also declare optional header parameter models and cookie parameter models ."
+    },
+    {
+      "heading_path": [
+        "Query Parameter Models",
+        "Summary"
+      ],
+      "page_number": null,
+      "text": "You can use Pydantic models to declare query parameters in FastAPI . 😎\nSpoiler alert: you can also use Pydantic models to declare cookies and headers, but you will read about that later in the tutorial. 🤫"
+    }
+  ]
+}

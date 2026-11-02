@@ -1,0 +1,21 @@
+{
+  "doc_id": "accb670db6bc727d40aca998f2cef1a6c510c0f76cf5d9b84bf5c39e45dbfb72",
+  "content_hash": "accb670db6bc727d40aca998f2cef1a6c510c0f76cf5d9b84bf5c39e45dbfb72",
+  "source_file": "learn/index.md",
+  "source_files": [
+    "learn/index.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 1,
+  "char_count": 168,
+  "sections": [
+    {
+      "heading_path": [
+        "Learn"
+      ],
+      "page_number": null,
+      "text": "Here are the introductory sections and the tutorials to learn FastAPI .\nYou could consider this a book , a course , the official and recommended way to learn FastAPI. 😎"
+    }
+  ]
+}

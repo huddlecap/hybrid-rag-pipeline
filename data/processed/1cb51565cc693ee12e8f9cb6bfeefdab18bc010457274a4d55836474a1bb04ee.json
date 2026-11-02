@@ -1,0 +1,205 @@
+{
+  "doc_id": "1cb51565cc693ee12e8f9cb6bfeefdab18bc010457274a4d55836474a1bb04ee",
+  "content_hash": "1cb51565cc693ee12e8f9cb6bfeefdab18bc010457274a4d55836474a1bb04ee",
+  "source_file": "tutorial/response-model.md",
+  "source_files": [
+    "tutorial/response-model.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 22,
+  "char_count": 20360,
+  "sections": [
+    {
+      "heading_path": [
+        "Response Model - Return Type"
+      ],
+      "page_number": null,
+      "text": "You can declare the type used for the response by annotating the path operation function return type .\nYou can use type annotations the same way you would for input data in function parameters , you can use Pydantic models, lists, dictionaries, scalar values like integers, booleans, etc.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: list[str] = []\n \n \n @app.post(\"/items/\")\n async def create_item(item: Item) -> Item:\n     return item\n \n \n @app.get(\"/items/\")\n async def read_items() -> list[Item]:\n     return [\n         Item(name=\"Portal Gun\", price=42.0),\n         Item(name=\"Plumbus\", price=32.0),\n     ]\n```\nFastAPI will use this return type to:\n- Validate the returned data. If the data is invalid (e.g. you are missing a field), it means that your app code is broken, not returning what it should, and it will return a server error instead of returning incorrect data. This way you and your clients can be certain that they will receive the data and the data shape expected.\n- Add a JSON Schema for the response, in the OpenAPI path operation . This will be used by the automatic docs . It will also be used by automatic client code generation tools.\n- Serialize the returned data to JSON using Pydantic, which is written in Rust , so it will be much faster .\nBut most importantly:\n- It will limit and filter the output data to what is defined in the return type. This is particularly important for security , we'll see more of that below."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "response_model Parameter"
+      ],
+      "page_number": null,
+      "text": "There are some cases where you need or want to return some data that is not exactly what the type declares.\nFor example, you could want to return a dictionary or a database object, but declare it as a Pydantic model . This way the Pydantic model would do all the data documentation, validation, etc. for the object that you returned (e.g. a dictionary or database object).\nIf you added the return type annotation, tools and editors would complain with a (correct) error telling you that your function is returning a type (e.g. a dict) that is different from what you declared (e.g. a Pydantic model).\nIn those cases, you can use the path operation decorator parameter `response_model` instead of the return type.\nYou can use the `response_model` parameter in any of the path operations :\n- @app.get()\n- @app.post()\n- @app.put()\n- @app.delete()\n- etc.\n```python\n from typing import Any\n \n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: list[str] = []\n \n \n @app.post(\"/items/\", response_model=Item)\n async def create_item(item: Item) -> Any:\n     return item\n \n \n @app.get(\"/items/\", response_model=list[Item])\n async def read_items() -> Any:\n     return [\n         {\"name\": \"Portal Gun\", \"price\": 42.0},\n         {\"name\": \"Plumbus\", \"price\": 32.0},\n     ]\n```\nNotice that `response_model` is a parameter of the \"decorator\" method ( `get` , `post` , etc). Not of your path operation function , like all the parameters and body.\n`response_model` receives the same type you would declare for a Pydantic model field, so, it can be a Pydantic model, but it can also be, e.g. a `list` of Pydantic models, like `List[Item]` .\nFastAPI will use this `response_model` to do all the data documentation, validation, etc. and also to convert and filter the output data to its type declaration.\nIf you have strict type checks in your editor, mypy, etc, you can declare the function return type as `Any` .\nThat way you tell the editor that you are intentionally returning anything. But FastAPI will still do the data documentation, validation, filtering, etc. with the `response_model` ."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "response_model Parameter",
+        "response_model Priority"
+      ],
+      "page_number": null,
+      "text": "If you declare both a return type and a `response_model` , the `response_model` will take priority and be used by FastAPI.\nThis way you can add correct type annotations to your functions even when you are returning a type different than the response model, to be used by the editor and tools like mypy. And still you can have FastAPI do the data validation, documentation, etc. using the `response_model` .\nYou can also use `response_model=None` to disable creating a response model for that path operation , you might need to do it if you are adding type annotations for things that are not valid Pydantic fields, you will see an example of that in one of the sections below."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Return the same input data"
+      ],
+      "page_number": null,
+      "text": "Here we are declaring a `UserIn` model, it will contain a plaintext password:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserIn(BaseModel):\n     username: str\n     password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n # Don't do this in production!\n @app.post(\"/user/\")\n async def create_user(user: UserIn) -> UserIn:\n     return user\n```\nTo use `EmailStr` , first install email-validator .\nAdd it to your project:\n```console\n$ uv add email-validator\n```\nor with:\n```console\n$ uv add \"pydantic[email]\"\n```\nAnd we are using this model to declare our input and the same model to declare our output:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserIn(BaseModel):\n     username: str\n     password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n # Don't do this in production!\n @app.post(\"/user/\")\n async def create_user(user: UserIn) -> UserIn:\n     return user\n```\nNow, whenever a browser is creating a user with a password, the API will return the same password in the response.\nIn this case, it might not be a problem, because it's the same user sending the password.\nBut if we use the same model for another path operation , we could be sending our user's passwords to every client.\nNever store the plain password of a user or send it in a response like this, unless you know all the caveats and you know what you are doing."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Add an output model"
+      ],
+      "page_number": null,
+      "text": "We can instead create an input model with the plaintext password and an output model without it:\n```python\n from typing import Any\n \n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserIn(BaseModel):\n     username: str\n     password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserOut(BaseModel):\n     username: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n @app.post(\"/user/\", response_model=UserOut)\n async def create_user(user: UserIn) -> Any:\n     return user\n```\nHere, even though our path operation function is returning the same input user that contains the password:\n```python\n from typing import Any\n \n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserIn(BaseModel):\n     username: str\n     password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserOut(BaseModel):\n     username: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n @app.post(\"/user/\", response_model=UserOut)\n async def create_user(user: UserIn) -> Any:\n     return user\n```\n...we declared the `response_model` to be our model `UserOut` , that doesn't include the password:\n```python\n from typing import Any\n \n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserIn(BaseModel):\n     username: str\n     password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserOut(BaseModel):\n     username: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n @app.post(\"/user/\", response_model=UserOut)\n async def create_user(user: UserIn) -> Any:\n     return user\n```\nSo, FastAPI will take care of filtering out all the data that is not declared in the output model (using Pydantic)."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Add an output model",
+        "response_model or Return Type"
+      ],
+      "page_number": null,
+      "text": "In this case, because the two models are different, if we annotated the function return type as `UserOut` , the editor and tools would complain that we are returning an invalid type, as those are different classes.\nThat's why in this example we have to declare it in the `response_model` parameter.\n...but continue reading below to see how to overcome that."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Return Type and Data Filtering"
+      ],
+      "page_number": null,
+      "text": "Let's continue from the previous example. We wanted to annotate the function with one type , but we wanted to be able to return from the function something that actually includes more data .\nWe want FastAPI to keep filtering the data using the response model. So that even though the function returns more data, the response will only include the fields declared in the response model.\nIn the previous example, because the classes were different, we had to use the `response_model` parameter. But that also means that we don't get the support from the editor and tools checking the function return type.\nBut in most of the cases where we need to do something like this, we want the model just to filter/remove some of the data as in this example.\nAnd in those cases, we can use classes and inheritance to take advantage of function type annotations to get better support in the editor and tools, and still get the FastAPI data filtering .\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class BaseUser(BaseModel):\n     username: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserIn(BaseUser):\n     password: str\n \n \n @app.post(\"/user/\")\n async def create_user(user: UserIn) -> BaseUser:\n     return user\n```\nWith this, we get tooling support, from editors and mypy as this code is correct in terms of types, but we also get the data filtering from FastAPI.\nHow does this work? Let's check that out. 🤓"
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Return Type and Data Filtering",
+        "Type Annotations and Tooling"
+      ],
+      "page_number": null,
+      "text": "First let's see how editors, mypy and other tools would see this.\n`BaseUser` has the base fields. Then `UserIn` inherits from `BaseUser` and adds the `password` field, so, it will include all the fields from both models.\nWe annotate the function return type as `BaseUser` , but we are actually returning a `UserIn` instance.\nThe editor, mypy, and other tools won't complain about this because, in typing terms, `UserIn` is a subclass of `BaseUser` , which means it's a valid type when what is expected is anything that is a `BaseUser` ."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Return Type and Data Filtering",
+        "FastAPI Data Filtering"
+      ],
+      "page_number": null,
+      "text": "Now, for FastAPI, it will see the return type and make sure that what you return includes only the fields that are declared in the type.\nFastAPI does several things internally with Pydantic to make sure that those same rules of class inheritance are not used for the returned data filtering, otherwise you could end up returning much more data than what you expected.\nThis way, you can get the best of both worlds: type annotations with tooling support and data filtering ."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "See it in the docs"
+      ],
+      "page_number": null,
+      "text": "When you see the automatic docs, you can check that the input model and output model will both have their own JSON Schema:\nAnd both models will be used for the interactive API documentation:"
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Other Return Type Annotations"
+      ],
+      "page_number": null,
+      "text": "There might be cases where you return something that is not a valid Pydantic field and you annotate it in the function, only to get the support provided by tooling (the editor, mypy, etc)."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Other Return Type Annotations",
+        "Return a Response Directly"
+      ],
+      "page_number": null,
+      "text": "The most common case would be returning a Response directly as explained later in the advanced docs .\n```python\n from fastapi import FastAPI, Response\n from fastapi.responses import JSONResponse, RedirectResponse\n \n app = FastAPI()\n \n \n @app.get(\"/portal\")\n async def get_portal(teleport: bool = False) -> Response:\n     if teleport:\n         return RedirectResponse(url=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\")\n     return JSONResponse(content={\"message\": \"Here's your interdimensional portal.\"})\n```\nThis simple case is handled automatically by FastAPI because the return type annotation is the class (or a subclass of) `Response` .\nAnd tools will also be happy because both `RedirectResponse` and `JSONResponse` are subclasses of `Response` , so the type annotation is correct."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Other Return Type Annotations",
+        "Annotate a Response Subclass"
+      ],
+      "page_number": null,
+      "text": "You can also use a subclass of `Response` in the type annotation:\n```python\n from fastapi import FastAPI\n from fastapi.responses import RedirectResponse\n \n app = FastAPI()\n \n \n @app.get(\"/teleport\")\n async def get_teleport() -> RedirectResponse:\n     return RedirectResponse(url=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\")\n```\nThis will also work because `RedirectResponse` is a subclass of `Response` , and FastAPI will automatically handle this simple case."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Other Return Type Annotations",
+        "Invalid Return Type Annotations"
+      ],
+      "page_number": null,
+      "text": "But when you return some other arbitrary object that is not a valid Pydantic type (e.g. a database object) and you annotate it like that in the function, FastAPI will try to create a Pydantic response model from that type annotation, and will fail.\nThe same would happen if you had something like a union between different types where one or more of them are not valid Pydantic types, for example this would fail 💥:\n```python\n from fastapi import FastAPI, Response\n from fastapi.responses import RedirectResponse\n \n app = FastAPI()\n \n \n @app.get(\"/portal\")\n async def get_portal(teleport: bool = False) -> Response | dict:\n     if teleport:\n         return RedirectResponse(url=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\")\n     return {\"message\": \"Here's your interdimensional portal.\"}\n```\n...this fails because the type annotation is not a Pydantic type and is not just a single `Response` class or subclass, it's a union (any of the two) between a `Response` and a `dict` ."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Other Return Type Annotations",
+        "Disable Response Model"
+      ],
+      "page_number": null,
+      "text": "Continuing from the example above, you might not want to have the default data validation, documentation, filtering, etc. that is performed by FastAPI.\nBut you might want to still keep the return type annotation in the function to get the support from tools like editors and type checkers (e.g. mypy).\nIn this case, you can disable the response model generation by setting `response_model=None` :\n```python\n from fastapi import FastAPI, Response\n from fastapi.responses import RedirectResponse\n \n app = FastAPI()\n \n \n @app.get(\"/portal\", response_model=None)\n async def get_portal(teleport: bool = False) -> Response | dict:\n     if teleport:\n         return RedirectResponse(url=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\")\n     return {\"message\": \"Here's your interdimensional portal.\"}\n```\nThis will make FastAPI skip the response model generation and that way you can have any return type annotations you need without it affecting your FastAPI application. 🤓"
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Response Model encoding parameters"
+      ],
+      "page_number": null,
+      "text": "Your response model could have default values, like:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float = 10.5\n     tags: list[str] = []\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The bartenders\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\"name\": \"Baz\", \"description\": None, \"price\": 50.2, \"tax\": 10.5, \"tags\": []},\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=Item, response_model_exclude_unset=True)\n async def read_item(item_id: str):\n     return items[item_id]\n```\n- description: Union[str, None] = None (or str | None = None in Python 3.10) has a default of None .\n- tax: float = 10.5 has a default of 10.5 .\n- tags: List[str] = [] has a default of an empty list: [] .\nbut you might want to omit them from the result if they were not actually stored.\nFor example, if you have models with many optional attributes in a NoSQL database, but you don't want to send very long JSON responses full of default values."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Response Model encoding parameters",
+        "Use the response_model_exclude_unset parameter"
+      ],
+      "page_number": null,
+      "text": "You can set the path operation decorator parameter `response_model_exclude_unset=True` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float = 10.5\n     tags: list[str] = []\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The bartenders\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\"name\": \"Baz\", \"description\": None, \"price\": 50.2, \"tax\": 10.5, \"tags\": []},\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=Item, response_model_exclude_unset=True)\n async def read_item(item_id: str):\n     return items[item_id]\n```\nand those default values won't be included in the response, only the values actually set.\nSo, if you send a request to that path operation for the item with ID `foo` , the response (not including default values) will be:\n```JSON\n{\n    \"name\": \"Foo\",\n    \"price\": 50.2\n}\n```\nYou can also use:\n- response_model_exclude_defaults=True\n- response_model_exclude_none=True\nas described in the Pydantic docs for `exclude_defaults` and `exclude_none` ."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Response Model encoding parameters",
+        "Use the response_model_exclude_unset parameter",
+        "Data with values for fields with defaults"
+      ],
+      "page_number": null,
+      "text": "But if your data has values for the model's fields with default values, like the item with ID `bar` :\n```Python\n{\n    \"name\": \"Bar\",\n    \"description\": \"The bartenders\",\n    \"price\": 62,\n    \"tax\": 20.2\n}\n```\nthey will be included in the response."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Response Model encoding parameters",
+        "Use the response_model_exclude_unset parameter",
+        "Data with the same values as the defaults"
+      ],
+      "page_number": null,
+      "text": "If the data has the same values as the default ones, like the item with ID `baz` :\n```Python\n{\n    \"name\": \"Baz\",\n    \"description\": None,\n    \"price\": 50.2,\n    \"tax\": 10.5,\n    \"tags\": []\n}\n```\nFastAPI is smart enough (actually, Pydantic is smart enough) to realize that, even though `description` , `tax` , and `tags` have the same values as the defaults, they were set explicitly (instead of taken from the defaults).\nSo, they will be included in the JSON response.\nNotice that the default values can be anything, not only `None` .\nThey can be a list ( `[]` ), a `float` of `10.5` , etc."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Response Model encoding parameters",
+        "response_model_include and response_model_exclude"
+      ],
+      "page_number": null,
+      "text": "You can also use the path operation decorator parameters `response_model_include` and `response_model_exclude` .\nThey take a `set` of `str` with the name of the attributes to include (omitting the rest) or to exclude (including the rest).\nThis can be used as a quick shortcut if you have only one Pydantic model and want to remove some data from the output.\nBut it is still recommended to use the ideas above, using multiple classes, instead of these parameters.\nThis is because the JSON Schema generated in your app's OpenAPI (and the docs) will still be the one for the complete model, even if you use `response_model_include` or `response_model_exclude` to omit some attributes.\nThis also applies to `response_model_by_alias` that works similarly.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float = 10.5\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The Bar fighters\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\n         \"name\": \"Baz\",\n         \"description\": \"There goes my baz\",\n         \"price\": 50.2,\n         \"tax\": 10.5,\n     },\n }\n \n \n @app.get(\n     \"/items/{item_id}/name\",\n     response_model=Item,\n     response_model_include={\"name\", \"description\"},\n )\n async def read_item_name(item_id: str):\n     return items[item_id]\n \n \n @app.get(\"/items/{item_id}/public\", response_model=Item, response_model_exclude={\"tax\"})\n async def read_item_public_data(item_id: str):\n     return items[item_id]\n```\nThe syntax `` creates a `set` with those two values.\nIt is equivalent to `set([\"name\", \"description\"])` ."
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Response Model encoding parameters",
+        "response_model_include and response_model_exclude",
+        "Using list s instead of set s"
+      ],
+      "page_number": null,
+      "text": "If you forget to use a `set` and use a `list` or `tuple` instead, FastAPI will still convert it to a `set` and it will work correctly:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float = 10.5\n \n \n items = {\n     \"foo\": {\"name\": \"Foo\", \"price\": 50.2},\n     \"bar\": {\"name\": \"Bar\", \"description\": \"The Bar fighters\", \"price\": 62, \"tax\": 20.2},\n     \"baz\": {\n         \"name\": \"Baz\",\n         \"description\": \"There goes my baz\",\n         \"price\": 50.2,\n         \"tax\": 10.5,\n     },\n }\n \n \n @app.get(\n     \"/items/{item_id}/name\",\n     response_model=Item,\n     response_model_include=[\"name\", \"description\"],\n )\n async def read_item_name(item_id: str):\n     return items[item_id]\n \n \n @app.get(\"/items/{item_id}/public\", response_model=Item, response_model_exclude=[\"tax\"])\n async def read_item_public_data(item_id: str):\n     return items[item_id]\n```"
+    },
+    {
+      "heading_path": [
+        "Response Model - Return Type",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Use the path operation decorator's parameter `response_model` to define response models and especially to ensure private data is filtered out.\nUse `response_model_exclude_unset` to return only the values explicitly set."
+    }
+  ]
+}

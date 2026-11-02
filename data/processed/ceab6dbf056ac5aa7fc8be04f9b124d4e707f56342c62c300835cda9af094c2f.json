@@ -1,0 +1,128 @@
+{
+  "doc_id": "ceab6dbf056ac5aa7fc8be04f9b124d4e707f56342c62c300835cda9af094c2f",
+  "content_hash": "ceab6dbf056ac5aa7fc8be04f9b124d4e707f56342c62c300835cda9af094c2f",
+  "source_file": "features.md",
+  "source_files": [
+    "features.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 13,
+  "char_count": 6858,
+  "sections": [
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features"
+      ],
+      "page_number": null,
+      "text": "FastAPI gives you the following:"
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Based on open standards"
+      ],
+      "page_number": null,
+      "text": "- OpenAPI for API creation, including declarations of path operations , parameters, request bodies, security, etc.\n- Automatic data model documentation with JSON Schema (as OpenAPI itself is based on JSON Schema).\n- Designed around these standards, after a meticulous study. Instead of an afterthought layer on top.\n- This also allows using automatic client code generation in many languages."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Automatic docs"
+      ],
+      "page_number": null,
+      "text": "Interactive API documentation and exploration web user interfaces. As the framework is based on OpenAPI, there are multiple options, 2 included by default.\n- Swagger UI , with interactive exploration, call and test your API directly from the browser.\nSwagger UI interaction\n- Alternative API documentation with ReDoc .\nReDoc"
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Just Modern Python"
+      ],
+      "page_number": null,
+      "text": "It's all based on standard Python type declarations (thanks to Pydantic). No new syntax to learn. Just standard modern Python.\nIf you need a 2 minute refresher of how to use Python types (even if you don't use FastAPI), check the short tutorial: Python Types .\nYou write standard Python with types:\n```Python\nfrom datetime import date\n\nfrom pydantic import BaseModel\n\n\n# Declare a variable as a str\n# and get editor support inside the function\ndef main(user_id: str):\n    return user_id\n\n\n# A Pydantic model\nclass User(BaseModel):\n    id: int\n    name: str\n    joined: date\n```\nThat can then be used like:\n```Python\nmy_user: User = User(id=3, name=\"John Doe\", joined=\"2018-07-19\")\n\nsecond_user_data = {\n    \"id\": 4,\n    \"name\": \"Mary\",\n    \"joined\": \"2018-11-30\",\n}\n\nmy_second_user: User = User(**second_user_data)\n```\n`**second_user_data` means:\nPass the keys and values of the `second_user_data` dict directly as key-value arguments, equivalent to: `User(id=4, name=\"Mary\", joined=\"2018-11-30\")`"
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Editor support"
+      ],
+      "page_number": null,
+      "text": "The whole framework was designed to be easy and intuitive to use, all the decisions were tested on multiple editors even before starting development, to ensure the best development experience.\nIn the Python developer surveys, it's clear that one of the most used features is \"autocompletion\" .\nThe whole FastAPI framework is designed to satisfy that. Autocompletion works everywhere.\nYou will rarely need to come back to the docs.\nHere's how your editor might help you:\n- in Visual Studio Code :\neditor support\n- in PyCharm :\neditor support\nYou will get completion in code you might even consider impossible before. As for example, the `price` key inside a JSON body (that could have been nested) that comes from a request.\nNo more typing the wrong key names, coming back and forth between docs, or scrolling up and down to find if you finally used `username` or `user_name` ."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Short"
+      ],
+      "page_number": null,
+      "text": "It has sensible defaults for everything, with optional configurations everywhere. All the parameters can be fine-tuned to do what you need and to define the API you need.\nBut by default, it all \"just works\" ."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Validation"
+      ],
+      "page_number": null,
+      "text": "- Validation for most (or all?) Python data types , including: JSON objects ( dict ). JSON array ( list ) defining item types. String ( str ) fields, defining min and max lengths. Numbers ( int , float ) with min and max values, etc.\n- Validation for more exotic types, like: URL. Email. UUID. ...and others.\nAll the validation is handled by the well-established and robust Pydantic ."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Security and authentication"
+      ],
+      "page_number": null,
+      "text": "Security and authentication integrated. Without any compromise with databases or data models.\nAll the security schemes defined in OpenAPI, including:\n- HTTP Basic.\n- OAuth2 (also with JWT tokens ). Check the tutorial on OAuth2 with JWT .\n- API keys in: Headers. Query parameters. Cookies, etc.\nPlus all the security features from Starlette (including session cookies ).\nAll built as reusable tools and components that are easy to integrate with your systems, data stores, relational and NoSQL databases, etc."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Dependency Injection"
+      ],
+      "page_number": null,
+      "text": "FastAPI includes an extremely easy to use, but extremely powerful Dependency Injection system.\n- Even dependencies can have dependencies, creating a hierarchy or \"graph\" of dependencies .\n- All automatically handled by the framework.\n- All the dependencies can require data from requests and augment the path operation constraints and automatic documentation.\n- Automatic validation even for path operation parameters defined in dependencies.\n- Support for complex user authentication systems, database connections , etc.\n- No compromise with databases, frontends, etc. But easy integration with all of them."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Unlimited \"plug-ins\""
+      ],
+      "page_number": null,
+      "text": "Or, in other words, no need for them, import and use the code you need.\nAny integration is designed to be so simple to use (with dependencies) that you can create a \"plug-in\" for your application in 2 lines of code using the same structure and syntax used for your path operations ."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "FastAPI features",
+        "Tested"
+      ],
+      "page_number": null,
+      "text": "- 100% test coverage .\n- 100% type annotated code base.\n- Used in production applications."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "Starlette features"
+      ],
+      "page_number": null,
+      "text": "FastAPI is fully compatible with (and based on) Starlette . So, any additional Starlette code you have, will also work.\n`FastAPI` is actually a sub-class of `Starlette` . So, if you already know or use Starlette, most of the functionality will work the same way.\nWith FastAPI you get all of Starlette 's features (as FastAPI is just Starlette on steroids):\n- Seriously impressive performance. It is one of the fastest Python frameworks available, on par with NodeJS and Go .\n- WebSocket support.\n- In-process background tasks.\n- Startup and shutdown events.\n- Test client built on HTTPX.\n- CORS , GZip, Static Files, Streaming responses.\n- Session and Cookie support.\n- 100% test coverage.\n- 100% type annotated codebase."
+    },
+    {
+      "heading_path": [
+        "Features",
+        "Pydantic features"
+      ],
+      "page_number": null,
+      "text": "FastAPI is fully compatible with (and based on) Pydantic . So, any additional Pydantic code you have, will also work.\nIncluding external libraries also based on Pydantic, such as ORM s and ODM s for databases.\nThis also means that in many cases you can pass the same object you get from a request directly to the database , as everything is validated automatically.\nThe same applies the other way around, in many cases you can just pass the object you get from the database directly to the client .\nWith FastAPI you get all of Pydantic 's features (as FastAPI is based on Pydantic for all the data handling):\n- No brainfuck : No new schema definition micro-language to learn. If you know Python types you know how to use Pydantic.\n- Plays nicely with your IDE / linter /brain : Because pydantic data structures are just instances of classes you define; auto-completion, linting, mypy and your intuition should all work properly with your validated data.\n- Validate complex structures : Use of hierarchical Pydantic models, Python typing ’s List and Dict , etc. And validators allow complex data schemas to be clearly and easily defined, checked and documented as JSON Schema. You can have deeply nested JSON objects and have them all validated and annotated.\n- Extensible : Pydantic allows custom data types to be defined or you can extend validation with methods on a model decorated with the validator decorator.\n- 100% test coverage."
+    }
+  ]
+}

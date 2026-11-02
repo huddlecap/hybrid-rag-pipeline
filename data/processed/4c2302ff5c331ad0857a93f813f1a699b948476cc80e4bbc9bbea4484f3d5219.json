@@ -1,0 +1,118 @@
+{
+  "doc_id": "4c2302ff5c331ad0857a93f813f1a699b948476cc80e4bbc9bbea4484f3d5219",
+  "content_hash": "4c2302ff5c331ad0857a93f813f1a699b948476cc80e4bbc9bbea4484f3d5219",
+  "source_file": "tutorial/extra-models.md",
+  "source_files": [
+    "tutorial/extra-models.md"
+  ],
+  "format": "markdown",
+  "loader_version": "1.0.1",
+  "section_count": 12,
+  "char_count": 8542,
+  "sections": [
+    {
+      "heading_path": [
+        "Extra Models"
+      ],
+      "page_number": null,
+      "text": "Continuing with the previous example, it will be common to have more than one related model.\nThis is especially the case for user models, because:\n- The input model needs to be able to have a password.\n- The output model should not have a password.\n- The database model would probably need to have a hashed password.\nNever store user's plaintext passwords. Always store a \"secure hash\" that you can then verify.\nIf you don't know, you will learn what a \"password hash\" is in the security chapters ."
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Multiple models"
+      ],
+      "page_number": null,
+      "text": "Here's a general idea of what the models could look like with their password fields and the places where they are used:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserIn(BaseModel):\n     username: str\n     password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserOut(BaseModel):\n     username: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserInDB(BaseModel):\n     username: str\n     hashed_password: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n def fake_password_hasher(raw_password: str):\n     return \"supersecret\" + raw_password\n \n \n def fake_save_user(user_in: UserIn):\n     hashed_password = fake_password_hasher(user_in.password)\n     user_in_db = UserInDB(**user_in.model_dump(), hashed_password=hashed_password)\n     print(\"User saved! ..not really\")\n     return user_in_db\n \n \n @app.post(\"/user/\", response_model=UserOut)\n async def create_user(user_in: UserIn):\n     user_saved = fake_save_user(user_in)\n     return user_saved\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Multiple models",
+        "About **user_in.model_dump()",
+        "Pydantic's .model_dump()"
+      ],
+      "page_number": null,
+      "text": "`user_in` is a Pydantic model of class `UserIn` .\nPydantic models have a `.model_dump()` method that returns a `dict` with the model's data.\nSo, if we create a Pydantic object `user_in` like:\n```Python\nuser_in = UserIn(username=\"john\", password=\"secret\", email=\"john.doe@example.com\")\n```\nand then we call:\n```Python\nuser_dict = user_in.model_dump()\n```\nwe now have a `dict` with the data in the variable `user_dict` (it's a `dict` instead of a Pydantic model object).\nAnd if we call:\n```Python\nprint(user_dict)\n```\nwe would get a Python `dict` with:\n```Python\n{\n    \"username\": \"john\",\n    \"password\": \"secret\",\n    \"email\": \"john.doe@example.com\",\n    \"full_name\": None,\n}\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Multiple models",
+        "About **user_in.model_dump()",
+        "Unpacking a dict"
+      ],
+      "page_number": null,
+      "text": "If we take a `dict` like `user_dict` and pass it to a function (or class) with `**user_dict` , Python will \"unpack\" it. It will pass the keys and values of the `user_dict` directly as key-value arguments.\nSo, continuing with the `user_dict` from above, writing:\n```Python\nUserInDB(**user_dict)\n```\nwould result in something equivalent to:\n```Python\nUserInDB(\n    username=\"john\",\n    password=\"secret\",\n    email=\"john.doe@example.com\",\n    full_name=None,\n)\n```\nOr more exactly, using `user_dict` directly, with whatever contents it might have in the future:\n```Python\nUserInDB(\n    username=user_dict[\"username\"],\n    password=user_dict[\"password\"],\n    email=user_dict[\"email\"],\n    full_name=user_dict[\"full_name\"],\n)\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Multiple models",
+        "About **user_in.model_dump()",
+        "A Pydantic model from the contents of another"
+      ],
+      "page_number": null,
+      "text": "As in the example above we got `user_dict` from `user_in.model_dump()` , this code:\n```Python\nuser_dict = user_in.model_dump()\nUserInDB(**user_dict)\n```\nwould be equivalent to:\n```Python\nUserInDB(**user_in.model_dump())\n```\n...because `user_in.model_dump()` is a `dict` , and then we make Python \"unpack\" it by passing it to `UserInDB` prefixed with `**` .\nSo, we get a Pydantic model from the data in another Pydantic model."
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Multiple models",
+        "About **user_in.model_dump()",
+        "Unpacking a dict and extra keywords"
+      ],
+      "page_number": null,
+      "text": "And then adding the extra keyword argument `hashed_password=hashed_password` , like in:\n```Python\nUserInDB(**user_in.model_dump(), hashed_password=hashed_password)\n```\n...ends up being like:\n```Python\nUserInDB(\n    username=user_dict[\"username\"],\n    password=user_dict[\"password\"],\n    email=user_dict[\"email\"],\n    full_name=user_dict[\"full_name\"],\n    hashed_password=hashed_password,\n)\n```\nThe supporting additional functions `fake_password_hasher` and `fake_save_user` are just to demo a possible flow of the data, but they of course are not providing any real security."
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Reduce duplication"
+      ],
+      "page_number": null,
+      "text": "Reducing code duplication is one of the core ideas in FastAPI .\nAs code duplication increases the chances of bugs, security issues, code desynchronization issues (when you update in one place but not in the others), etc.\nAnd these models are all sharing a lot of the data and duplicating attribute names and types.\nWe could do better.\nWe can declare a `UserBase` model that serves as a base for our other models. And then we can make subclasses of that model that inherit its attributes (type declarations, validation, etc).\nAll the data conversion, validation, documentation, etc. will still work as normally.\nThat way, we can declare just the differences between the models (with plaintext `password` , with `hashed_password` and without password):\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, EmailStr\n \n app = FastAPI()\n \n \n class UserBase(BaseModel):\n     username: str\n     email: EmailStr\n     full_name: str | None = None\n \n \n class UserIn(UserBase):\n     password: str\n \n \n class UserOut(UserBase):\n     pass\n \n \n class UserInDB(UserBase):\n     hashed_password: str\n \n \n def fake_password_hasher(raw_password: str):\n     return \"supersecret\" + raw_password\n \n \n def fake_save_user(user_in: UserIn):\n     hashed_password = fake_password_hasher(user_in.password)\n     user_in_db = UserInDB(**user_in.model_dump(), hashed_password=hashed_password)\n     print(\"User saved! ..not really\")\n     return user_in_db\n \n \n @app.post(\"/user/\", response_model=UserOut)\n async def create_user(user_in: UserIn):\n     user_saved = fake_save_user(user_in)\n     return user_saved\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Union or anyOf"
+      ],
+      "page_number": null,
+      "text": "You can declare a response to be the `Union` of two or more types, that means, that the response would be any of them.\nIt will be defined in OpenAPI with `anyOf` .\nTo do that, use the standard Python type hint typing.Union :\nWhen defining a Union , include the most specific type first, followed by the less specific type. In the example below, the more specific `PlaneItem` comes before `CarItem` in `Union[PlaneItem, CarItem]` .\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class BaseItem(BaseModel):\n     description: str\n     type: str\n \n \n class CarItem(BaseItem):\n     type: str = \"car\"\n \n \n class PlaneItem(BaseItem):\n     type: str = \"plane\"\n     size: int\n \n \n items = {\n     \"item1\": {\"description\": \"All my friends drive a low rider\", \"type\": \"car\"},\n     \"item2\": {\n         \"description\": \"Music is my aeroplane, it's my aeroplane\",\n         \"type\": \"plane\",\n         \"size\": 5,\n     },\n }\n \n \n @app.get(\"/items/{item_id}\", response_model=PlaneItem | CarItem)\n async def read_item(item_id: str):\n     return items[item_id]\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Union or anyOf",
+        "Union in Python 3.10"
+      ],
+      "page_number": null,
+      "text": "In this example we pass `Union[PlaneItem, CarItem]` as the value of the argument `response_model` .\nBecause we are passing it as a value to an argument instead of putting it in a type annotation , we have to use `Union` even in Python 3.10.\nIf it was in a type annotation we could have used the vertical bar, as:\n```Python\nsome_variable: PlaneItem | CarItem\n```\nBut if we put that in the assignment `response_model=PlaneItem | CarItem` we would get an error, because Python would try to perform an invalid operation between `PlaneItem` and `CarItem` instead of interpreting that as a type annotation."
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "List of models"
+      ],
+      "page_number": null,
+      "text": "The same way, you can declare responses of lists of objects.\nFor that, use the standard Python `list` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str\n \n \n items = [\n     {\"name\": \"Foo\", \"description\": \"There comes my hero\"},\n     {\"name\": \"Red\", \"description\": \"It's my aeroplane\"},\n ]\n \n \n @app.get(\"/items/\", response_model=list[Item])\n async def read_items():\n     return items\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Response with arbitrary dict"
+      ],
+      "page_number": null,
+      "text": "You can also declare a response using a plain arbitrary `dict` , declaring just the type of the keys and values, without using a Pydantic model.\nThis is useful if you don't know the valid field/attribute names (that would be needed for a Pydantic model) beforehand.\nIn this case, you can use `dict` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/keyword-weights/\", response_model=dict[str, float])\n async def read_keyword_weights():\n     return {\"foo\": 2.3, \"bar\": 3.4}\n```"
+    },
+    {
+      "heading_path": [
+        "Extra Models",
+        "Recap"
+      ],
+      "page_number": null,
+      "text": "Use multiple Pydantic models and inherit freely for each case.\nYou don't need to have a single data model per entity if that entity must be able to have different \"states\". The user \"entity\" is an example, with states that include `password` , `password_hash` , or no password."
+    }
+  ]
+}
