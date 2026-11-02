@@ -1,0 +1,37 @@
+{
+  "doc_id": "3c0b3bcf377c4701e62dcde0c58194c90885d66f11f1f7fd577e63aada0f9d71",
+  "source_file": "reference/openapi/index.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "635f95625fd1da0913c48a5aebebfb7f7212add9",
+      "doc_id": "3c0b3bcf377c4701e62dcde0c58194c90885d66f11f1f7fd577e63aada0f9d71",
+      "source_file": "reference/openapi/index.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "OpenAPI"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 46,
+      "token_count": 9,
+      "text": "There are several utilities to handle OpenAPI."
+    },
+    {
+      "chunk_id": "d3e6b31b700d55d36f73eac2fb89e7c743b58f2f",
+      "doc_id": "3c0b3bcf377c4701e62dcde0c58194c90885d66f11f1f7fd577e63aada0f9d71",
+      "source_file": "reference/openapi/index.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "OpenAPI"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 98,
+      "token_count": 20,
+      "text": "You normally don't need to use them unless you have a specific advanced use case that requires it."
+    }
+  ]
+}

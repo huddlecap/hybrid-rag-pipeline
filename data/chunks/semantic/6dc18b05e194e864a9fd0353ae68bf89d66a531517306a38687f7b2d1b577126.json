@@ -1,0 +1,38 @@
+{
+  "doc_id": "6dc18b05e194e864a9fd0353ae68bf89d66a531517306a38687f7b2d1b577126",
+  "source_file": "contributing.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "881ba4bc1c4726f48088c8b1749ac9bf2557aa1b",
+      "doc_id": "6dc18b05e194e864a9fd0353ae68bf89d66a531517306a38687f7b2d1b577126",
+      "source_file": "contributing.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Contributing"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 74,
+      "token_count": 18,
+      "text": "First, you might want to see the basic ways to help FastAPI and get help ."
+    },
+    {
+      "chunk_id": "ab9fc5c23db2beddda8faa965a3f1f9dc47191df",
+      "doc_id": "6dc18b05e194e864a9fd0353ae68bf89d66a531517306a38687f7b2d1b577126",
+      "source_file": "contributing.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Contributing",
+        "Developing"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 96,
+      "token_count": 20,
+      "text": "To contribute code to the project, please follow the guidelines in tiangolo.com - Contributing ."
+    }
+  ]
+}

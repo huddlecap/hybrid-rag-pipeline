@@ -1,0 +1,39 @@
+{
+  "doc_id": "6b6ed80768d92bd021a0abf9a9ba5b571dcc9b23440d1de5a13e5a109c4e77f8",
+  "source_file": "tutorial/static-files.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "3621016500ba30b9427c5428bb842489d056cdf0",
+      "doc_id": "6b6ed80768d92bd021a0abf9a9ba5b571dcc9b23440d1de5a13e5a109c4e77f8",
+      "source_file": "tutorial/static-files.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Static Files"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 815,
+      "token_count": 180,
+      "text": "You can serve static files automatically from a directory using `StaticFiles` .\nIf you need to host a frontend, use `app.frontend()` instead, read about it in Frontend .\n`app.frontend()` uses `StaticFiles` underneath, with several additional advantages for frontends, like handling client-side routing.\n- Import StaticFiles .\n- \"Mount\" a StaticFiles() instance in a specific path.\n```python\n from fastapi import FastAPI\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI()\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n```\nTechnical Details:\nYou could also use `from starlette.staticfiles import StaticFiles` .\nFastAPI provides the same `starlette.staticfiles` as `fastapi.staticfiles` just as a convenience for you, the developer.\nBut it actually comes directly from Starlette."
+    },
+    {
+      "chunk_id": "37aa7f01365963a5b36eeb537e10bb890118fdd6",
+      "doc_id": "6b6ed80768d92bd021a0abf9a9ba5b571dcc9b23440d1de5a13e5a109c4e77f8",
+      "source_file": "tutorial/static-files.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Static Files",
+        "Use StaticFiles",
+        "What is \"Mounting\""
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 919,
+      "token_count": 197,
+      "text": "\"Mounting\" means adding a complete \"independent\" application in a specific path, that then takes care of handling all the sub-paths.\nThis is different from using an `APIRouter` as a mounted application is completely independent.\nThe OpenAPI and docs from your main application won't include anything from the mounted application, etc.\nYou can read more about this in the Advanced User Guide .\nThe first `\"/static\"` refers to the sub-path this \"sub-application\" will be \"mounted\" on.\nSo, any path that starts with `\"/static\"` will be handled by it.\nThe `directory=\"static\"` refers to the name of the directory that contains your static files.\nThe `name=\"static\"` gives it a name that can be used internally by FastAPI .\nAll these parameters can be different than \" `static` \", adjust them to the needs and specific details of your own application.\nFor more details and options check Starlette's docs about Static Files ."
+    }
+  ]
+}

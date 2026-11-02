@@ -1,0 +1,147 @@
+{
+  "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+  "source_file": "how-to/custom-request-and-route.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 9,
+  "chunks": [
+    {
+      "chunk_id": "67418a8142c23cbe5f7874efa90a6d762670c7ce",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Custom Request and APIRoute class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 381,
+      "token_count": 84,
+      "text": "In some cases, you may want to override the logic used by the `Request` and `APIRoute` classes.\nIn particular, this may be a good alternative to logic in a middleware.\nFor example, if you want to read or manipulate the request body before it is processed by your application.\nThis is an \"advanced\" feature.\nIf you are just starting with FastAPI you might want to skip this section."
+    },
+    {
+      "chunk_id": "9cb5076322d7eb6d1d5d500940cb7a2510d67071",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Use cases"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 324,
+      "token_count": 73,
+      "text": "Some use cases include:\n- Converting non-JSON request bodies to JSON (e.g. msgpack ).\n- Decompressing gzip-compressed request bodies.\n- Automatically logging all request bodies.\nLet's see how to make use of a custom `Request` subclass to decompress gzip requests.\nAnd an `APIRoute` subclass to use that custom request class."
+    },
+    {
+      "chunk_id": "cc793dd8350e1993551873562eec6e22d239f65c",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 2,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Handling custom request body encodings",
+        "Create a custom GzipRequest class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 3410,
+      "token_count": 745,
+      "text": "This is a toy example to demonstrate how it works, if you need Gzip support, you can use the provided GzipMiddleware .\nFirst, we create a `GzipRequest` class, which will overwrite the `Request.body()` method to decompress the body in the presence of an appropriate header.\nIf there's no `gzip` in the header, it will not try to decompress the body.\nThat way, the same route class can handle gzip compressed or uncompressed requests.\n```python\n import gzip\n from collections.abc import Callable\n from typing import Annotated\n \n from fastapi import Body, FastAPI, Request, Response\n from fastapi.routing import APIRoute\n \n \n class GzipRequest(Request):\n     async def body(self) -> bytes:\n         if not hasattr(self, \"_body\"):\n             body = await super().body()\n             if \"gzip\" in self.headers.getlist(\"Content-Encoding\"):\n                 body = gzip.decompress(body)\n             self._body = body\n         return self._body\n \n \n class GzipRoute(APIRoute):\n     def get_route_handler(self) -> Callable:\n         original_route_handler = super().get_route_handler()\n \n         async def custom_route_handler(request: Request) -> Response:\n             request = GzipRequest(request.scope, request.receive)\n             return await original_route_handler(request)\n \n         return custom_route_handler\n \n \n app = FastAPI()\n app.router.route_class = GzipRoute\n \n \n @app.post(\"/sum\")\n async def sum_numbers(numbers: Annotated[list[int], Body()]):\n     return {\"sum\": sum(numbers)}\n```\nNext, we create a custom subclass of `fastapi.routing.APIRoute` that will make use of the `GzipRequest` .\nThis time, it will overwrite the method `APIRoute.get_route_handler()` .\nThis method returns a function.\nAnd that function is what will receive a request and return a response.\nHere we use it to create a `GzipRequest` from the original request.\n```python\n import gzip\n from collections.abc import Callable\n from typing import Annotated\n \n from fastapi import Body, FastAPI, Request, Response\n from fastapi.routing import APIRoute\n \n \n class GzipRequest(Request):\n     async def body(self) -> bytes:\n         if not hasattr(self, \"_body\"):\n             body = await super().body()\n             if \"gzip\" in self.headers.getlist(\"Content-Encoding\"):\n                 body = gzip.decompress(body)\n             self._body = body\n         return self._body\n \n \n class GzipRoute(APIRoute):\n     def get_route_handler(self) -> Callable:\n         original_route_handler = super().get_route_handler()\n \n         async def custom_route_handler(request: Request) -> Response:\n             request = GzipRequest(request.scope, request.receive)\n             return await original_route_handler(request)\n \n         return custom_route_handler\n \n \n app = FastAPI()\n app.router.route_class = GzipRoute\n \n \n @app.post(\"/sum\")\n async def sum_numbers(numbers: Annotated[list[int], Body()]):\n     return {\"sum\": sum(numbers)}\n```\nTechnical Details:\nA `Request` has a `request.scope` attribute, that's just a Python `dict` containing the metadata related to the request.\nA `Request` also has a `request.receive` , that's a function to \"receive\" the body of the request.\nThe `scope` `dict` and `receive` function are both part of the ASGI specification.\nAnd those two things, `scope` and `receive` , are what is needed to create a new `Request` instance.\nTo learn more about the `Request` check Starlette's docs about Requests ."
+    },
+    {
+      "chunk_id": "b8c0175917a7ec76114e80624974539cd943fe8e",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 3,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Handling custom request body encodings",
+        "Create a custom GzipRoute class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 263,
+      "token_count": 61,
+      "text": "The only thing the function returned by `GzipRequest.get_route_handler` does differently is convert the `Request` to a `GzipRequest` .\nDoing this, our `GzipRequest` will take care of decompressing the data (if necessary) before passing it to our path operations ."
+    },
+    {
+      "chunk_id": "47ad7b6e3b86d7111c0ca3452ac3063307c327f1",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 4,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Handling custom request body encodings",
+        "Create a custom GzipRoute class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 52,
+      "token_count": 12,
+      "text": "After that, all of the processing logic is the same."
+    },
+    {
+      "chunk_id": "762deaf6007060ece6ae88a7145a9b38db73a534",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 5,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Handling custom request body encodings",
+        "Create a custom GzipRoute class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 378,
+      "token_count": 79,
+      "text": "But because of our changes in `GzipRequest.body` , the request body will be automatically decompressed when it is loaded by FastAPI when needed.\nTo solve this same problem, it's probably a lot easier to use the `body` in a custom handler for `RequestValidationError` ( Handling Errors ).\nBut this example is still valid and it shows how to interact with the internal components."
+    },
+    {
+      "chunk_id": "a532e992a6402909e9bf5bff4164a1cea92879be",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 6,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Accessing the request body in an exception handler"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 159,
+      "token_count": 37,
+      "text": "We can also use this same approach to access the request body in an exception handler.\nAll we need to do is handle the request inside a `try` / `except` block:"
+    },
+    {
+      "chunk_id": "709142d0274f76a31cb0b779d1d60273a1788465",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 7,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Accessing the request body in an exception handler"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 2244,
+      "token_count": 433,
+      "text": "```python\n from collections.abc import Callable\n from typing import Annotated\n \n from fastapi import Body, FastAPI, HTTPException, Request, Response\n from fastapi.exceptions import RequestValidationError\n from fastapi.routing import APIRoute\n \n \n class ValidationErrorLoggingRoute(APIRoute):\n     def get_route_handler(self) -> Callable:\n         original_route_handler = super().get_route_handler()\n \n         async def custom_route_handler(request: Request) -> Response:\n             try:\n                 return await original_route_handler(request)\n             except RequestValidationError as exc:\n                 body = await request.body()\n                 detail = {\"errors\": exc.errors(), \"body\": body.decode()}\n                 raise HTTPException(status_code=422, detail=detail)\n \n         return custom_route_handler\n \n \n app = FastAPI()\n app.router.route_class = ValidationErrorLoggingRoute\n \n \n @app.post(\"/\")\n async def sum_numbers(numbers: Annotated[list[int], Body()]):\n     return sum(numbers)\n```\nIf an exception occurs, the `Request` instance will still be in scope, so we can read and make use of the request body when handling the error:\n```python\n from collections.abc import Callable\n from typing import Annotated\n \n from fastapi import Body, FastAPI, HTTPException, Request, Response\n from fastapi.exceptions import RequestValidationError\n from fastapi.routing import APIRoute\n \n \n class ValidationErrorLoggingRoute(APIRoute):\n     def get_route_handler(self) -> Callable:\n         original_route_handler = super().get_route_handler()\n \n         async def custom_route_handler(request: Request) -> Response:\n             try:\n                 return await original_route_handler(request)\n             except RequestValidationError as exc:\n                 body = await request.body()\n                 detail = {\"errors\": exc.errors(), \"body\": body.decode()}\n                 raise HTTPException(status_code=422, detail=detail)\n \n         return custom_route_handler\n \n \n app = FastAPI()\n app.router.route_class = ValidationErrorLoggingRoute\n \n \n @app.post(\"/\")\n async def sum_numbers(numbers: Annotated[list[int], Body()]):\n     return sum(numbers)\n```\nYou can also set the `route_class` parameter of an `APIRouter` :"
+    },
+    {
+      "chunk_id": "48b937783019b9d605e937fefde78d5fe436ff89",
+      "doc_id": "ce338d8ed72e10227f8a446876ce409714f9b646f58000512c2ba84f3ce096e8",
+      "source_file": "how-to/custom-request-and-route.md",
+      "chunk_index": 8,
+      "heading_path": [
+        "Custom Request and APIRoute class",
+        "Custom APIRoute class in a router"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 2415,
+      "token_count": 507,
+      "text": "```python\n import time\n from collections.abc import Callable\n \n from fastapi import APIRouter, FastAPI, Request, Response\n from fastapi.routing import APIRoute\n \n \n class TimedRoute(APIRoute):\n     def get_route_handler(self) -> Callable:\n         original_route_handler = super().get_route_handler()\n \n         async def custom_route_handler(request: Request) -> Response:\n             before = time.time()\n             response: Response = await original_route_handler(request)\n             duration = time.time() - before\n             response.headers[\"X-Response-Time\"] = str(duration)\n             print(f\"route duration: {duration}\")\n             print(f\"route response: {response}\")\n             print(f\"route response headers: {response.headers}\")\n             return response\n \n         return custom_route_handler\n \n \n app = FastAPI()\n router = APIRouter(route_class=TimedRoute)\n \n \n @app.get(\"/\")\n async def not_timed():\n     return {\"message\": \"Not timed\"}\n \n \n @router.get(\"/timed\")\n async def timed():\n     return {\"message\": \"It's the time of my life\"}\n \n \n app.include_router(router)\n```\nIn this example, the path operations under the `router` will use the custom `TimedRoute` class, and will have an extra `X-Response-Time` header in the response with the time it took to generate the response:\n```python\n import time\n from collections.abc import Callable\n \n from fastapi import APIRouter, FastAPI, Request, Response\n from fastapi.routing import APIRoute\n \n \n class TimedRoute(APIRoute):\n     def get_route_handler(self) -> Callable:\n         original_route_handler = super().get_route_handler()\n \n         async def custom_route_handler(request: Request) -> Response:\n             before = time.time()\n             response: Response = await original_route_handler(request)\n             duration = time.time() - before\n             response.headers[\"X-Response-Time\"] = str(duration)\n             print(f\"route duration: {duration}\")\n             print(f\"route response: {response}\")\n             print(f\"route response headers: {response.headers}\")\n             return response\n \n         return custom_route_handler\n \n \n app = FastAPI()\n router = APIRouter(route_class=TimedRoute)\n \n \n @app.get(\"/\")\n async def not_timed():\n     return {\"message\": \"Not timed\"}\n \n \n @router.get(\"/timed\")\n async def timed():\n     return {\"message\": \"It's the time of my life\"}\n \n \n app.include_router(router)\n```"
+    }
+  ]
+}

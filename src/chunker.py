@@ -8,7 +8,9 @@ Strategies:
              token sizing. Code blocks are NOT protected (by design).
   structure  Structure-aware: split oversized sections, merge tiny sibling
              sections, never cut a fenced code block.
-  semantic   Reserved for the next step.
+  semantic   Embedding-based: split at the biggest meaning drops using a local
+             fastembed model (BAAI/bge-small-en-v1.5), capped at a max size.
+             Embeddings are used only to find boundaries and are never persisted.
 
 No vector store, BM25, deduplication or persisted embeddings here.
 """
@@ -29,10 +31,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 CHUNKER_VERSION = "1.0.0"
 
-DEFAULT_CONFIG: Dict[str, Dict[str, int]] = {
+EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+
+DEFAULT_CONFIG: Dict[str, Dict[str, float]] = {
     "fixed": {"chunk_size_tokens": 500, "chunk_overlap_tokens": 50},
     "structure": {"min_tokens": 100, "max_tokens": 800},
-    "semantic": {"max_tokens": 800},
+    "semantic": {"max_tokens": 800, "top_fraction": 0.05},
 }
 
 FENCE_RE = re.compile(r"(?ms)^(`{3,})[^\n]*\n.*?^\1[ \t]*$")
@@ -311,6 +315,136 @@ def chunk_structure(
 
 
 # ---------------------------------------------------------------------------
+# Semantic
+# ---------------------------------------------------------------------------
+
+def _embed_texts(embedder, texts: List[str]) -> List[List[float]]:
+    """Embed texts locally in batches. Embeddings are never written to disk."""
+    return [v.tolist() for v in embedder.embed(texts, batch_size=256)]
+
+
+def _cosine_drops(vectors: List[List[float]]) -> List[float]:
+    import numpy as np
+
+    arr = np.asarray(vectors, dtype=float)
+    norms = np.linalg.norm(arr, axis=1)
+    norms[norms == 0] = 1.0
+    unit = arr / norms[:, None]
+    sims = np.sum(unit[:-1] * unit[1:], axis=1)
+    return [float(d) for d in (1.0 - sims)]
+
+
+def semantic_units(
+    doc: Dict[str, Any], max_tokens: int, enc
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Document-level atomic units (whole code blocks + prose sentences)."""
+    units: List[Dict[str, Any]] = []
+    oversized: List[Dict[str, Any]] = []
+    for section in doc["sections"]:
+        path = section.get("heading_path", [])
+        page = section.get("page_number")
+        for text, is_code in atomic_units(section["text"]):
+            tokens = token_count(text, enc)
+            if is_code and tokens > max_tokens:
+                oversized.append(
+                    {"source_file": doc["source_file"], "heading_path": path,
+                     "page_number": page, "tokens": tokens, "chars": len(text)}
+                )
+                units.append({"text": text, "heading_path": path,
+                              "page_number": page, "tokens": tokens})
+                continue
+            if not is_code and tokens > max_tokens:
+                for piece in _split_prose_to_max(text, max_tokens, enc):
+                    units.append(
+                        {"text": piece, "heading_path": path,
+                         "page_number": page, "tokens": token_count(piece, enc)}
+                    )
+                continue
+            units.append({"text": text, "heading_path": path,
+                          "page_number": page, "tokens": tokens})
+    return units, oversized
+
+
+def _group_units(units: List[Dict[str, Any]], boundaries: set, enc) -> List[Dict[str, Any]]:
+    groups: List[Dict[str, Any]] = []
+    start = 0
+    for end in sorted(boundaries) + [len(units)]:
+        if end <= start:
+            continue
+        text = "\n".join(u["text"] for u in units[start:end]).strip()
+        if text:
+            groups.append(
+                {"start": start, "end": end, "text": text,
+                 "tokens": token_count(text, enc)}
+            )
+        start = end
+    return groups
+
+
+def chunk_semantic(
+    doc: Dict[str, Any], cfg: Dict[str, Any], enc, embedder
+) -> Tuple[List[Dict], List[Dict], Dict[str, int]]:
+    max_tokens = int(cfg["max_tokens"])
+    top_fraction = float(cfg["top_fraction"])
+
+    units, oversized = semantic_units(doc, max_tokens, enc)
+    if not units:
+        return [], oversized, {"embedding_inputs": 0, "embedding_tokens": 0,
+                               "embedding_requests": 0}
+
+    vectors = _embed_texts(embedder, [u["text"] for u in units])
+    drops = _cosine_drops(vectors)
+
+    # Top ~N% biggest meaning drops are the initial topic boundaries.
+    boundaries: set = set()
+    if drops:
+        n_top = max(1, round(len(drops) * top_fraction))
+        ranked = sorted(range(len(drops)), key=lambda i: drops[i], reverse=True)
+        boundaries.update(i + 1 for i in ranked[:n_top])
+
+    # Enforce the max chunk size by adding the biggest available drop inside
+    # oversized groups. A single oversized code block has no internal drop and
+    # is kept whole (already recorded in `oversized`).
+    groups = _group_units(units, boundaries, enc)
+    while True:
+        over = [
+            g for g in groups
+            if g["tokens"] > max_tokens
+            and any(b not in boundaries for b in range(g["start"] + 1, g["end"]))
+        ]
+        if not over:
+            break
+        g = max(over, key=lambda x: x["tokens"])
+        candidates = [
+            b for b in range(g["start"] + 1, g["end"]) if b not in boundaries
+        ]
+        b = max(candidates, key=lambda i: drops[i - 1])
+        boundaries.add(b)
+        groups = _group_units(units, boundaries, enc)
+
+    chunks: List[Dict] = []
+    for g in groups:
+        first = units[g["start"]]
+        chunks.append(
+            _make_chunk(
+                doc,
+                "semantic",
+                len(chunks),
+                first["heading_path"],
+                first["page_number"],
+                g["text"],
+                enc,
+            )
+        )
+    stats = {
+        "embedding_inputs": len(units),
+        "embedding_tokens": sum(u["tokens"] for u in units),
+        "embedding_requests": (len(units) + 255) // 256,
+    }
+    return chunks, oversized, stats
+
+
+# ---------------------------------------------------------------------------
 # Shared
 # ---------------------------------------------------------------------------
 
@@ -345,37 +479,55 @@ def run(
     strategy: str,
     input_root: str | Path = "data/processed",
     output_root: str | Path = "data/chunks",
-    config: Optional[Dict[str, Dict[str, int]]] = None,
+    config: Optional[Dict[str, Dict[str, Any]]] = None,
+    embedder: Any = None,
 ) -> Dict[str, Any]:
-    if strategy not in ("fixed", "structure"):
-        raise ValueError(f"strategy not built yet: {strategy}")
+    if strategy not in ("fixed", "structure", "semantic"):
+        raise ValueError(f"unknown strategy: {strategy}")
     cfg = {**DEFAULT_CONFIG[strategy], **(config or {}).get(strategy, {})}
     input_root = Path(input_root)
     out_dir = Path(output_root) / strategy
     out_dir.mkdir(parents=True, exist_ok=True)
     enc = get_encoder()
 
+    if strategy == "semantic" and embedder is None:
+        from fastembed import TextEmbedding
+
+        embedder = TextEmbedding(model_name=EMBEDDING_MODEL)
+
     files = sorted(input_root.glob("*.json"))
     total_chunks = 0
     total_code_blocks = 0
     total_code_cut = 0
     oversized: List[Dict[str, Any]] = []
-    oversized: List[Dict[str, Any]] = []
     per_doc: List[Dict[str, Any]] = []
     tiny_before_total = 0
     tiny_after_total = 0
+    embedding_inputs = 0
+    embedding_tokens = 0
+    embedding_requests = 0
 
-    for f in files:
+    for idx, f in enumerate(files, 1):
         doc = json.loads(f.read_text(encoding="utf-8"))
         if strategy == "fixed":
             chunks, code_total, code_cut = chunk_fixed(doc, cfg, enc)
             total_code_blocks += code_total
             total_code_cut += code_cut
-        else:
+        elif strategy == "structure":
             chunks, over, stats = chunk_structure(doc, cfg, enc)
             oversized.extend(over)
             tiny_before_total += stats["tiny_before"]
             tiny_after_total += stats["tiny_after"]
+            code_total = code_cut = 0
+            for s in doc["sections"]:
+                code_total += len(code_spans(s["text"]))
+            total_code_blocks += code_total
+        else:
+            chunks, over, stats = chunk_semantic(doc, cfg, enc, embedder)
+            oversized.extend(over)
+            embedding_inputs += stats["embedding_inputs"]
+            embedding_tokens += stats["embedding_tokens"]
+            embedding_requests += stats["embedding_requests"]
             code_total = code_cut = 0
             for s in doc["sections"]:
                 code_total += len(code_spans(s["text"]))
@@ -398,6 +550,11 @@ def run(
             {"source_file": doc["source_file"], "chunks": len(chunks),
              "code_blocks": code_total, "code_cut": code_cut}
         )
+        if strategy == "semantic" and (idx % 10 == 0 or idx == len(files)):
+            logger.info(
+                "semantic progress: %d/%d docs, %d chunks",
+                idx, len(files), total_chunks,
+            )
 
     for o in oversized:
         logger.warning(
@@ -415,6 +572,11 @@ def run(
         "oversized_code_blocks": len(oversized),
         "chunks_below_min_before": tiny_before_total,
         "chunks_below_min_after": tiny_after_total,
+        "embedding_inputs": embedding_inputs,
+        "embedding_tokens": embedding_tokens,
+        "embedding_requests": embedding_requests,
+        "embedding_model": EMBEDDING_MODEL if strategy == "semantic" else None,
+        "embedding_cost_usd": 0.0,
         "per_doc": per_doc,
     }
 
@@ -423,7 +585,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     import argparse
 
     parser = argparse.ArgumentParser(description="Chunk processed documents")
-    parser.add_argument("--strategy", required=True, choices=["fixed", "structure"])
+    parser.add_argument("--strategy", required=True, choices=["fixed", "structure", "semantic"])
     parser.add_argument("--input", default="data/processed")
     parser.add_argument("--output", default="data/chunks")
     parser.add_argument("--log", default="data/logs/chunker.log")
@@ -431,6 +593,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--fixed-overlap", type=int, default=50)
     parser.add_argument("--structure-min", type=int, default=100)
     parser.add_argument("--structure-max", type=int, default=800)
+    parser.add_argument("--semantic-max", type=int, default=800)
+    parser.add_argument("--semantic-top-fraction", type=float, default=0.05)
     args = parser.parse_args(argv)
 
     Path(args.log).parent.mkdir(parents=True, exist_ok=True)
@@ -451,6 +615,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             "min_tokens": args.structure_min,
             "max_tokens": args.structure_max,
         },
+        "semantic": {
+            "max_tokens": args.semantic_max,
+            "top_fraction": args.semantic_top_fraction,
+        },
     }
     report = run(args.strategy, args.input, args.output, config)
     logger.info(
@@ -459,6 +627,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         report["code_blocks"], report["code_blocks_cut"],
         report["oversized_code_blocks"],
     )
+    if report["strategy"] == "semantic":
+        logger.info(
+            "semantic embeddings: inputs=%d requests=%d tokens=%d cost_usd=%.6f",
+            report["embedding_inputs"], report["embedding_requests"],
+            report["embedding_tokens"], report["embedding_cost_usd"],
+        )
     return 0
 
 

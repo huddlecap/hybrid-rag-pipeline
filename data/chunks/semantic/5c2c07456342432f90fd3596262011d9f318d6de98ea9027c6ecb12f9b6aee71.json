@@ -1,0 +1,37 @@
+{
+  "doc_id": "5c2c07456342432f90fd3596262011d9f318d6de98ea9027c6ecb12f9b6aee71",
+  "source_file": "reference/testclient.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "85efad3d20a707122f8ea47233e6b863cc3c94ae",
+      "doc_id": "5c2c07456342432f90fd3596262011d9f318d6de98ea9027c6ecb12f9b6aee71",
+      "source_file": "reference/testclient.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Test Client - TestClient"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 169,
+      "token_count": 32,
+      "text": "You can use the `TestClient` class to test FastAPI applications without creating an actual HTTP and socket connection, just communicating directly with the FastAPI code."
+    },
+    {
+      "chunk_id": "20dd0b407d5ab71a1fdfa8e140f43ee6d6a9f399",
+      "doc_id": "5c2c07456342432f90fd3596262011d9f318d6de98ea9027c6ecb12f9b6aee71",
+      "source_file": "reference/testclient.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Test Client - TestClient"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 197,
+      "token_count": 47,
+      "text": "Read more about it in the FastAPI docs for Testing .\nYou can import it directly from `fastapi.testclient` :\n```python\nfrom fastapi.testclient import TestClient\n```\n::: fastapi.testclient.TestClient"
+    }
+  ]
+}

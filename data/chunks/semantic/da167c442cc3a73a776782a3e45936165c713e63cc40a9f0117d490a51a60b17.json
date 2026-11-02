@@ -1,0 +1,53 @@
+{
+  "doc_id": "da167c442cc3a73a776782a3e45936165c713e63cc40a9f0117d490a51a60b17",
+  "source_file": "tutorial/cors.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 3,
+  "chunks": [
+    {
+      "chunk_id": "eb720c8d301994e533afc4cbfafd0b3a44e861e4",
+      "doc_id": "da167c442cc3a73a776782a3e45936165c713e63cc40a9f0117d490a51a60b17",
+      "source_file": "tutorial/cors.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "CORS (Cross-Origin Resource Sharing)"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 3049,
+      "token_count": 701,
+      "text": "CORS or \"Cross-Origin Resource Sharing\" refers to the situations when a frontend running in a browser has JavaScript code that communicates with a backend, and the backend is in a different \"origin\" than the frontend.\nAn origin is the combination of protocol ( `http` , `https` ), domain ( `myapp.com` , `localhost` , `localhost.tiangolo.com` ), and port ( `80` , `443` , `8080` ).\nSo, all these are different origins:\n- http://localhost\n- https://localhost\n- http://localhost:8080\nEven if they are all in `localhost` , they use different protocols or ports, so, they are different \"origins\".\nSo, let's say you have a frontend running in your browser at `http://localhost:8080` , and its JavaScript is trying to communicate with a backend running at `http://localhost` (because we don't specify a port, the browser will assume the default port `80` ).\nThen, the browser will send an HTTP `OPTIONS` request to the `:80` -backend, and if the backend sends the appropriate headers authorizing the communication from this different origin ( `http://localhost:8080` ) then the `:8080` -browser will let the JavaScript in the frontend send its request to the `:80` -backend.\nTo achieve this, the `:80` -backend must have a list of \"allowed origins\".\nIn this case, the list would have to include `http://localhost:8080` for the `:8080` -frontend to work correctly.\nIt's also possible to declare the list as `\"*\"` (a \"wildcard\") to say that all are allowed.\nBut that will only allow certain types of communication, excluding everything that involves credentials: Cookies, Authorization headers like those used with Bearer Tokens, etc.\nSo, for everything to work correctly, it's better to specify explicitly the allowed origins.\nYou can configure it in your FastAPI application using the `CORSMiddleware` .\n- Import CORSMiddleware .\n- Create a list of allowed origins (as strings).\n- Add it as a \"middleware\" to your FastAPI application.\nYou can also specify whether your backend allows:\n- Credentials (Authorization headers, Cookies, etc).\n- Specific HTTP methods ( POST , PUT ) or all of them with the wildcard \"*\" .\n- Specific HTTP headers or all of them with the wildcard \"*\" .\n```python\n from fastapi import FastAPI\n from fastapi.middleware.cors import CORSMiddleware\n \n app = FastAPI()\n \n origins = [\n     \"http://localhost.tiangolo.com\",\n     \"https://localhost.tiangolo.com\",\n     \"http://localhost\",\n     \"http://localhost:8080\",\n ]\n \n app.add_middleware(\n     CORSMiddleware,\n     allow_origins=origins,\n     allow_credentials=True,\n     allow_methods=[\"*\"],\n     allow_headers=[\"*\"],\n )\n \n \n @app.get(\"/\")\n async def main():\n     return {\"message\": \"Hello World\"}\n```\nThe default parameters used by the `CORSMiddleware` implementation are restrictive by default, so you'll need to explicitly enable particular origins, methods, or headers, in order for browsers to be permitted to use them in a Cross-Domain context.\nThe following arguments are supported:\n- allow_origins - A list of origins that should be permitted to make cross-origin requests."
+    },
+    {
+      "chunk_id": "df9dd14ac04ba8dc5deb1f993caeffd7435ac70e",
+      "doc_id": "da167c442cc3a73a776782a3e45936165c713e63cc40a9f0117d490a51a60b17",
+      "source_file": "tutorial/cors.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "CORS (Cross-Origin Resource Sharing)",
+        "Use CORSMiddleware"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 779,
+      "token_count": 168,
+      "text": "E.g.\n['https://example.org', 'https://www.example.org'] .\nYou can use ['*'] to allow any origin.\n- allow_origin_regex - A regex string to match against origins that should be permitted to make cross-origin requests. e.g.\n'https://.*\\.example\\.org' .\n- allow_methods - A list of HTTP methods that should be allowed for cross-origin requests.\nDefaults to ['GET'] .\nYou can use ['*'] to allow all standard methods.\n- allow_headers - A list of HTTP request headers that should be supported for cross-origin requests.\nDefaults to [] .\nYou can use ['*'] to allow all headers.\nThe Accept , Accept-Language , Content-Language and Content-Type headers are always allowed for simple CORS requests .\n- allow_credentials - Indicate that cookies should be supported for cross-origin requests."
+    },
+    {
+      "chunk_id": "7daf44f96b0e2520d5ead74f698c99d3d58f1140",
+      "doc_id": "da167c442cc3a73a776782a3e45936165c713e63cc40a9f0117d490a51a60b17",
+      "source_file": "tutorial/cors.md",
+      "chunk_index": 2,
+      "heading_path": [
+        "CORS (Cross-Origin Resource Sharing)",
+        "Use CORSMiddleware"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 1219,
+      "token_count": 246,
+      "text": "Defaults to False .\nNone of allow_origins , allow_methods and allow_headers can be set to ['*'] if allow_credentials is set to True .\nAll of them must be explicitly specified .\n- expose_headers - Indicate any response headers that should be made accessible to the browser.\nDefaults to [] .\n- max_age - Sets a maximum time in seconds for browsers to cache CORS responses.\nDefaults to 600 .\nThe middleware responds to two particular types of HTTP request...\nThese are any `OPTIONS` request with `Origin` and `Access-Control-Request-Method` headers.\nIn this case the middleware will intercept the incoming request and respond with appropriate CORS headers, and either a `200` or `400` response for informational purposes.\nAny request with an `Origin` header.\nIn this case the middleware will pass the request through as normal, but will include appropriate CORS headers on the response.\nFor more info about CORS , check the Mozilla CORS documentation .\nTechnical Details:\nYou could also use `from starlette.middleware.cors import CORSMiddleware` .\nFastAPI provides several middlewares in `fastapi.middleware` just as a convenience for you, the developer.\nBut most of the available middlewares come directly from Starlette."
+    }
+  ]
+}

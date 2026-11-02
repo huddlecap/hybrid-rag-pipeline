@@ -1,0 +1,37 @@
+{
+  "doc_id": "fed7923444090e924caa677c451b93920a5d84a6c5b1b71e0c8c5c2bb927ffeb",
+  "source_file": "reference/templating.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "4ca5e650b7ebb1bf80473d889b48054e2bc6227e",
+      "doc_id": "fed7923444090e924caa677c451b93920a5d84a6c5b1b71e0c8c5c2bb927ffeb",
+      "source_file": "reference/templating.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Templating - Jinja2Templates"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 66,
+      "token_count": 17,
+      "text": "You can use the `Jinja2Templates` class to render Jinja templates."
+    },
+    {
+      "chunk_id": "7b5beb22d361dccded11d9dd0ea86c7d01ca638a",
+      "doc_id": "fed7923444090e924caa677c451b93920a5d84a6c5b1b71e0c8c5c2bb927ffeb",
+      "source_file": "reference/templating.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Templating - Jinja2Templates"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 209,
+      "token_count": 54,
+      "text": "Read more about it in the FastAPI docs for Templates .\nYou can import it directly from `fastapi.templating` :\n```python\nfrom fastapi.templating import Jinja2Templates\n```\n::: fastapi.templating.Jinja2Templates"
+    }
+  ]
+}

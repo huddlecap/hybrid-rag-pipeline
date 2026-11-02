@@ -29,3 +29,18 @@ Two things:
 1. The metric table came through without numbers. Resend it with numbers for both strategies.
 2. Fix the fixed-size baseline: it should ignore document structure. For each document, join all section texts in order with blank lines, then split that single text every ~500 tokens with ~50 overlap (standard splitter, code not protected). For each chunk, record the heading_path of the section where the chunk starts, and the page_number of that section. Keep all other fields the same. Re-run fixed-size on all documents, then resend the full table for both strategies, including code blocks cut and the determinism check. Do not change structure-aware.
    Then STOP.
+
+Now build the semantic strategy.
+
+- Use OpenAI text-embedding-3-small only to find topic boundaries. Do not save the embeddings.
+- Split at the top ~5% biggest meaning drops within each document, with a max chunk size of 800 tokens. Both are settings.
+- Same chunk fields and save to data/chunks/semantic/. Like structure-aware, never cut a code block in half (an oversized one stays whole and is logged).
+- Do not change the other two strategies.
+
+Run it on all documents. Report, short:
+
+- The actual embedding cost
+- The same metric table as before, with numbers, for semantic only: documents, total chunks, average/min/max/median tokens, chunks with missing heading path, empty chunks, documents with zero chunks, chunks under 100 tokens, code blocks cut, oversized code blocks kept whole
+- Confirm that running twice gives identical files
+- One real example chunk for first-steps.md
+  Then STOP.

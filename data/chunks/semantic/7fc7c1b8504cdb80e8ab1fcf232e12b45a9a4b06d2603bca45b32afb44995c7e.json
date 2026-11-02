@@ -1,0 +1,37 @@
+{
+  "doc_id": "7fc7c1b8504cdb80e8ab1fcf232e12b45a9a4b06d2603bca45b32afb44995c7e",
+  "source_file": "reference/apirouter.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "0ebec6c0b1611512360293abb432696451e1f125",
+      "doc_id": "7fc7c1b8504cdb80e8ab1fcf232e12b45a9a4b06d2603bca45b32afb44995c7e",
+      "source_file": "reference/apirouter.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "APIRouter class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 215,
+      "token_count": 49,
+      "text": "Here's the reference information for the `APIRouter` class, with all its parameters, attributes and methods.\nYou can import the `APIRouter` class directly from `fastapi` :\n```python\nfrom fastapi import APIRouter\n```"
+    },
+    {
+      "chunk_id": "d29c084f11596da59b96062a51776cb4f01b32e9",
+      "doc_id": "7fc7c1b8504cdb80e8ab1fcf232e12b45a9a4b06d2603bca45b32afb44995c7e",
+      "source_file": "reference/apirouter.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "APIRouter class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 151,
+      "token_count": 48,
+      "text": "::: fastapi.APIRouter\noptions:\nmembers:\n- websocket\n- include_router\n- frontend\n- get\n- put\n- post\n- delete\n- options\n- head\n- patch\n- trace\n- on_event"
+    }
+  ]
+}

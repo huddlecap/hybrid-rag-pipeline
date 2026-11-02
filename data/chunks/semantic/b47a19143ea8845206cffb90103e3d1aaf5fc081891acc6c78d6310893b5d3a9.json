@@ -1,0 +1,23 @@
+{
+  "doc_id": "b47a19143ea8845206cffb90103e3d1aaf5fc081891acc6c78d6310893b5d3a9",
+  "source_file": "about/index.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "9728d2f56e76c1cf30739f039b56ae080cbc65f2",
+      "doc_id": "b47a19143ea8845206cffb90103e3d1aaf5fc081891acc6c78d6310893b5d3a9",
+      "source_file": "about/index.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "About"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 50,
+      "token_count": 14,
+      "text": "About FastAPI, its design, inspiration and more. 🤓"
+    }
+  ]
+}

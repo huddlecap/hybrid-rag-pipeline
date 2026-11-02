@@ -1,0 +1,37 @@
+{
+  "doc_id": "fa08fcde919ccc974cab1fc4228e3f32da33172d006a31306f019ad95bb74cbb",
+  "source_file": "reference/httpconnection.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "30bb0f81dd7110045d6abf8084c1e704de444972",
+      "doc_id": "fa08fcde919ccc974cab1fc4228e3f32da33172d006a31306f019ad95bb74cbb",
+      "source_file": "reference/httpconnection.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "HTTPConnection class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 193,
+      "token_count": 42,
+      "text": "When you want to define dependencies that should be compatible with both HTTP and WebSockets, you can define a parameter that takes an `HTTPConnection` instead of a `Request` or a `WebSocket` ."
+    },
+    {
+      "chunk_id": "bab4c62a48ea9e6309e69d472cdc0b20310362e1",
+      "doc_id": "fa08fcde919ccc974cab1fc4228e3f32da33172d006a31306f019ad95bb74cbb",
+      "source_file": "reference/httpconnection.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "HTTPConnection class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 137,
+      "token_count": 31,
+      "text": "You can import it from `fastapi.requests` :\n```python\nfrom fastapi.requests import HTTPConnection\n```\n::: fastapi.requests.HTTPConnection"
+    }
+  ]
+}

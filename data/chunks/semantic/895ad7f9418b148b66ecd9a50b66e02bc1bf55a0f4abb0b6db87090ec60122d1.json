@@ -1,0 +1,37 @@
+{
+  "doc_id": "895ad7f9418b148b66ecd9a50b66e02bc1bf55a0f4abb0b6db87090ec60122d1",
+  "source_file": "reference/background.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "b36581c98e745c3b767e86e56358fd2d30ae4a47",
+      "doc_id": "895ad7f9418b148b66ecd9a50b66e02bc1bf55a0f4abb0b6db87090ec60122d1",
+      "source_file": "reference/background.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Background Tasks - BackgroundTasks"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 211,
+      "token_count": 40,
+      "text": "You can declare a parameter in a path operation function or dependency function with the type `BackgroundTasks` , and then you can use it to schedule the execution of background tasks after the response is sent."
+    },
+    {
+      "chunk_id": "e121fce175ff675b25336b88378c8f8220bea5d4",
+      "doc_id": "895ad7f9418b148b66ecd9a50b66e02bc1bf55a0f4abb0b6db87090ec60122d1",
+      "source_file": "reference/background.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Background Tasks - BackgroundTasks"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 121,
+      "token_count": 29,
+      "text": "You can import it directly from `fastapi` :\n```python\nfrom fastapi import BackgroundTasks\n```\n::: fastapi.BackgroundTasks"
+    }
+  ]
+}

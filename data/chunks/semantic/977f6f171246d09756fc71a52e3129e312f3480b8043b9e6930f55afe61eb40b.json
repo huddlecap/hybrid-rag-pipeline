@@ -1,0 +1,37 @@
+{
+  "doc_id": "977f6f171246d09756fc71a52e3129e312f3480b8043b9e6930f55afe61eb40b",
+  "source_file": "reference/uploadfile.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "85adc41d25940ce773a29b03cf2e799fc49b3006",
+      "doc_id": "977f6f171246d09756fc71a52e3129e312f3480b8043b9e6930f55afe61eb40b",
+      "source_file": "reference/uploadfile.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "UploadFile class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 115,
+      "token_count": 23,
+      "text": "You can define path operation function parameters to be of the type `UploadFile` to receive files from the request."
+    },
+    {
+      "chunk_id": "5975b0209661ba58e7a742b03fd9a8be9f3aeff5",
+      "doc_id": "977f6f171246d09756fc71a52e3129e312f3480b8043b9e6930f55afe61eb40b",
+      "source_file": "reference/uploadfile.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "UploadFile class"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 209,
+      "token_count": 61,
+      "text": "You can import it directly from `fastapi` :\n```python\nfrom fastapi import UploadFile\n```\n::: fastapi.UploadFile\noptions:\nmembers:\n- file\n- filename\n- size\n- headers\n- content_type\n- read\n- write\n- seek\n- close"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "doc_id": "9e6f3d9e2344cc927bd48e4ac8b7cb30b7acec46887a25778c602fef132b159d",
+  "source_file": "how-to/testing-database.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "ba1672616b73014162cd372c223581910f7588ca",
+      "doc_id": "9e6f3d9e2344cc927bd48e4ac8b7cb30b7acec46887a25778c602fef132b159d",
+      "source_file": "how-to/testing-database.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Testing a Database"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 197,
+      "token_count": 49,
+      "text": "You can study about databases, SQL, and SQLModel in the SQLModel docs . 🤓\nThere's a mini tutorial on using SQLModel with FastAPI . ✨\nThat tutorial includes a section about testing SQL databases . 😎"
+    }
+  ]
+}

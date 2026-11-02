@@ -1,0 +1,33 @@
+{
+  "doc_id": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+  "source_file": "translation-banner.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "f4af3b3dfa6f61399cff8089007e139a6d8f3c52",
+      "doc_id": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+      "source_file": "translation-banner.md",
+      "chunk_index": 0,
+      "heading_path": [],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 250,
+      "token_count": 58,
+      "text": "🌐 Translation by AI and humans:\nThis translation was made by AI guided by humans. 🤝\nIt could have mistakes of misunderstanding the original meaning, or looking unnatural, etc. 🤖\nYou can improve this translation by helping us guide the AI LLM better ."
+    },
+    {
+      "chunk_id": "ce184252dbe28440c128c9c8ae5b0a89d63d6a76",
+      "doc_id": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+      "source_file": "translation-banner.md",
+      "chunk_index": 1,
+      "heading_path": [],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 15,
+      "token_count": 2,
+      "text": "English version"
+    }
+  ]
+}

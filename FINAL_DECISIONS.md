@@ -38,3 +38,8 @@ Every chunk keeps its heading path.
 ### 3. Semantic: split at the biggest meaning drops in each document (top ~5%), with a max chunk size
 
 **Why:** No magic number to guess, and it behaves consistently across documents. The max size stops a chunk from growing huge when a document never changes topic.
+
+### 4. Embeddings: local fastembed with `BAAI/bge-small-en-v1.5` (384 dimensions)
+
+Used only to find semantic chunk boundaries, and later to embed chunks and queries for retrieval. Embeddings are not saved during chunking.
+**Why:** OpenAI `text-embedding-3-small` was the original plan, but it costs money. The local model keeps embedding cost at $0, runs offline, and needs no API key or quota. It is good enough for detecting topic boundaries on this corpus.

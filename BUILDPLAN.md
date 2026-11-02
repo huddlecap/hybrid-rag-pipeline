@@ -13,7 +13,7 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 | COMPONENT        | TOOL / LIBRARY                | WHY THIS CHOICE                  |
 | ---------------- | ----------------------------- | -------------------------------- |
 | Language         | Python 3.11+                  | Ecosystem standard               |
-| Embeddings       | OpenAI text-embedding-3-small | Cost-effective, high quality     |
+| Embeddings       | fastembed (BAAI/bge-small-en-v1.5) | $0, fully local, no API key      |
 | Vector Store     | ChromaDB or Qdrant            | File-based or containerized      |
 | Sparse Search    | BM25 via rank_bm25            | Keyword matching for exact terms |
 | LLM              | GPT-4o or Claude Sonnet       | Strong grounding and citation    |
@@ -31,7 +31,7 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 
 2. **Implement configurable chunking.** Build three chunking strategies and make them switchable: fixed-size with overlap (baseline), recursive character splitting by section headers (structure-aware), and semantic chunking that splits on topic boundaries using embedding similarity. Track which strategy each chunk used.
 
-3. **Generate and store embeddings.** Embed every chunk using text-embedding-3-small. Store in ChromaDB with metadata: source document, chunk index, section heading, chunking strategy, and character count. Build the BM25 index in parallel over the same chunks. Both indexes must stay in sync.
+3. **Generate and store embeddings.** Embed every chunk using the local fastembed BAAI/bge-small-en-v1.5 model (384 dimensions). Store in ChromaDB with metadata: source document, chunk index, section heading, chunking strategy, and character count. Build the BM25 index in parallel over the same chunks. Both indexes must stay in sync.
 
 4. **Add deduplication.** Before inserting a chunk, check for near-duplicates (cosine similarity > 0.95 against existing chunks). Flag and skip duplicates. This prevents the retriever from wasting context window slots on redundant content when the same information appears in multiple docs.
 
@@ -39,7 +39,7 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 
 **Day 3-6**
 
-1. **Implement dense retrieval.** Query the vector store with the embedded user question. Return the top-k chunks ranked by cosine similarity. Start with k=10.
+1. **Implement dense retrieval.** Embed the user question with the same local fastembed model, then query the vector store. Return the top-k chunks ranked by cosine similarity. Start with k=10.
 
 2. **Implement sparse retrieval.** Run the same query through BM25 over the chunk corpus. Return top-k by BM25 score. This catches exact keyword matches that semantic search might miss, critical for technical documentation with specific function names, config keys, or error codes.
 

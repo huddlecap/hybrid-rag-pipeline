@@ -1,0 +1,131 @@
+{
+  "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+  "source_file": "tutorial/schema-extra-example.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 8,
+  "chunks": [
+    {
+      "chunk_id": "988f035be85da2ec7cb48b136590c463a7ec8f71",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Declare Request Example Data"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 90,
+      "token_count": 20,
+      "text": "You can declare examples of the data your app can receive.\nHere are several ways to do it."
+    },
+    {
+      "chunk_id": "90761078f7c23852487ffb997153674b42b71fa6",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Declare Request Example Data",
+        "Extra JSON Schema data in Pydantic models"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 1642,
+      "token_count": 386,
+      "text": "You can declare `examples` for a Pydantic model that will be added to the generated JSON Schema.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n     model_config = {\n         \"json_schema_extra\": {\n             \"examples\": [\n                 {\n                     \"name\": \"Foo\",\n                     \"description\": \"A very nice Item\",\n                     \"price\": 35.4,\n                     \"tax\": 3.2,\n                 }\n             ]\n         }\n     }\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nThat extra info will be added as-is to the output JSON Schema for that model, and it will be used in the API docs.\nYou can use the attribute `model_config` that takes a `dict` as described in Pydantic's docs: Configuration .\nYou can set `\"json_schema_extra\"` with a `dict` containing any additional data you would like to show up in the generated JSON Schema, including `examples` .\nYou could use the same technique to extend the JSON Schema and add your own custom extra info.\nFor example you could use it to add metadata for a frontend user interface, etc.\nOpenAPI 3.1.0 (used since FastAPI 0.99.0) added support for `examples` , which is part of the JSON Schema standard.\nBefore that, it only supported the keyword `example` with a single example.\nThat is still supported by OpenAPI 3.1.0, but is deprecated and is not part of the JSON Schema standard."
+    },
+    {
+      "chunk_id": "34ebb62a4479d381b7805d67ddbb90225136706c",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 2,
+      "heading_path": [
+        "Declare Request Example Data",
+        "Extra JSON Schema data in Pydantic models"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 1844,
+      "token_count": 448,
+      "text": "So you are encouraged to migrate `example` to `examples` . 🤓\nYou can read more at the end of this page.\nWhen using `Field()` with Pydantic models, you can also declare additional `examples` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, Field\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str = Field(examples=[\"Foo\"])\n     description: str | None = Field(default=None, examples=[\"A very nice Item\"])\n     price: float = Field(examples=[35.4])\n     tax: float | None = Field(default=None, examples=[3.2])\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nWhen using any of:\n- Path()\n- Query()\n- Header()\n- Cookie()\n- Body()\n- Form()\n- File()\nyou can also declare a group of `examples` with additional information that will be added to their JSON Schemas inside of OpenAPI .\nHere we pass `examples` containing one example of the data expected in `Body()` :\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     item_id: int,\n     item: Annotated[\n         Item,\n         Body(\n             examples=[\n                 {\n                     \"name\": \"Foo\",\n                     \"description\": \"A very nice Item\",\n                     \"price\": 35.4,\n                     \"tax\": 3.2,\n                 }\n             ],\n         ),\n     ],\n ):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nWith any of the methods above it would look like this in the `/docs` :\nYou can of course also pass multiple `examples` :"
+    },
+    {
+      "chunk_id": "708cdb2fb0e7ffaf98c8f8dc9964c79b0c3b8a3c",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 3,
+      "heading_path": [
+        "Declare Request Example Data",
+        "examples in JSON Schema - OpenAPI",
+        "Body with multiple examples"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 1236,
+      "token_count": 267,
+      "text": "```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     *,\n     item_id: int,\n     item: Annotated[\n         Item,\n         Body(\n             examples=[\n                 {\n                     \"name\": \"Foo\",\n                     \"description\": \"A very nice Item\",\n                     \"price\": 35.4,\n                     \"tax\": 3.2,\n                 },\n                 {\n                     \"name\": \"Bar\",\n                     \"price\": \"35.4\",\n                 },\n                 {\n                     \"name\": \"Baz\",\n                     \"price\": \"thirty five point four\",\n                 },\n             ],\n         ),\n     ],\n ):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nWhen you do this, the examples will be part of the internal JSON Schema for that body data.\nNevertheless, at the time of writing this , Swagger UI, the tool in charge of showing the docs UI, doesn't support showing multiple examples for the data in JSON Schema ."
+    },
+    {
+      "chunk_id": "f15dfc2d5a913931c367827a8c656d2fe4ed21e9",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 4,
+      "heading_path": [
+        "Declare Request Example Data",
+        "examples in JSON Schema - OpenAPI",
+        "Body with multiple examples"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 3375,
+      "token_count": 712,
+      "text": "But read below for a workaround.\nSince before JSON Schema supported `examples` , OpenAPI had support for a different field also called `examples` .\nThis OpenAPI-specific `examples` goes in another section in the OpenAPI specification.\nIt goes in the details for each path operation , not inside each JSON Schema.\nAnd Swagger UI has supported this particular `examples` field for a while.\nSo, you can use it to show different examples in the docs UI .\nThe shape of this OpenAPI-specific field `examples` is a `dict` with multiple examples (instead of a `list` ), each with extra information that will be added to OpenAPI too.\nThis doesn't go inside of each JSON Schema contained in OpenAPI, this goes outside, in the path operation directly.\nYou can declare the OpenAPI-specific `examples` in FastAPI with the parameter `openapi_examples` for:\n- Path()\n- Query()\n- Header()\n- Cookie()\n- Body()\n- Form()\n- File()\nThe keys of the `dict` identify each example, and each value is another `dict` .\nEach specific example `dict` in the `examples` can contain:\n- summary : Short description for the example.\n- description : A long description that can contain Markdown text.\n- value : This is the actual example shown, e.g. a dict .\n- externalValue : alternative to value , a URL pointing to the example.\nAlthough this might not be supported by as many tools as value .\nYou can use it like this:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     *,\n     item_id: int,\n     item: Annotated[\n         Item,\n         Body(\n             openapi_examples={\n                 \"normal\": {\n                     \"summary\": \"A normal example\",\n                     \"description\": \"A **normal** item works correctly.\",\n                     \"value\": {\n                         \"name\": \"Foo\",\n                         \"description\": \"A very nice Item\",\n                         \"price\": 35.4,\n                         \"tax\": 3.2,\n                     },\n                 },\n                 \"converted\": {\n                     \"summary\": \"An example with converted data\",\n                     \"description\": \"FastAPI can convert price `strings` to actual `numbers` automatically\",\n                     \"value\": {\n                         \"name\": \"Bar\",\n                         \"price\": \"35.4\",\n                     },\n                 },\n                 \"invalid\": {\n                     \"summary\": \"Invalid data is rejected with an error\",\n                     \"value\": {\n                         \"name\": \"Baz\",\n                         \"price\": \"thirty five point four\",\n                     },\n                 },\n             },\n         ),\n     ],\n ):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nWith `openapi_examples` added to `Body()` the `/docs` would look like:\nIf you are already using FastAPI version 0.99.0 or above , you can probably skip these details.\nThey are more relevant for older versions, before OpenAPI 3.1.0 was available.\nYou can consider this a brief OpenAPI and JSON Schema history lesson . 🤓\nThese are very technical details about the standards JSON Schema and OpenAPI ."
+    },
+    {
+      "chunk_id": "452032088144ab6d6e5d037aecb07d0c767731f2",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 5,
+      "heading_path": [
+        "Declare Request Example Data",
+        "Technical Details"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 129,
+      "token_count": 29,
+      "text": "If the ideas above already work for you, that might be enough, and you probably don't need these details, feel free to skip them."
+    },
+    {
+      "chunk_id": "bf5b9b3c38aafd5dc8937378b964f1ff4b123227",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 6,
+      "heading_path": [
+        "Declare Request Example Data",
+        "Technical Details"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 1438,
+      "token_count": 361,
+      "text": "Before OpenAPI 3.1.0, OpenAPI used an older and modified version of JSON Schema .\nJSON Schema didn't have `examples` , so OpenAPI added its own `example` field to its own modified version.\nOpenAPI also added `example` and `examples` fields to other parts of the specification:\n- Parameter Object (in the specification) that was used by FastAPI's: Path() Query() Header() Cookie()\n- Request Body Object , in the field content , on the Media Type Object (in the specification) that was used by FastAPI's: Body() File() Form()\nThis old OpenAPI-specific `examples` parameter is now `openapi_examples` since FastAPI `0.103.0` .\nBut then JSON Schema added an examples field to a new version of the specification.\nAnd then the new OpenAPI 3.1.0 was based on the latest version (JSON Schema 2020-12) that included this new field `examples` .\nAnd now this new `examples` field takes precedence over the old single (and custom) `example` field, that is now deprecated.\nThis new `examples` field in JSON Schema is just a `list` of examples, not a dict with extra metadata as in the other places in OpenAPI (described above).\nEven after OpenAPI 3.1.0 was released with this new simpler integration with JSON Schema, for a while, Swagger UI, the tool that provides the automatic docs, didn't support OpenAPI 3.1.0 (it does since version 5.0.0 🎉).\nBecause of that, versions of FastAPI previous to 0.99.0 still used versions of OpenAPI lower than 3.1.0."
+    },
+    {
+      "chunk_id": "bbf4d1dd90964b9d4626ef410012d9c8e157f448",
+      "doc_id": "1bc9e50ddfa28bc8c6057ebdeafafae8069ab9d05e2a1674555122ede3a263a0",
+      "source_file": "tutorial/schema-extra-example.md",
+      "chunk_index": 7,
+      "heading_path": [
+        "Declare Request Example Data",
+        "Technical Details",
+        "Pydantic and FastAPI examples"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 1482,
+      "token_count": 385,
+      "text": "When you add `examples` inside a Pydantic model, using `schema_extra` or `Field(examples=[\"something\"])` that example is added to the JSON Schema for that Pydantic model.\nAnd that JSON Schema of the Pydantic model is included in the OpenAPI of your API, and then it's used in the docs UI.\nIn versions of FastAPI before 0.99.0 (0.99.0 and above use the newer OpenAPI 3.1.0) when you used `example` or `examples` with any of the other utilities ( `Query()` , `Body()` , etc.) those examples were not added to the JSON Schema that describes that data (not even to OpenAPI's own version of JSON Schema), they were added directly to the path operation declaration in OpenAPI (outside the parts of OpenAPI that use JSON Schema).\nBut now that FastAPI 0.99.0 and above uses OpenAPI 3.1.0, that uses JSON Schema 2020-12, and Swagger UI 5.0.0 and above, everything is more consistent and the examples are included in JSON Schema.\nNow, as Swagger UI didn't support multiple JSON Schema examples (as of 2023-08-26), users didn't have a way to show multiple examples in the docs.\nTo solve that, FastAPI `0.103.0` added support for declaring the same old OpenAPI-specific `examples` field with the new parameter `openapi_examples` . 🤓\nI used to say I didn't like history that much... and look at me now giving \"tech history\" lessons. 😅\nIn short, upgrade to FastAPI 0.99.0 or above , and things are much simpler, consistent, and intuitive , and you don't have to know all these historic details. 😎"
+    }
+  ]
+}

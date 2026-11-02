@@ -1,0 +1,38 @@
+{
+  "doc_id": "23892fb722a135d36fff8ba8a7dd0ba34591c1aa758ed5851a2d3438ada6b667",
+  "source_file": "tutorial/extra-data-types.md",
+  "strategy": "semantic",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "b8e2a2cb05d4de90a5e79f6c9b4c4e80585161b8",
+      "doc_id": "23892fb722a135d36fff8ba8a7dd0ba34591c1aa758ed5851a2d3438ada6b667",
+      "source_file": "tutorial/extra-data-types.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Extra Data Types"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 509,
+      "token_count": 112,
+      "text": "Up to now, you have been using common data types, like:\n- int\n- float\n- str\n- bool\nBut you can also use more complex data types.\nAnd you will still have the same features as seen up to now:\n- Great editor support.\n- Data conversion from incoming requests.\n- Data conversion for response data.\n- Data validation.\n- Automatic annotation and documentation.\nHere are some of the additional data types you can use:\n- UUID : A standard \"Universally Unique Identifier\", common as an ID in many databases and systems."
+    },
+    {
+      "chunk_id": "99544111ada1b15eaf19baf93b2fed8fc8293eb6",
+      "doc_id": "23892fb722a135d36fff8ba8a7dd0ba34591c1aa758ed5851a2d3438ada6b667",
+      "source_file": "tutorial/extra-data-types.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Extra Data Types",
+        "Other data types"
+      ],
+      "page_number": null,
+      "strategy": "semantic",
+      "char_count": 3241,
+      "token_count": 734,
+      "text": "In requests and responses will be represented as a str .\n- datetime.datetime : A Python datetime.datetime .\nIn requests and responses will be represented as a str in ISO 8601 format, like: 2008-09-15T15:53:00+05:00 .\n- datetime.date : Python datetime.date .\nIn requests and responses will be represented as a str in ISO 8601 format, like: 2008-09-15 .\n- datetime.time : A Python datetime.time .\nIn requests and responses will be represented as a str in ISO 8601 format, like: 14:23:55.003 .\n- datetime.timedelta : A Python datetime.timedelta .\nIn requests and responses will be represented as a float of total seconds.\nPydantic also allows representing it as an \"ISO 8601 time diff encoding\", see the docs for more info .\n- frozenset : In requests and responses, treated the same as a set : In requests, a list will be read, eliminating duplicates and converting it to a set .\nIn responses, the set will be converted to a list .\nThe generated schema will specify that the set values are unique (using JSON Schema's uniqueItems ).\n- bytes : Standard Python bytes .\nIn requests and responses will be treated as str .\nThe generated schema will specify that it's a str with binary \"format\".\n- Decimal : Standard Python Decimal .\nIn requests and responses, handled the same as a float .\n- You can check all the valid Pydantic data types here: Pydantic data types .\nHere's an example path operation with parameters using some of the above types.\n```python\n from datetime import datetime, time, timedelta\n from typing import Annotated\n from uuid import UUID\n \n from fastapi import Body, FastAPI\n \n app = FastAPI()\n \n \n @app.put(\"/items/{item_id}\")\n async def read_items(\n     item_id: UUID,\n     start_datetime: Annotated[datetime, Body()],\n     end_datetime: Annotated[datetime, Body()],\n     process_after: Annotated[timedelta, Body()],\n     repeat_at: Annotated[time | None, Body()] = None,\n ):\n     start_process = start_datetime + process_after\n     duration = end_datetime - start_process\n     return {\n         \"item_id\": item_id,\n         \"start_datetime\": start_datetime,\n         \"end_datetime\": end_datetime,\n         \"process_after\": process_after,\n         \"repeat_at\": repeat_at,\n         \"start_process\": start_process,\n         \"duration\": duration,\n     }\n```\nNote that the parameters inside the function have their natural data type, and you can, for example, perform normal date manipulations, like:\n```python\n from datetime import datetime, time, timedelta\n from typing import Annotated\n from uuid import UUID\n \n from fastapi import Body, FastAPI\n \n app = FastAPI()\n \n \n @app.put(\"/items/{item_id}\")\n async def read_items(\n     item_id: UUID,\n     start_datetime: Annotated[datetime, Body()],\n     end_datetime: Annotated[datetime, Body()],\n     process_after: Annotated[timedelta, Body()],\n     repeat_at: Annotated[time | None, Body()] = None,\n ):\n     start_process = start_datetime + process_after\n     duration = end_datetime - start_process\n     return {\n         \"item_id\": item_id,\n         \"start_datetime\": start_datetime,\n         \"end_datetime\": end_datetime,\n         \"process_after\": process_after,\n         \"repeat_at\": repeat_at,\n         \"start_process\": start_process,\n         \"duration\": duration,\n     }\n```"
+    }
+  ]
+}
