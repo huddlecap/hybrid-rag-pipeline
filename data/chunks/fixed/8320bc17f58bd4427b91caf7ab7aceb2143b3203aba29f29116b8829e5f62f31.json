@@ -1,0 +1,142 @@
+{
+  "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+  "source_file": "advanced/websockets.md",
+  "strategy": "fixed",
+  "chunker_version": "1.0.0",
+  "chunk_count": 9,
+  "chunks": [
+    {
+      "chunk_id": "9b4d934c55b5cbf6e1c4f385dde1840f59f3b26f",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "WebSockets"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 2438,
+      "token_count": 493,
+      "text": "You can use WebSockets with FastAPI .\n\nAdd `websockets` (a Python library that makes it easy to use the \"WebSocket\" protocol) to your project:\n```console\n$ uv add websockets\n\n---> 100%\n```\n\nIn your production system, you probably have a frontend created with a modern framework like React, Vue.js or Angular.\nAnd to communicate using WebSockets with your backend you would probably use your frontend's utilities.\nOr you might have a native mobile application that communicates with your WebSocket backend directly, in native code.\nOr you might have any other way to communicate with the WebSocket endpoint.\n---\nBut for this example, we'll use a very simple HTML document with some JavaScript, all inside a long string.\nThis, of course, is not optimal and you wouldn't use it for production.\nIn production you would have one of the options above.\nBut it's the simplest way to focus on the server-side of WebSockets and have a working example:\n```python\n from fastapi import FastAPI, WebSocket\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n html = \"\"\"\n <!DOCTYPE html>\n <html>\n     <head>\n         <title>Chat</title>\n     </head>\n     <body>\n         <h1>WebSocket Chat</h1>\n         <form action=\"\" onsubmit=\"sendMessage(event)\">\n             <input type=\"text\" id=\"messageText\" autocomplete=\"off\"/>\n             <button>Send</button>\n         </form>\n         <ul id='messages'>\n         </ul>\n         <script>\n             var ws = new WebSocket(\"ws://localhost:8000/ws\");\n             ws.onmessage = function(event) {\n                 var messages = document.getElementById('messages')\n                 var message = document.createElement('li')\n                 var content = document.createTextNode(event.data)\n                 message.appendChild(content)\n                 messages.appendChild(message)\n             };\n             function sendMessage(event) {\n                 var input = document.getElementById(\"messageText\")\n                 ws.send(input.value)\n                 input.value = ''\n                 event.preventDefault()\n             }\n         </script>\n     </body>\n </html>\n \"\"\"\n \n \n @app.get(\"/\")\n async def get():\n     return HTMLResponse(html)\n \n \n @app.websocket(\"/ws\")\n async def websocket_endpoint(websocket: WebSocket):\n     await websocket.accept()\n     while True:\n         data = await websocket.receive_text()\n         await websocket.send_text(f\"Message text was: {data}\")\n```"
+    },
+    {
+      "chunk_id": "f4a6e873328031aae74f77989d07a0a9bec396eb",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "WebSockets",
+        "Create a websocket"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 1764,
+      "token_count": 349,
+      "text": "In your FastAPI application, create a `websocket` :\n```python\n from fastapi import FastAPI, WebSocket\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n html = \"\"\"\n <!DOCTYPE html>\n <html>\n     <head>\n         <title>Chat</title>\n     </head>\n     <body>\n         <h1>WebSocket Chat</h1>\n         <form action=\"\" onsubmit=\"sendMessage(event)\">\n             <input type=\"text\" id=\"messageText\" autocomplete=\"off\"/>\n             <button>Send</button>\n         </form>\n         <ul id='messages'>\n         </ul>\n         <script>\n             var ws = new WebSocket(\"ws://localhost:8000/ws\");\n             ws.onmessage = function(event) {\n                 var messages = document.getElementById('messages')\n                 var message = document.createElement('li')\n                 var content = document.createTextNode(event.data)\n                 message.appendChild(content)\n                 messages.appendChild(message)\n             };\n             function sendMessage(event) {\n                 var input = document.getElementById(\"messageText\")\n                 ws.send(input.value)\n                 input.value = ''\n                 event.preventDefault()\n             }\n         </script>\n     </body>\n </html>\n \"\"\"\n \n \n @app.get(\"/\")\n async def get():\n     return HTMLResponse(html)\n \n \n @app.websocket(\"/ws\")\n async def websocket_endpoint(websocket: WebSocket):\n     await websocket.accept()\n     while True:\n         data = await websocket.receive_text()\n         await websocket.send_text(f\"Message text was: {data}\")\n```\nTechnical Details:\nYou could also use `from starlette.websockets import WebSocket` .\nFastAPI provides the same `WebSocket` directly just as a convenience for you, the developer. But it comes directly from Starlette."
+    },
+    {
+      "chunk_id": "6d45ec9b5bbfbae59e8cf38d2d8b927c83769dc9",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 2,
+      "heading_path": [
+        "WebSockets",
+        "Await for messages and send messages"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 2094,
+      "token_count": 448,
+      "text": "In your WebSocket route you can `await` for messages and send messages.\n```python\n from fastapi import FastAPI, WebSocket\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n html = \"\"\"\n <!DOCTYPE html>\n <html>\n     <head>\n         <title>Chat</title>\n     </head>\n     <body>\n         <h1>WebSocket Chat</h1>\n         <form action=\"\" onsubmit=\"sendMessage(event)\">\n             <input type=\"text\" id=\"messageText\" autocomplete=\"off\"/>\n             <button>Send</button>\n         </form>\n         <ul id='messages'>\n         </ul>\n         <script>\n             var ws = new WebSocket(\"ws://localhost:8000/ws\");\n             ws.onmessage = function(event) {\n                 var messages = document.getElementById('messages')\n                 var message = document.createElement('li')\n                 var content = document.createTextNode(event.data)\n                 message.appendChild(content)\n                 messages.appendChild(message)\n             };\n             function sendMessage(event) {\n                 var input = document.getElementById(\"messageText\")\n                 ws.send(input.value)\n                 input.value = ''\n                 event.preventDefault()\n             }\n         </script>\n     </body>\n </html>\n \"\"\"\n \n \n @app.get(\"/\")\n async def get():\n     return HTMLResponse(html)\n \n \n @app.websocket(\"/ws\")\n async def websocket_endpoint(websocket: WebSocket):\n     await websocket.accept()\n     while True:\n         data = await websocket.receive_text()\n         await websocket.send_text(f\"Message text was: {data}\")\n```\nYou can receive and send binary, text, and JSON data.\n\nPut your code in a file `main.py` and then run your application:\n```console\n$ uv run fastapi dev\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nOpen your browser at http://127.0.0.1:8000 .\nYou will see a simple page like:\nYou can type messages in the input box, and send them:\nAnd your FastAPI application with WebSockets will respond back:\nYou can send (and receive) many messages:\nAnd all of them will use the same WebSocket connection."
+    },
+    {
+      "chunk_id": "2c1be59222a6d7c578f3fe248bb365b3899db376",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 3,
+      "heading_path": [
+        "WebSockets",
+        "Using Depends and others"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 2154,
+      "token_count": 433,
+      "text": "In WebSocket endpoints you can import from `fastapi` and use:\n- Depends\n- Security\n- Cookie\n- Header\n- Path\n- Query\nThey work the same way as for other FastAPI endpoints/ path operations :\n```python\n from typing import Annotated\n \n from fastapi import (\n     Cookie,\n     Depends,\n     FastAPI,\n     Query,\n     WebSocket,\n     WebSocketException,\n     status,\n )\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n html = \"\"\"\n <!DOCTYPE html>\n <html>\n     <head>\n         <title>Chat</title>\n     </head>\n     <body>\n         <h1>WebSocket Chat</h1>\n         <form action=\"\" onsubmit=\"sendMessage(event)\">\n             <label>Item ID: <input type=\"text\" id=\"itemId\" autocomplete=\"off\" value=\"foo\"/></label>\n             <label>Token: <input type=\"text\" id=\"token\" autocomplete=\"off\" value=\"some-key-token\"/></label>\n             <button onclick=\"connect(event)\">Connect</button>\n             <hr>\n             <label>Message: <input type=\"text\" id=\"messageText\" autocomplete=\"off\"/></label>\n             <button>Send</button>\n         </form>\n         <ul id='messages'>\n         </ul>\n         <script>\n         var ws = null;\n             function connect(event) {\n                 var itemId = document.getElementById(\"itemId\")\n                 var token = document.getElementById(\"token\")\n                 ws = new WebSocket(\"ws://localhost:8000/items/\" + itemId.value + \"/ws?token=\" + token.value);\n                 ws.onmessage = function(event) {\n                     var messages = document.getElementById('messages')\n                     var message = document.createElement('li')\n                     var content = document.createTextNode(event.data)\n                     message.appendChild(content)\n                     messages.appendChild(message)\n                 };\n                 event.preventDefault()\n             }\n             function sendMessage(event) {\n                 var input = document.getElementById(\"messageText\")\n                 ws.send(input.value)\n                 input.value = ''\n                 event.preventDefault()\n             }\n         </script>\n     </body>\n </html>\n \"\"\"\n \n \n @app.get(\"/\")"
+    },
+    {
+      "chunk_id": "15fbdb666ebae8e30fb82e0071d3c93febd87a76",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 4,
+      "heading_path": [
+        "WebSockets"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 1372,
+      "token_count": 303,
+      "text": "ws.send(input.value)\n                 input.value = ''\n                 event.preventDefault()\n             }\n         </script>\n     </body>\n </html>\n \"\"\"\n \n \n @app.get(\"/\")\n async def get():\n     return HTMLResponse(html)\n \n \n async def get_cookie_or_token(\n     websocket: WebSocket,\n     session: Annotated[str | None, Cookie()] = None,\n     token: Annotated[str | None, Query()] = None,\n ):\n     if session is None and token is None:\n         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)\n     return session or token\n \n \n @app.websocket(\"/items/{item_id}/ws\")\n async def websocket_endpoint(\n     *,\n     websocket: WebSocket,\n     item_id: str,\n     q: int | None = None,\n     cookie_or_token: Annotated[str, Depends(get_cookie_or_token)],\n ):\n     await websocket.accept()\n     while True:\n         data = await websocket.receive_text()\n         await websocket.send_text(\n             f\"Session cookie or query token value is: {cookie_or_token}\"\n         )\n         if q is not None:\n             await websocket.send_text(f\"Query parameter q is: {q}\")\n         await websocket.send_text(f\"Message text was: {data}, for item ID: {item_id}\")\n```\nAs this is a WebSocket it doesn't really make sense to raise an `HTTPException` , instead we raise a `WebSocketException` .\nYou can use a closing code from the valid codes defined in the specification ."
+    },
+    {
+      "chunk_id": "03f0b65d9baa81486d6a7693df71cfed460bcc70",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 5,
+      "heading_path": [
+        "WebSockets",
+        "Using Depends and others",
+        "Try the WebSockets with dependencies"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 411,
+      "token_count": 115,
+      "text": "Run your application:\n```console\n$ uv run fastapi dev\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```\nOpen your browser at http://127.0.0.1:8000 .\nThere you can set:\n- The \"Item ID\", used in the path.\n- The \"Token\" used as a query parameter.\nNotice that the query `token` will be handled by a dependency.\nWith that you can connect the WebSocket and then send and receive messages:"
+    },
+    {
+      "chunk_id": "8f556b031703d9ba1e5dd1b223059049ad554cee",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 6,
+      "heading_path": [
+        "WebSockets",
+        "Handling disconnections and multiple clients"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 2224,
+      "token_count": 430,
+      "text": "When a WebSocket connection is closed, the `await websocket.receive_text()` will raise a `WebSocketDisconnect` exception, which you can then catch and handle like in this example.\n```python\n from fastapi import FastAPI, WebSocket, WebSocketDisconnect\n from fastapi.responses import HTMLResponse\n \n app = FastAPI()\n \n html = \"\"\"\n <!DOCTYPE html>\n <html>\n     <head>\n         <title>Chat</title>\n     </head>\n     <body>\n         <h1>WebSocket Chat</h1>\n         <h2>Your ID: <span id=\"ws-id\"></span></h2>\n         <form action=\"\" onsubmit=\"sendMessage(event)\">\n             <input type=\"text\" id=\"messageText\" autocomplete=\"off\"/>\n             <button>Send</button>\n         </form>\n         <ul id='messages'>\n         </ul>\n         <script>\n             var client_id = Date.now()\n             document.querySelector(\"#ws-id\").textContent = client_id;\n             var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);\n             ws.onmessage = function(event) {\n                 var messages = document.getElementById('messages')\n                 var message = document.createElement('li')\n                 var content = document.createTextNode(event.data)\n                 message.appendChild(content)\n                 messages.appendChild(message)\n             };\n             function sendMessage(event) {\n                 var input = document.getElementById(\"messageText\")\n                 ws.send(input.value)\n                 input.value = ''\n                 event.preventDefault()\n             }\n         </script>\n     </body>\n </html>\n \"\"\"\n \n \n class ConnectionManager:\n     def __init__(self):\n         self.active_connections: list[WebSocket] = []\n \n     async def connect(self, websocket: WebSocket):\n         await websocket.accept()\n         self.active_connections.append(websocket)\n \n     def disconnect(self, websocket: WebSocket):\n         self.active_connections.remove(websocket)\n \n     async def send_personal_message(self, message: str, websocket: WebSocket):\n         await websocket.send_text(message)\n \n     async def broadcast(self, message: str):\n         for connection in self.active_connections:\n             await connection.send_text(message)\n \n \n manager = ConnectionManager()"
+    },
+    {
+      "chunk_id": "49a92bec33c9aa0e8c78d62aeca75b5e04654158",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 7,
+      "heading_path": [
+        "WebSockets"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 1534,
+      "token_count": 312,
+      "text": "await websocket.send_text(message)\n \n     async def broadcast(self, message: str):\n         for connection in self.active_connections:\n             await connection.send_text(message)\n \n \n manager = ConnectionManager()\n \n \n @app.get(\"/\")\n async def get():\n     return HTMLResponse(html)\n \n \n @app.websocket(\"/ws/{client_id}\")\n async def websocket_endpoint(websocket: WebSocket, client_id: int):\n     await manager.connect(websocket)\n     try:\n         while True:\n             data = await websocket.receive_text()\n             await manager.send_personal_message(f\"You wrote: {data}\", websocket)\n             await manager.broadcast(f\"Client #{client_id} says: {data}\")\n     except WebSocketDisconnect:\n         manager.disconnect(websocket)\n         await manager.broadcast(f\"Client #{client_id} left the chat\")\n```\nTo try it out:\n- Open the app with several browser tabs.\n- Write messages from them.\n- Then close one of the tabs.\nThat will raise the `WebSocketDisconnect` exception, and all the other clients will receive a message like:\n```text\nClient #1596980209979 left the chat\n```\nThe app above is a minimal and simple example to demonstrate how to handle and broadcast messages to several WebSocket connections.\nBut keep in mind that, as everything is handled in memory, in a single list, it will only work while the process is running, and will only work with a single process.\nIf you need something easy to integrate with FastAPI but that is more robust, supported by Redis, PostgreSQL or others, check encode/broadcaster ."
+    },
+    {
+      "chunk_id": "004403517073b00a7841ed67ee120d949d460cc1",
+      "doc_id": "8320bc17f58bd4427b91caf7ab7aceb2143b3203aba29f29116b8829e5f62f31",
+      "source_file": "advanced/websockets.md",
+      "chunk_index": 8,
+      "heading_path": [
+        "WebSockets",
+        "More info"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 128,
+      "token_count": 25,
+      "text": "To learn more about the options, check Starlette's documentation for:\n- The WebSocket class .\n- Class-based WebSocket handling ."
+    }
+  ]
+}

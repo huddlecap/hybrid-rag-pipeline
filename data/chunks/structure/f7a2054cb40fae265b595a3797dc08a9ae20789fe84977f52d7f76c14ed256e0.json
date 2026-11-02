@@ -1,0 +1,23 @@
+{
+  "doc_id": "f7a2054cb40fae265b595a3797dc08a9ae20789fe84977f52d7f76c14ed256e0",
+  "source_file": "management.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "29bda553212cdcf0d5cdacecc9d3b08ed668f211",
+      "doc_id": "f7a2054cb40fae265b595a3797dc08a9ae20789fe84977f52d7f76c14ed256e0",
+      "source_file": "management.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Repository Management"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 404,
+      "token_count": 101,
+      "text": "Here's a short description of how the FastAPI repository is managed and maintained.\n\nI, @tiangolo , am the creator and owner of the FastAPI repository. 🤓\nI normally give the final review to each PR before merging them. I make the final decisions on the project, I'm the BDFL . 😅\n\nThere's a team of people that help manage and maintain the project. 😎\nLearn more about it in tiangolo.com - GitHub FastAPI ."
+    }
+  ]
+}

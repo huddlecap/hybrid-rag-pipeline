@@ -1,0 +1,159 @@
+{
+  "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+  "source_file": "tutorial/body-nested-models.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 10,
+  "chunks": [
+    {
+      "chunk_id": "8544f2cce0d39f86d0bcf6a90fa870a35b5fa135",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Body - Nested Models"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 685,
+      "token_count": 174,
+      "text": "With FastAPI , you can define, validate, document, and use arbitrarily deeply nested models (thanks to Pydantic).\n\nYou can define an attribute to be a subtype. For example, a Python `list` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: list = []\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nThis will make `tags` be a list, although it doesn't declare the type of the elements of the list."
+    },
+    {
+      "chunk_id": "6ae71a377aea776656dba0acf754ccef233feeee",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Body - Nested Models",
+        "List fields with type parameter"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 905,
+      "token_count": 223,
+      "text": "But Python has a specific way to declare lists with internal types, or \"type parameters\":\n\nTo declare types that have type parameters (internal types), like `list` , `dict` , `tuple` ,\npass the internal type(s) as \"type parameters\" using square brackets: `[` and `]`\n```Python\nmy_list: list[str]\n```\nThat's all standard Python syntax for type declarations.\nUse that same standard syntax for model attributes with internal types.\nSo, in our example, we can make `tags` be specifically a \"list of strings\":\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: list[str] = []\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```"
+    },
+    {
+      "chunk_id": "5c98621dad7200bd193ad6448657014d2e9a3d0c",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 2,
+      "heading_path": [
+        "Body - Nested Models",
+        "Set types"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 908,
+      "token_count": 221,
+      "text": "But then we think about it, and realize that tags shouldn't repeat, they would probably be unique strings.\nAnd Python has a special data type for sets of unique items, the `set` .\nThen we can declare `tags` as a set of strings:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nWith this, even if you receive a request with duplicate data, it will be converted to a set of unique items.\nAnd whenever you output that data, even if the source had duplicates, it will be output as a set of unique items.\nAnd it will be annotated / documented accordingly too."
+    },
+    {
+      "chunk_id": "7b5f30a00316dc9472dd89637e78f95258a3d13f",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 3,
+      "heading_path": [
+        "Body - Nested Models",
+        "Nested Models"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 770,
+      "token_count": 195,
+      "text": "Each attribute of a Pydantic model has a type.\nBut that type can itself be another Pydantic model.\nSo, you can declare deeply nested JSON \"objects\" with specific attribute names, types and validations.\nAll that, arbitrarily nested.\n\nFor example, we can define an `Image` model:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Image(BaseModel):\n     url: str\n     name: str\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n     image: Image | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```"
+    },
+    {
+      "chunk_id": "d6adb9f1ff9f931378fb2842940f1ebb5001cf1d",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 4,
+      "heading_path": [
+        "Body - Nested Models",
+        "Nested Models",
+        "Use the submodel as a type"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 1026,
+      "token_count": 280,
+      "text": "And then we can use it as the type of an attribute:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Image(BaseModel):\n     url: str\n     name: str\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n     image: Image | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nThis would mean that FastAPI would expect a body similar to:\n```JSON\n{\n    \"name\": \"Foo\",\n    \"description\": \"The pretender\",\n    \"price\": 42.0,\n    \"tax\": 3.2,\n    \"tags\": [\"rock\", \"metal\", \"bar\"],\n    \"image\": {\n        \"url\": \"http://example.com/baz.jpg\",\n        \"name\": \"The Foo live\"\n    }\n}\n```\nAgain, doing just that declaration, with FastAPI you get:\n- Editor support (completion, etc.), even for nested models\n- Data conversion\n- Data validation\n- Automatic documentation"
+    },
+    {
+      "chunk_id": "e9c0db5829255614c3a232ecb711e16f02ac5bd7",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 5,
+      "heading_path": [
+        "Body - Nested Models",
+        "Special types and validation"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 994,
+      "token_count": 263,
+      "text": "Apart from normal singular types like `str` , `int` , `float` , etc. you can use more complex singular types that inherit from `str` .\nTo see all the options you have, check out Pydantic's Type Overview . You will see some examples in the next chapter.\nFor example, as in the `Image` model we have a `url` field, we can declare it to be an instance of Pydantic's `HttpUrl` instead of a `str` :\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Image(BaseModel):\n     url: HttpUrl\n     name: str\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n     image: Image | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nThe string will be checked to be a valid URL, and documented in JSON Schema / OpenAPI as such."
+    },
+    {
+      "chunk_id": "eedf1f90afcef08b4a688dcc3ec2c781598fef77",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 6,
+      "heading_path": [
+        "Body - Nested Models",
+        "Attributes with lists of submodels"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 1116,
+      "token_count": 314,
+      "text": "You can also use Pydantic models as subtypes of `list` , `set` , etc.:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Image(BaseModel):\n     url: HttpUrl\n     name: str\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n     images: list[Image] | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nThis will expect (convert, validate, document, etc.) a JSON body like:\n```JSON\n{\n    \"name\": \"Foo\",\n    \"description\": \"The pretender\",\n    \"price\": 42.0,\n    \"tax\": 3.2,\n    \"tags\": [\n        \"rock\",\n        \"metal\",\n        \"bar\"\n    ],\n    \"images\": [\n        {\n            \"url\": \"http://example.com/baz.jpg\",\n            \"name\": \"The Foo live\"\n        },\n        {\n            \"url\": \"http://example.com/dave.jpg\",\n            \"name\": \"The Baz\"\n        }\n    ]\n}\n```\nNotice how the `images` key now has a list of image objects."
+    },
+    {
+      "chunk_id": "0f44e922cd92b43aa5fdae3a462e4edbd31309b9",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 7,
+      "heading_path": [
+        "Body - Nested Models",
+        "Deeply nested models"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 704,
+      "token_count": 185,
+      "text": "You can define arbitrarily deeply nested models:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Image(BaseModel):\n     url: HttpUrl\n     name: str\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n     tags: set[str] = set()\n     images: list[Image] | None = None\n \n \n class Offer(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     items: list[Item]\n \n \n @app.post(\"/offers/\")\n async def create_offer(offer: Offer):\n     return offer\n```\nNotice how `Offer` has a list of `Item` s, which in turn have an optional list of `Image` s"
+    },
+    {
+      "chunk_id": "f4265bb1126d1725d18a1570b0fdd453df73c5ff",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 8,
+      "heading_path": [
+        "Body - Nested Models",
+        "Bodies of pure lists"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 496,
+      "token_count": 126,
+      "text": "If the top level value of the JSON body you expect is a JSON `array` (a Python `list` ), you can declare the type in the parameter of the function, the same as in Pydantic models:\n```Python\nimages: list[Image]\n```\nas in:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel, HttpUrl\n \n app = FastAPI()\n \n \n class Image(BaseModel):\n     url: HttpUrl\n     name: str\n \n \n @app.post(\"/images/multiple/\")\n async def create_multiple_images(images: list[Image]):\n     return images\n```"
+    },
+    {
+      "chunk_id": "225239c7f939ad86f377a3e337d5fe7380a54c30",
+      "doc_id": "87c1ff04f9dc7c885be837cb992ebdf695907eecd9acc929faa1b7a184120f48",
+      "source_file": "tutorial/body-nested-models.md",
+      "chunk_index": 9,
+      "heading_path": [
+        "Body - Nested Models",
+        "Editor support everywhere"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 1687,
+      "token_count": 377,
+      "text": "And you get editor support everywhere.\nEven for items inside of lists:\nYou couldn't get this kind of editor support if you were working directly with `dict` instead of Pydantic models.\nBut you don't have to worry about them either, incoming dicts are converted automatically and your output is converted automatically to JSON too.\n\nYou can also declare a body as a `dict` with keys of some type and values of some other type.\nThis way, you don't have to know beforehand what the valid field/attribute names are (as would be the case with Pydantic models).\nThis would be useful if you want to receive keys that you don't already know.\n---\nAnother useful case is when you want to have keys of another type (e.g., `int` ).\nThat's what we are going to see here.\nIn this case, you would accept any `dict` as long as it has `int` keys with `float` values:\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.post(\"/index-weights/\")\n async def create_index_weights(weights: dict[int, float]):\n     return weights\n```\nKeep in mind that JSON only supports `str` as keys.\nBut Pydantic has automatic data conversion.\nThis means that, even though your API clients can only send strings as keys, as long as those strings contain pure integers, Pydantic will convert them and validate them.\nAnd the `dict` you receive as `weights` will actually have `int` keys and `float` values.\n\nWith FastAPI you have the maximum flexibility provided by Pydantic models, while keeping your code simple, short and elegant.\nBut with all the benefits:\n- Editor support (completion everywhere!)\n- Data conversion (a.k.a. parsing / serialization)\n- Data validation\n- Schema documentation\n- Automatic docs"
+    }
+  ]
+}

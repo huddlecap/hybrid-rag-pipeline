@@ -1,0 +1,23 @@
+{
+  "doc_id": "620b83b00fa7bd7c3a6ffa4c1675232f08c7662806847b2bb6769b3ef45e4303",
+  "source_file": "resources/index.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "fd9cc486c3e4d520f2caedca04ac86062de4fd2c",
+      "doc_id": "620b83b00fa7bd7c3a6ffa4c1675232f08c7662806847b2bb6769b3ef45e4303",
+      "source_file": "resources/index.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Resources"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 50,
+      "token_count": 12,
+      "text": "Additional resources, external links, and more. ✈️"
+    }
+  ]
+}

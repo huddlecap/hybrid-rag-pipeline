@@ -1,0 +1,23 @@
+{
+  "doc_id": "7fc7c1b8504cdb80e8ab1fcf232e12b45a9a4b06d2603bca45b32afb44995c7e",
+  "source_file": "reference/apirouter.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "a292d3e02d50cc448101d43777f4351747dc5faf",
+      "doc_id": "7fc7c1b8504cdb80e8ab1fcf232e12b45a9a4b06d2603bca45b32afb44995c7e",
+      "source_file": "reference/apirouter.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "APIRouter class"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 367,
+      "token_count": 98,
+      "text": "Here's the reference information for the `APIRouter` class, with all its parameters, attributes and methods.\nYou can import the `APIRouter` class directly from `fastapi` :\n```python\nfrom fastapi import APIRouter\n```\n::: fastapi.APIRouter\noptions:\nmembers:\n- websocket\n- include_router\n- frontend\n- get\n- put\n- post\n- delete\n- options\n- head\n- patch\n- trace\n- on_event"
+    }
+  ]
+}

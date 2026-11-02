@@ -1,0 +1,23 @@
+{
+  "doc_id": "accb670db6bc727d40aca998f2cef1a6c510c0f76cf5d9b84bf5c39e45dbfb72",
+  "source_file": "learn/index.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "2c992318620b439863841def2fe04edf40f33a96",
+      "doc_id": "accb670db6bc727d40aca998f2cef1a6c510c0f76cf5d9b84bf5c39e45dbfb72",
+      "source_file": "learn/index.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Learn"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 168,
+      "token_count": 35,
+      "text": "Here are the introductory sections and the tutorials to learn FastAPI .\nYou could consider this a book , a course , the official and recommended way to learn FastAPI. 😎"
+    }
+  ]
+}

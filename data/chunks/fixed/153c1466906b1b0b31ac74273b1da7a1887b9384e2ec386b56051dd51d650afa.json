@@ -1,0 +1,23 @@
+{
+  "doc_id": "153c1466906b1b0b31ac74273b1da7a1887b9384e2ec386b56051dd51d650afa",
+  "source_file": "reference/index.md",
+  "strategy": "fixed",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "a132f0fd07eefbbefe9c72a57d4e4c49be4f9efa",
+      "doc_id": "153c1466906b1b0b31ac74273b1da7a1887b9384e2ec386b56051dd51d650afa",
+      "source_file": "reference/index.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Reference"
+      ],
+      "page_number": null,
+      "strategy": "fixed",
+      "char_count": 225,
+      "token_count": 49,
+      "text": "Here's the reference or code API, the classes, functions, parameters, attributes, and\nall the FastAPI parts you can use in your applications.\nIf you want to learn FastAPI you are much better off reading the FastAPI Tutorial ."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "doc_id": "b33fe420bac7a66e3ed06f242d5001c47f0d35be5fcd8bea9e43e2a7f829865d",
+  "source_file": "reference/openapi/docs.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "778f2380fee8164d155ca72b88868ba1daf6559f",
+      "doc_id": "b33fe420bac7a66e3ed06f242d5001c47f0d35be5fcd8bea9e43e2a7f829865d",
+      "source_file": "reference/openapi/docs.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "OpenAPI docs"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 339,
+      "token_count": 80,
+      "text": "Utilities to handle OpenAPI automatic UI documentation, including Swagger UI (by default at `/docs` ) and ReDoc (by default at `/redoc` ).\n::: fastapi.openapi.docs.get_swagger_ui_html\n::: fastapi.openapi.docs.get_redoc_html\n::: fastapi.openapi.docs.get_swagger_ui_oauth2_redirect_html\n::: fastapi.openapi.docs.swagger_ui_default_parameters"
+    }
+  ]
+}

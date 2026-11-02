@@ -23,3 +23,18 @@ The file name is kept alongside as a readable label.
 
 A loaded/skipped summary is printed at the end.
 **Why:** One bad file shouldn't block the rest, and nothing is hidden. The skipped list also feeds the "what did not work" section.
+
+## Phase 1, Step 2: Configurable Chunking
+
+### 1. Fixed-size baseline: ~500 tokens, ~50 tokens overlap
+
+**Why:** The usual starting point, so it's a fair baseline to beat. Kept as a setting so the eval can test other sizes.
+
+### 2. Structure-aware: split big sections, merge tiny ones
+
+Every chunk keeps its heading path.
+**Why:** Near-empty chunks waste search results, and oversized ones are what the baseline already does badly. This strategy has to fix both to be a fair competitor.
+
+### 3. Semantic: split at the biggest meaning drops in each document (top ~5%), with a max chunk size
+
+**Why:** No magic number to guess, and it behaves consistently across documents. The max size stops a chunk from growing huge when a document never changes topic.

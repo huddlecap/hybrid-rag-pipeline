@@ -1,0 +1,38 @@
+{
+  "doc_id": "2b0b1c3218818cb05b679ea0f80f1fe6493cf43fbf651305411b3e2b44a122b2",
+  "source_file": "tutorial/request-forms-and-files.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "chunk_id": "dbba6b7d9b65aaa8da8e0f83c486fb6367e2c56b",
+      "doc_id": "2b0b1c3218818cb05b679ea0f80f1fe6493cf43fbf651305411b3e2b44a122b2",
+      "source_file": "tutorial/request-forms-and-files.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Request Forms and Files"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 640,
+      "token_count": 157,
+      "text": "You can define files and form fields at the same time using `File` and `Form` .\nTo receive uploaded files and/or form data, first install python-multipart .\nAdd it to your project:\n```console\n$ uv add python-multipart\n```\n\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, Form, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(\n     file: Annotated[bytes, File()],\n     fileb: Annotated[UploadFile, File()],\n     token: Annotated[str, Form()],\n ):\n     return {\n         \"file_size\": len(file),\n         \"token\": token,\n         \"fileb_content_type\": fileb.content_type,\n     }\n```"
+    },
+    {
+      "chunk_id": "8a72cb8524c66b13a846886e71b1a1232287ad85",
+      "doc_id": "2b0b1c3218818cb05b679ea0f80f1fe6493cf43fbf651305411b3e2b44a122b2",
+      "source_file": "tutorial/request-forms-and-files.md",
+      "chunk_index": 1,
+      "heading_path": [
+        "Request Forms and Files",
+        "Define File and Form parameters"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 1094,
+      "token_count": 260,
+      "text": "Create file and form parameters the same way you would for `Body` or `Query` :\n```python\n from typing import Annotated\n \n from fastapi import FastAPI, File, Form, UploadFile\n \n app = FastAPI()\n \n \n @app.post(\"/files/\")\n async def create_file(\n     file: Annotated[bytes, File()],\n     fileb: Annotated[UploadFile, File()],\n     token: Annotated[str, Form()],\n ):\n     return {\n         \"file_size\": len(file),\n         \"token\": token,\n         \"fileb_content_type\": fileb.content_type,\n     }\n```\nThe files and form fields will be uploaded as form data and you will receive the files and form fields.\nAnd you can declare some of the files as `bytes` and some as `UploadFile` .\nYou can declare multiple `File` and `Form` parameters in a path operation , but you can't also declare `Body` fields that you expect to receive as JSON, as the request will have the body encoded using `multipart/form-data` instead of `application/json` .\nThis is not a limitation of FastAPI , it's part of the HTTP protocol.\n\nUse `File` and `Form` together when you need to receive data and files in the same request."
+    }
+  ]
+}

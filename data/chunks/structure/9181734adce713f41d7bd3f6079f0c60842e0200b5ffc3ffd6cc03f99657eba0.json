@@ -1,0 +1,23 @@
+{
+  "doc_id": "9181734adce713f41d7bd3f6079f0c60842e0200b5ffc3ffd6cc03f99657eba0",
+  "source_file": "reference/sse.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "2fdee4d1f96a4be37e2ddcf8c014fdc7f86748a1",
+      "doc_id": "9181734adce713f41d7bd3f6079f0c60842e0200b5ffc3ffd6cc03f99657eba0",
+      "source_file": "reference/sse.md",
+      "chunk_index": 0,
+      "heading_path": [
+        "Server-Sent Events - EventSourceResponse and ServerSentEvent"
+      ],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 531,
+      "token_count": 141,
+      "text": "To stream Server-Sent Events (SSE), use `yield` in your path operation function and set `response_class=EventSourceResponse` .\nIf you need to set SSE fields like `event` , `id` , `retry` , or `comment` , you can `yield` `ServerSentEvent` objects instead of plain data.\nRead more about it in the FastAPI docs for Server-Sent Events (SSE) .\nYou can import them directly from `fastapi.sse` :\n```python\nfrom fastapi.sse import EventSourceResponse, ServerSentEvent\n```\n::: fastapi.sse.EventSourceResponse\n::: fastapi.sse.ServerSentEvent"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "doc_id": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+  "source_file": "translation-banner.md",
+  "strategy": "structure",
+  "chunker_version": "1.0.0",
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "chunk_id": "728784cec5747bd4f92538a32383c30276e561ec",
+      "doc_id": "55f3f738430273583b97595d37ca427e42f55eb0d546fdee2ce4a8840e4b1a46",
+      "source_file": "translation-banner.md",
+      "chunk_index": 0,
+      "heading_path": [],
+      "page_number": null,
+      "strategy": "structure",
+      "char_count": 266,
+      "token_count": 60,
+      "text": "🌐 Translation by AI and humans:\nThis translation was made by AI guided by humans. 🤝\nIt could have mistakes of misunderstanding the original meaning, or looking unnatural, etc. 🤖\nYou can improve this translation by helping us guide the AI LLM better .\nEnglish version"
+    }
+  ]
+}
