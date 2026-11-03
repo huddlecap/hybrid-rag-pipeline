@@ -44,3 +44,19 @@ Run it on all documents. Report, short:
 - Confirm that running twice gives identical files
 - One real example chunk for first-steps.md
   Then STOP.
+
+Now build the semantic strategy.
+
+- Use the local `fastembed` library with the `bge-small-en-v1.5` model to find topic boundaries. Do not save the embeddings yet.
+- Split at the top ~5% biggest meaning drops within each document, with a max chunk size of 800 tokens. Both are settings.
+- Same chunk fields as before. Save to data/chunks/semantic/.
+- Like structure-aware, never cut a code block in half (an oversized one stays whole and is logged).
+- Do not change the other two strategies (fixed-size and structure-aware).
+
+Run it on all documents. Report, short:
+
+- The actual embedding cost (should be $0)
+- The same metric table as before, with numbers, for semantic only: documents, total chunks, average/min/max/median tokens, chunks with missing heading path, empty chunks, documents with zero chunks, chunks under 100 tokens, code blocks cut, oversized code blocks kept whole.
+- Confirm that running twice gives identical files.
+- One real example chunk for first-steps.md.
+  Then STOP.

@@ -1,0 +1,207 @@
+{
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "chroma_dir": "data/index/chroma",
+  "bm25_dir": "data/index/bm25",
+  "ingested": [
+    {
+      "strategy": "fixed",
+      "json_chunks": 925,
+      "chroma_count": 925,
+      "bm25_count": 925,
+      "skipped": [],
+      "bm25_path": "data/index/bm25/fixed.pkl",
+      "bm25_bytes": 3867303
+    },
+    {
+      "strategy": "structure",
+      "json_chunks": 1247,
+      "chroma_count": 1247,
+      "bm25_count": 1247,
+      "skipped": [],
+      "bm25_path": "data/index/bm25/structure.pkl",
+      "bm25_bytes": 3926359
+    },
+    {
+      "strategy": "semantic",
+      "json_chunks": 1154,
+      "chroma_count": 1154,
+      "bm25_count": 1154,
+      "skipped": [],
+      "bm25_path": "data/index/bm25/semantic.pkl",
+      "bm25_bytes": 3834877
+    }
+  ],
+  "verifications": [
+    {
+      "strategy": "fixed",
+      "chroma_count": 925,
+      "bm25_count": 925,
+      "json_count": 925,
+      "counts_match": true,
+      "id_sets_match": true,
+      "duplicate_chroma_ids": 0,
+      "samples": [
+        {
+          "chunk_id": "addbc8f87abfd934641d29b3be8d0e0ccb4656d8",
+          "strategy": "fixed",
+          "source_file": "advanced/stream-data.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 205,
+          "preview": "pugBQoTnzjvn+kzLBh9GtRDjhleZFwbx3kugP3GvFzdkqRlbDYw0u/HxKjuOw2QxZCGL5V5f4l7cd6qs"
+        },
+        {
+          "chunk_id": "8a496cce4297b99e2a8e696c2e9ca8f32de4d1ba",
+          "strategy": "fixed",
+          "source_file": "tutorial/security/get-current-user.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 1496,
+          "preview": "In the previous chapter the security system (which is based on the dependency in"
+        },
+        {
+          "chunk_id": "20ed39fb3fc99bb661bbff69357c7f8f54d62c6e",
+          "strategy": "fixed",
+          "source_file": "tutorial/security/oauth2-jwt.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 1729,
+          "preview": "Now that we have all the security flow, let's make the application actually secu"
+        },
+        {
+          "chunk_id": "7a841f14c7df1e8cf9f6c34ab21f39a9fdff9106",
+          "strategy": "fixed",
+          "source_file": "history-design-future.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 638,
+          "preview": "By the time I started creating FastAPI itself, most of the pieces were already i"
+        },
+        {
+          "chunk_id": "102c203a6a39ace60f09524e82371c71c0fd7a76",
+          "strategy": "fixed",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 1596,
+          "preview": "- ✨ Add support for PEP695 TypeAliasType . PR #13920 by @cstruct .\n- ✨ Allow Res"
+        }
+      ],
+      "samples_all_match": true
+    },
+    {
+      "strategy": "structure",
+      "chroma_count": 1247,
+      "bm25_count": 1247,
+      "json_count": 1247,
+      "counts_match": true,
+      "id_sets_match": true,
+      "duplicate_chroma_ids": 0,
+      "samples": [
+        {
+          "chunk_id": "aa4cfc6fa93ddb4e7d12531429a1b19bd667dc46",
+          "strategy": "structure",
+          "source_file": "tutorial/bigger-applications.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 823,
+          "preview": "We see that we are going to need some dependencies used in several places of the"
+        },
+        {
+          "chunk_id": "a6e44ae659df48b3a4326b6e4561d13eae2e7aa5",
+          "strategy": "structure",
+          "source_file": "tutorial/security/oauth2-jwt.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 1374,
+          "preview": "Now that we have all the security flow, let's make the application actually secu"
+        },
+        {
+          "chunk_id": "f2cb3040013744f8b2c9beb7310ef276d7ddf1bc",
+          "strategy": "structure",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 793,
+          "preview": "Check out the Pydantic migration guide .\nFor the things that need changes in you"
+        },
+        {
+          "chunk_id": "cdee7424d8894dbe2e2505097ffac1e018afc513",
+          "strategy": "structure",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 353,
+          "preview": "- ⬆️ Allow Starlette 0.38.x, update the pin to >=0.37.2,<0.39.0 . PR #11876 by @"
+        },
+        {
+          "chunk_id": "eec8856f1e58cd6c599154c83045e95c67b88ea9",
+          "strategy": "structure",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 219,
+          "preview": "- ⬆️ Upgrade python-multipart to >=0.0.18. PR #13219 by @DanielKusyDev .\n- ⬆️ Bu"
+        }
+      ],
+      "samples_all_match": true
+    },
+    {
+      "strategy": "semantic",
+      "chroma_count": 1154,
+      "bm25_count": 1154,
+      "json_count": 1154,
+      "counts_match": true,
+      "id_sets_match": true,
+      "duplicate_chroma_ids": 0,
+      "samples": [
+        {
+          "chunk_id": "4b5988fee6384e01860970c7ee6cec3f02899d97",
+          "strategy": "semantic",
+          "source_file": "tutorial/response-status-code.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 1154,
+          "preview": "When something goes wrong at some part in your application code, or server, it w"
+        },
+        {
+          "chunk_id": "1a8a7be78bc945902dc19f68e2922a76be684e41",
+          "strategy": "semantic",
+          "source_file": "tutorial/security/oauth2-jwt.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 45,
+          "preview": "Create a real JWT access token and return it."
+        },
+        {
+          "chunk_id": "297f0c48f3d0011c07b7c7f2250bc118c809b4c0",
+          "strategy": "semantic",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 2331,
+          "preview": "Initial PR #2944 by @uSpike .\nNow, instead of using independent `startup` and `s"
+        },
+        {
+          "chunk_id": "f0caf992ac62ef6627c574736f12a81493172be4",
+          "strategy": "semantic",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 24,
+          "preview": "PR #11192 by @vusallyv ."
+        },
+        {
+          "chunk_id": "bb382e71f96cee1f62f01b08afc089f22aba3816",
+          "strategy": "semantic",
+          "source_file": "release-notes.md",
+          "chroma_equals_bm25": true,
+          "chroma_equals_json": true,
+          "chars": 584,
+          "preview": "PR #12194 by @Wurstnase .\n- 🌐 Add Portuguese translation for docs/pt/docs/tutori"
+        }
+      ],
+      "samples_all_match": true
+    }
+  ]
+}

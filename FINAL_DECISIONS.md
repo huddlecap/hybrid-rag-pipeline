@@ -43,3 +43,21 @@ Every chunk keeps its heading path.
 
 Used only to find semantic chunk boundaries, and later to embed chunks and queries for retrieval. Embeddings are not saved during chunking.
 **Why:** OpenAI `text-embedding-3-small` was the original plan, but it costs money. The local model keeps embedding cost at $0, runs offline, and needs no API key or quota. It is good enough for detecting topic boundaries on this corpus.
+
+## Phase 1, Step 1.3: generate and store embeddings
+
+### 1. ChromaDB Collection Layout: Three separate collections
+
+Why: Keeping the three chunking strategies (fixed, structure, semantic) in distinct collections makes the evaluation phase and metadata filtering much easier to manage.
+
+### 2. ID Scheme: Use existing `chunk_id` for both databases
+
+Why: Using the deterministic hash already generated in the JSON files guarantees automatic 1:1 synchronization between the vector database (ChromaDB) and the keyword index (BM25), avoiding messy mapping tables.
+
+### 3. BM25 Storage: Save to disk as `.pkl` files
+
+Why: Writing the index to disk during ingestion allows the API to load it instantly on startup, rather than rebuilding it from scratch in memory every time the server boots.
+
+### 4. Verification Method: Count plus ID cross-check
+
+Why: Checking total counts and randomly sampling IDs to ensure they point to the exact same text completely guarantees the hybrid search won't mix up results.
