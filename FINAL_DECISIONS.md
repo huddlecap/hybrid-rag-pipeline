@@ -61,3 +61,17 @@ Why: Writing the index to disk during ingestion allows the API to load it instan
 ### 4. Verification Method: Count plus ID cross-check
 
 Why: Checking total counts and randomly sampling IDs to ensure they point to the exact same text completely guarantees the hybrid search won't mix up results.
+
+Decision: When should the deduplication run?
+
+option 1: During Ingestion: Every time a new chunk is about to be inserted, search the database to see if a 95% match already exists. (Slower, but prevents duplicates from ever entering).
+
+optiton 2: Post-Processing Script: Since the database is already built, write a script that scans the whole ChromaDB in bulk, finds the >0.95 pairs, flags them, and removes the duplicates. (Much faster and easier to test).
+
+option 2. Running it as a separate script means we don't slow down your main ingestion pipeline, and we can easily review what it flagged before it deletes anything.
+
+## Phase 1, Step 1.4: Deduplication
+
+### 1. Deduplication Timing: Post-Processing Script
+
+Why: Running deduplication after ingestion prevents slowing down the main pipeline and allows easy review of flagged chunks before deletion.
