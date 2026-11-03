@@ -1,4 +1,4 @@
-"""Phase 2, Step 1: hybrid retrieval with Reciprocal Rank Fusion.
+"""Phase 2: hybrid retrieval with RRF and a local cross-encoder reranker.
 
 Dense search queries the selected ChromaDB collection with the same local
 fastembed model used for indexing. Sparse search runs BM25 over the matching
@@ -8,7 +8,8 @@ RRF:
     score(chunk) = vector_weight / (rrf_k + dense_rank)
                  + keyword_weight / (rrf_k + bm25_rank)
 
-No cross-encoder reranker is applied here.
+The fused candidates are then scored by a local fastembed cross-encoder and
+only the top reranked chunks are returned.
 """
 
 from __future__ import annotations
@@ -23,14 +24,17 @@ from typing import Any, Dict, List, Optional
 import chromadb
 from chromadb.config import Settings
 from fastembed import TextEmbedding
+from fastembed.rerank.cross_encoder import TextCrossEncoder
 
 from indexer import STRATEGIES, tokenize
 
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+RERANK_MODEL = "BAAI/bge-reranker-base"
 DEFAULT_TOP_K = 10
 DEFAULT_RRF_K = 60
 DEFAULT_VECTOR_WEIGHT = 0.5
 DEFAULT_KEYWORD_WEIGHT = 0.5
+DEFAULT_RERANK_TOP_K = 5
 
 logger = logging.getLogger("retriever")
 
@@ -141,6 +145,31 @@ def fuse(
     )
 
 
+def rerank_results(
+    query: str,
+    results: List[Dict[str, Any]],
+    reranker: TextCrossEncoder,
+    top_k: int,
+) -> List[Dict[str, Any]]:
+    if not results:
+        return []
+
+    scores = [
+        float(score)
+        for score in reranker.rerank(query, [item["text"] for item in results])
+    ]
+    if len(scores) != len(results):
+        raise RuntimeError("reranker returned a different number of scores than documents")
+
+    for item, score in zip(results, scores):
+        item["rerank_score"] = score
+
+    return sorted(
+        results,
+        key=lambda item: (-item["rerank_score"], item["chunk_id"]),
+    )[:top_k]
+
+
 def search(
     query: str,
     strategy: str = "structure",
@@ -151,6 +180,9 @@ def search(
     rrf_k: int = DEFAULT_RRF_K,
     vector_weight: float = DEFAULT_VECTOR_WEIGHT,
     keyword_weight: float = DEFAULT_KEYWORD_WEIGHT,
+    rerank: bool = True,
+    rerank_model: str = RERANK_MODEL,
+    rerank_top_k: int = DEFAULT_RERANK_TOP_K,
 ) -> Dict[str, Any]:
     if strategy not in STRATEGIES:
         raise ValueError(f"unknown strategy: {strategy}")
@@ -162,6 +194,8 @@ def search(
         raise ValueError("weights must be >= 0")
     if vector_weight == 0 and keyword_weight == 0:
         raise ValueError("at least one weight must be > 0")
+    if rerank_top_k < 1:
+        raise ValueError("rerank_top_k must be >= 1")
 
     chroma_dir = Path(chroma_dir)
     bm25_path = Path(bm25_dir) / f"{strategy}.pkl"
@@ -178,11 +212,31 @@ def search(
 
     dense_results = dense_search(collection, embedder, query, top_k)
     keyword_results = keyword_search(bm25_data, query, top_k)
-    results = fuse(dense_results, keyword_results, vector_weight, keyword_weight, rrf_k)
+    fused_results = fuse(
+        dense_results, keyword_results, vector_weight, keyword_weight, rrf_k
+    )
+
+    rrf_top = None
+    if fused_results:
+        rrf_top = {
+            "chunk_id": fused_results[0]["chunk_id"],
+            "source_file": fused_results[0]["source_file"],
+            "rrf_score": fused_results[0]["rrf_score"],
+        }
+
+    if rerank:
+        logger.info("loading cross-encoder model %s", rerank_model)
+        reranker = TextCrossEncoder(model_name=rerank_model)
+        results = rerank_results(query, fused_results, reranker, rerank_top_k)
+        rerank_model_used = rerank_model
+    else:
+        results = fused_results
+        rerank_model_used = None
 
     logger.info(
-        "query=%r strategy=%s dense=%d keyword=%d unique=%d",
-        query, strategy, len(dense_results), len(keyword_results), len(results),
+        "query=%r strategy=%s dense=%d keyword=%d fused=%d returned=%d rerank=%s",
+        query, strategy, len(dense_results), len(keyword_results),
+        len(fused_results), len(results), rerank_model_used,
     )
 
     return {
@@ -195,7 +249,13 @@ def search(
         "keyword_weight": keyword_weight,
         "dense_count": len(dense_results),
         "keyword_count": len(keyword_results),
-        "unique_chunks": len(results),
+        "unique_chunks": len(fused_results),
+        "fused_count": len(fused_results),
+        "rerank": rerank,
+        "rerank_model": rerank_model_used,
+        "rerank_top_k": rerank_top_k,
+        "rrf_top": rrf_top,
+        "result_count": len(results),
         "results": results,
     }
 
@@ -212,6 +272,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--rrf-k", type=int, default=DEFAULT_RRF_K)
     parser.add_argument("--vector-weight", type=float, default=DEFAULT_VECTOR_WEIGHT)
     parser.add_argument("--keyword-weight", type=float, default=DEFAULT_KEYWORD_WEIGHT)
+    parser.add_argument("--rerank-model", default=RERANK_MODEL)
+    parser.add_argument("--rerank-top-k", type=int, default=DEFAULT_RERANK_TOP_K)
+    parser.add_argument("--no-rerank", action="store_true")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--log", default="data/logs/retriever.log")
     args = parser.parse_args(argv)
@@ -232,6 +295,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         rrf_k=args.rrf_k,
         vector_weight=args.vector_weight,
         keyword_weight=args.keyword_weight,
+        rerank=not args.no_rerank,
+        rerank_model=args.rerank_model,
+        rerank_top_k=args.rerank_top_k,
     )
 
     if args.json:
@@ -244,11 +310,25 @@ def main(argv: Optional[List[str]] = None) -> int:
         f"Dense: {report['dense_count']}  BM25: {report['keyword_count']}  "
         f"Unique after fusion: {report['unique_chunks']}"
     )
+    print(
+        f"Reranker: {report['rerank_model'] or 'disabled'}  "
+        f"Returned: {report['result_count']}"
+    )
     for i, item in enumerate(report["results"], start=1):
+        rerank_part = (
+            f"  rerank {item['rerank_score']:.6f}"
+            if "rerank_score" in item
+            else ""
+        )
         print(
-            f"{i:2d}. {item['chunk_id']}  RRF {item['rrf_score']:.6f}  "
-            f"dense #{item['dense_rank']}  bm25 #{item['bm25_rank']}  "
-            f"source={item['source_file']}"
+            f"{i:2d}. {item['chunk_id']}  RRF {item['rrf_score']:.6f}"
+            f"{rerank_part}  dense #{item['dense_rank']}  "
+            f"bm25 #{item['bm25_rank']}  source={item['source_file']}"
+        )
+    if report["rerank"] and report["rrf_top"] and report["results"]:
+        print(
+            "Top chunk changed: "
+            f"{report['rrf_top']['chunk_id'] != report['results'][0]['chunk_id']}"
         )
     return 0
 
