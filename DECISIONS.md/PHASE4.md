@@ -22,7 +22,7 @@ Why: `search()` reuses module-level lazy caches for the embedder, reranker, Chro
 
 ### 6. Checkpointing: Save After Every Question
 
-Why: Results are written to `data/eval/checkpoint.json` immediately after each question, keyed by a SHA-256 hash of the question text. If the run fails on a quota or API error, completed questions are skipped on restart and no evaluation work is lost.
+Why: Results are written immediately after each question, keyed by a SHA-256 hash of the question text. If the run fails on a quota or API error, completed questions are skipped on restart and no evaluation work is lost. There is one checkpoint file per chunking strategy: `data/eval/checkpoint_fixed.json`, `checkpoint_structure.json`, and `checkpoint_semantic.json`.
 
 ### 7. Batched Evaluation: `--batch-size`
 
@@ -43,3 +43,23 @@ Why: `openai/gpt-oss-20b` uses reasoning tokens, and an 8-token output budget so
 ### 11. Final Evaluation Outcome
 
 Why: All 50 questions were completed without checkpoint data loss. Final metrics are retrieval 84.0%, correctness 68.0%, faithfulness 98.0%, and citation 74.0%. Questions 1–38 were judged by Qwen and questions 39–50 by `openai/gpt-oss-20b`, so the final numbers are not a single consistent-judge baseline.
+
+### 12. Strategy-Specific Golden Datasets
+
+Why: Each chunking strategy (fixed, structure, semantic) has its own evaluation dataset at `data/eval/golden_dataset_{strategy}.json`. Each entry maps a question to its best-matching chunk ID(s) in that strategy using fastembed cosine similarity, with up to 3 acceptable chunk IDs stored in `ground_truth_chunk_ids` to allow for answers that span chunks.
+
+### 13. Single-Pass Groq Judge
+
+Why: The judge was refactored to evaluate correctness, faithfulness, and citation accuracy in a single API call. It returns JSON with keys `correctness` (0/1), `faithfulness` (0/1), and `unsupported_citations` (list of citation strings). Citation accuracy is computed deterministically in Python: 1 if no citations exist or all citations are supported, else 0. One retry is performed on invalid JSON output.
+
+### 14. Strategy Routing with `--strategy`
+
+Why: `scripts/evaluate_pipeline.py` accepts `--strategy fixed|structure|semantic`. This flag simultaneously routes: (1) the ChromaDB vector collection, (2) the BM25 index, (3) the strategy-specific golden dataset file, and (4) the strategy-specific checkpoint file (`checkpoint_{strategy}.json`).
+
+### 15. Chunking Strategy Comparison Script
+
+Why: `scripts/compare_chunking.py` reads the three checkpoint files and displays N (number of evaluations completed), per-metric averages, and paired wins/losses between strategy pairs. It explicitly marks partial results and refuses to declare an overall winner if N values are mismatched across strategies.
+
+### 16. Chunking Strategy Comparison Report
+
+Why: `comparison_report.md` at the repo root contains the final comparison table showing which chunking strategy wins on retrieval relevance, answer correctness, faithfulness, and citation accuracy. Strategies compared are fixed-size, structure-aware, and semantic chunking, each evaluated on 30 questions under identical pipeline conditions.

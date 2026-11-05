@@ -1,0 +1,302 @@
+[
+  {
+    "question": "How do I include APIRouters from submodules into my main FastAPI application?",
+    "ground_truth_chunk_ids": [
+      "9d20b1b58d158f2af546a2a871f06eaa6a879df9",
+      "0ebec6c0b1611512360293abb432696451e1f125",
+      "488f83625e40b02e6a3ef34472ec1a36deef93de"
+    ],
+    "ground_truth_chunk_id": "9d20b1b58d158f2af546a2a871f06eaa6a879df9",
+    "ground_truth_text": "You import and create a `FastAPI` class as normally.\nAnd we can even declare global dependencies that will be combined with the dependencies for each `APIRouter` :\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```\nNow we import the other submodules that have `APIRouter` s:\n```python\n from fastapi import Depends, FastAPI\n \n from .dependencies import get_query_token, get_token_header\n from .internal import admin\n from .routers import items, users\n \n app = FastAPI(dependencies=[Depends(get_query_token)])\n \n \n app.include_router(users.router)\n app.include_router(items.router)\n app.include_router(\n     admin.router,\n     prefix=\"/admin\",\n     tags=[\"admin\"],\n     dependencies=[Depends(get_token_header)],\n     responses={418: {\"description\": \"I'm a teapot\"}},\n )\n \n \n @app.get(\"/\")\n async def root():\n     return {\"message\": \"Hello Bigger Applications!\"}\n```\nAs the files `app/routers/users.py` and `app/routers/items.py` are submodules that are part of the same Python package `app` , we can use a single dot `.` to import them using \"relative imports\".\nThe section:\n```Python\nfrom .routers import items, users\n```\nmeans:\n- Starting in the same package that this module (the file app/main.py ) lives in (the directory app/ )...\n- look for the subpackage routers (the directory at app/routers/ )...\n- and from it, import the submodule items (the file at app/routers/items.py ) and users (the file at app/routers/users.py )...\nThe module `items` will have a variable `router` ( `items.router` ).\nThis is the same one we created in the file `app/routers/items.py` , it's an `APIRouter` object.\nAnd then we do the same for the module `users` .\nWe could also import them like:\n```Python\nfrom app.routers import items, users\n```\nThe first version is a \"relative import\":\n```Python\nfrom .routers import items, users\n```\nThe second version is an \"absolute import\":\n```Python\nfrom app.routers import items, users\n```"
+  },
+  {
+    "question": "How do I validate nested Pydantic models in a FastAPI request body?",
+    "ground_truth_chunk_ids": [
+      "12a20d10dacadf3818fd657b518eb779b4ed7f5e",
+      "87be9204d13ce130d0b2c4c62af9beb3ff38fc29",
+      "b8a4b09ebcef25ee6bc830b24f4e3ff7af6040ff"
+    ],
+    "ground_truth_chunk_id": "12a20d10dacadf3818fd657b518eb779b4ed7f5e",
+    "ground_truth_text": "OpenAPI Pydantic models used to generate and validate the generated OpenAPI.\n::: fastapi.openapi.models"
+  },
+  {
+    "question": "What changes were made in FastAPI PR #2548 regarding Uvicorn dependencies?",
+    "ground_truth_chunk_ids": [
+      "631b9ed8b57c77a665700db3c815c40f65691ade",
+      "1380d2bdff234d53ad9c5d63e6715e1c48ca6e0e",
+      "5648b679feea88e476d7e416b4ad5fb705d9b1db"
+    ],
+    "ground_truth_chunk_id": "631b9ed8b57c77a665700db3c815c40f65691ade",
+    "ground_truth_text": "- ⬆️ Upgrade Uvicorn when installing fastapi[all] to the latest version including uvloop , the new range is uvicorn[standard] >=0.12.0,<0.14.0 .\nPR #2548 by @tiangolo .\n- 🐛 PR #2547 (read above) also fixes some false-positive mypy errors with callbacks parameters and when using the OAuth2 class.\n- 📝 Update Uvicorn installation instructions to use uvicorn[standard] (includes uvloop).\nPR #2543 by @tiangolo .\n- 📝 Update title for Deta tutorial.\nPR #2466 by @tiangolo .\n- 👥 Update FastAPI People.\nPR #2454 by @github-actions[bot] .\n- 🌐 Add docs lang selector widget.\nPR #2542 by @tiangolo .\n- 🌐 Add Chinese translation for Tutorial - Response Status Code.\nPR #2442 by @waynerv .\n- 🌐 Start translation of the documentation for the Albanian language.\nPR #2516 by @vjanz .\n- 🌐 Add Chinese translation for Tutorial - Extra Models.\nPR #2416 by @waynerv .\n- 🌐 Add Chinese translation for Tutorial - Response Model.\nPR #2414 by @waynerv .\n- 🌐 Add Chinese translation for Tutorial - Schema Extra Example.\nPR #2411 by @maoyibo .\n- 🌐 Add Korean translation for Index.\nPR #2192 by @hard-coders .\n- 🌐 Add Japanese translation for Advanced User Guide - Additional Status Codes.\nPR #2145 by @Attsun1031 .\n- 🐛 Fix docs overrides directory for translations.\nPR #2541 by @tiangolo .\n- ➖ Remove Typer as a docs building dependency (covered by typer-cli) to fix pip resolver conflicts.\nPR #2539 by @tiangolo .\n- ✨ Add newsletter: FastAPI and friends.\nPR #2509 by @tiangolo .\n- ✨ Add new Gold Sponsor: InvestSuite 🎉.\nPR #2508 by @tiangolo .\n- 🔧 Add issue template configs.\nPR #2476 by @tiangolo .\n- ✨ Add support for shared/top-level parameters (dependencies, tags, etc).\nPR #2434 by @tiangolo ."
+  },
+  {
+    "question": "How can I include custom HTTP headers in an HTTPException when using FastAPI?",
+    "ground_truth_chunk_ids": [
+      "8f6a9a03d8c6f9c2161693330ac4c04860b9d5d8",
+      "972f2c3f156207a77a26e2e57873ec6160d71200",
+      "ee3afc39158930cbb0e7c3d0b72ec128900591d1"
+    ],
+    "ground_truth_chunk_id": "8f6a9a03d8c6f9c2161693330ac4c04860b9d5d8",
+    "ground_truth_text": "You can use:\n- HTTPException\n- WebSocketException\nThese exceptions can be imported directly from `fastapi` :\n```python\nfrom fastapi import HTTPException, WebSocketException\n```\n::: fastapi.HTTPException\n::: fastapi.WebSocketException"
+  },
+  {
+    "question": "Why does Swagger UI fail to display multiple body examples defined via the examples parameter in FastAPI's Annotated Body specification, and what is the underlying reason related to JSON Schema support",
+    "ground_truth_chunk_ids": [
+      "f15dfc2d5a913931c367827a8c656d2fe4ed21e9",
+      "708cdb2fb0e7ffaf98c8f8dc9964c79b0c3b8a3c",
+      "bbf4d1dd90964b9d4626ef410012d9c8e157f448"
+    ],
+    "ground_truth_chunk_id": "f15dfc2d5a913931c367827a8c656d2fe4ed21e9",
+    "ground_truth_text": "But read below for a workaround.\nSince before JSON Schema supported `examples` , OpenAPI had support for a different field also called `examples` .\nThis OpenAPI-specific `examples` goes in another section in the OpenAPI specification.\nIt goes in the details for each path operation , not inside each JSON Schema.\nAnd Swagger UI has supported this particular `examples` field for a while.\nSo, you can use it to show different examples in the docs UI .\nThe shape of this OpenAPI-specific field `examples` is a `dict` with multiple examples (instead of a `list` ), each with extra information that will be added to OpenAPI too.\nThis doesn't go inside of each JSON Schema contained in OpenAPI, this goes outside, in the path operation directly.\nYou can declare the OpenAPI-specific `examples` in FastAPI with the parameter `openapi_examples` for:\n- Path()\n- Query()\n- Header()\n- Cookie()\n- Body()\n- Form()\n- File()\nThe keys of the `dict` identify each example, and each value is another `dict` .\nEach specific example `dict` in the `examples` can contain:\n- summary : Short description for the example.\n- description : A long description that can contain Markdown text.\n- value : This is the actual example shown, e.g. a dict .\n- externalValue : alternative to value , a URL pointing to the example.\nAlthough this might not be supported by as many tools as value .\nYou can use it like this:\n```python\n from typing import Annotated\n \n from fastapi import Body, FastAPI\n from pydantic import BaseModel\n \n app = FastAPI()\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(\n     *,\n     item_id: int,\n     item: Annotated[\n         Item,\n         Body(\n             openapi_examples={\n                 \"normal\": {\n                     \"summary\": \"A normal example\",\n                     \"description\": \"A **normal** item works correctly.\",\n                     \"value\": {\n                         \"name\": \"Foo\",\n                         \"description\": \"A very nice Item\",\n                         \"price\": 35.4,\n                         \"tax\": 3.2,\n                     },\n                 },\n                 \"converted\": {\n                     \"summary\": \"An example with converted data\",\n                     \"description\": \"FastAPI can convert price `strings` to actual `numbers` automatically\",\n                     \"value\": {\n                         \"name\": \"Bar\",\n                         \"price\": \"35.4\",\n                     },\n                 },\n                 \"invalid\": {\n                     \"summary\": \"Invalid data is rejected with an error\",\n                     \"value\": {\n                         \"name\": \"Baz\",\n                         \"price\": \"thirty five point four\",\n                     },\n                 },\n             },\n         ),\n     ],\n ):\n     results = {\"item_id\": item_id, \"item\": item}\n     return results\n```\nWith `openapi_examples` added to `Body()` the `/docs` would look like:\nIf you are already using FastAPI version 0.99.0 or above , you can probably skip these details.\nThey are more relevant for older versions, before OpenAPI 3.1.0 was available.\nYou can consider this a brief OpenAPI and JSON Schema history lesson . 🤓\nThese are very technical details about the standards JSON Schema and OpenAPI ."
+  },
+  {
+    "question": "How do I serve Swagger UI and ReDoc from a local static directory instead of the default CDN in FastAPI, and what is the required code to disable the default documentation routes and mount custom endpoints pointing to my local static files?",
+    "ground_truth_chunk_ids": [
+      "12263d0baf4f558e777f72ab1888a318a080fd11",
+      "32b68735a306e28f244793d65b41a3ba3082fd6c",
+      "bfb9b8f29364a62b3e31ff8cc8dd217d42a6707a"
+    ],
+    "ground_truth_chunk_id": "12263d0baf4f558e777f72ab1888a318a080fd11",
+    "ground_truth_text": "```JavaScript\n/*! For license information please see redoc.standalone.js.LICENSE.txt */\n!function(e,t){\"object\"==typeof exports&&\"object\"==typeof module?module.exports=t(require(\"null\")):\n...\n```\nThat confirms that you are being able to serve static files from your app, and that you placed the static files for the docs in the correct place.\nNow we can configure the app to use those static files for the docs.\nThe same as when using a custom CDN, the first step is to disable the automatic docs, as those use the CDN by default.\nTo disable them, set their URLs to `None` when creating your `FastAPI` app:\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```\nAnd the same way as with a custom CDN, now you can create the path operations for the custom docs.\nAgain, you can reuse FastAPI's internal functions to create the HTML pages for the docs, and pass them the needed arguments:\n- openapi_url : the URL where the HTML page for the docs can get the OpenAPI schema for your API.\nYou can use here the attribute app.openapi_url .\n- title : the title of your API.\n- oauth2_redirect_url : you can use app.swagger_ui_oauth2_redirect_url here to use the default.\n- swagger_js_url : the URL where the HTML for your Swagger UI docs can get the JavaScript file.\nThis is the one that your own app is now serving .\n- swagger_css_url : the URL where the HTML for your Swagger UI docs can get the CSS file.\nThis is the one that your own app is now serving ."
+  },
+  {
+    "question": "What does the trailing dot (.) signify in the command `docker build -t myimage .` and how does it tell Docker where to find the build context?",
+    "ground_truth_chunk_ids": [
+      "0179a828933ce96aa4ff29cd8b4087602b81ca37",
+      "b55a8ce98a9377a1343743d76acb3059a5ece540",
+      "4fa53e3c78874b674d3e409f9d377e79f7efbf73"
+    ],
+    "ground_truth_chunk_id": "0179a828933ce96aa4ff29cd8b4087602b81ca37",
+    "ground_truth_text": "```Dockerfile\nCOPY ./app /code/app\n```\nNow that all the files are in place, let's build the container image.\n- Go to the project directory (in where your Dockerfile is, containing your app directory).\n- Build your FastAPI image:\n```console\n$ docker build -t myimage .\n\n---> 100%\n```\nNotice the `.` at the end, it's equivalent to `./` , it tells Docker the directory to use to build the container image.\nIn this case, it's the same current directory ( `.` ).\n- Run a container based on your image:\n```console\n$ docker run -d --name mycontainer -p 80:80 myimage\n```\nYou should be able to check it in your Docker container's URL, for example: http://192.168.99.100/items/5?q=somequery or http://127.0.0.1/items/5?q=somequery (or equivalent, using your Docker host).\nYou will see something like:\n```JSON\n{\"item_id\": 5, \"q\": \"somequery\"}\n```\nNow you can go to http://192.168.99.100/docs or http://127.0.0.1/docs (or equivalent, using your Docker host).\nYou will see the automatic interactive API documentation (provided by Swagger UI ):\nSwagger UI\nAnd you can also go to http://192.168.99.100/redoc or http://127.0.0.1/redoc (or equivalent, using your Docker host).\nYou will see the alternative automatic documentation (provided by ReDoc ):\nReDoc\nIf your FastAPI is a single file, for example, `main.py` without an `./app` directory, your file structure could look like this:\n```text\n.\n├── Dockerfile\n├── main.py\n└── requirements.txt\n```\nThen you would just have to change the corresponding paths to copy the file inside the `Dockerfile` :\n```{\nFROM python:3.14\n\nWORKDIR /code\n\nCOPY ./requirements.txt /code/requirements.txt\n\nRUN pip install --no-cache-dir --upgrade -r /code/requirements.txt\n\n# (1)!\nCOPY ./main.py /code/\n\n# (2)!\nCMD [\"fastapi\", \"run\", \"main.py\", \"--port\", \"80\"]\n```\n1."
+  },
+  {
+    "question": "How do I serve static files in FastAPI and what is the import path for the required class?",
+    "ground_truth_chunk_ids": [
+      "3621016500ba30b9427c5428bb842489d056cdf0",
+      "f4a04aa1bdfef94df61ba269bf44eac77a878d45",
+      "12263d0baf4f558e777f72ab1888a318a080fd11"
+    ],
+    "ground_truth_chunk_id": "3621016500ba30b9427c5428bb842489d056cdf0",
+    "ground_truth_text": "You can serve static files automatically from a directory using `StaticFiles` .\nIf you need to host a frontend, use `app.frontend()` instead, read about it in Frontend .\n`app.frontend()` uses `StaticFiles` underneath, with several additional advantages for frontends, like handling client-side routing.\n- Import StaticFiles .\n- \"Mount\" a StaticFiles() instance in a specific path.\n```python\n from fastapi import FastAPI\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI()\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n```\nTechnical Details:\nYou could also use `from starlette.staticfiles import StaticFiles` .\nFastAPI provides the same `starlette.staticfiles` as `fastapi.staticfiles` just as a convenience for you, the developer.\nBut it actually comes directly from Starlette."
+  },
+  {
+    "question": "How can I create custom Swagger UI and ReDoc paths in FastAPI to use specific CDN URLs for the JavaScript and CSS files, and what is the purpose of the `swagger_ui_redirect` path operation when using OAuth2?",
+    "ground_truth_chunk_ids": [
+      "48e224083110fda9ce9d44f07c9730d9ef2e1aa4",
+      "bfb9b8f29364a62b3e31ff8cc8dd217d42a6707a",
+      "4de581b4f73df4853790f28bb30514f40b1343b8"
+    ],
+    "ground_truth_chunk_id": "48e224083110fda9ce9d44f07c9730d9ef2e1aa4",
+    "ground_truth_text": "```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```\nThe path operation for `swagger_ui_redirect` is a helper for when you use OAuth2.\nIf you integrate your API with an OAuth2 provider, you will be able to authenticate and come back to the API docs with the acquired credentials.\nAnd interact with it using the real OAuth2 authentication.\nSwagger UI will handle it behind the scenes for you, but it needs this \"redirect\" helper.\nNow, to be able to test that everything works, create a path operation :\n```python\n from fastapi import FastAPI\n from fastapi.openapi.docs import (\n     get_redoc_html,\n     get_swagger_ui_html,\n     get_swagger_ui_oauth2_redirect_html,\n )\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI(docs_url=None, redoc_url=None)\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n \n \n @app.get(\"/docs\", include_in_schema=False)\n async def custom_swagger_ui_html():\n     return get_swagger_ui_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - Swagger UI\",\n         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,\n         swagger_js_url=\"/static/swagger-ui-bundle.js\",\n         swagger_css_url=\"/static/swagger-ui.css\",\n     )\n \n \n @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)\n async def swagger_ui_redirect():\n     return get_swagger_ui_oauth2_redirect_html()\n \n \n @app.get(\"/redoc\", include_in_schema=False)\n async def redoc_html():\n     return get_redoc_html(\n         openapi_url=app.openapi_url,\n         title=app.title + \" - ReDoc\",\n         redoc_js_url=\"/static/redoc.standalone.js\",\n     )\n \n \n @app.get(\"/users/{username}\")\n async def read_user(username: str):\n     return {\"message\": f\"Hello {username}\"}\n```\nNow, you should be able to disconnect your WiFi, go to your docs at http://127.0.0.1:8000/docs , and reload the page.\nAnd even without Internet, you would be able to see the docs for your API and interact with it."
+  },
+  {
+    "question": "Why does FastAPI require Pydantic models instead of plain dicts, and how does this affect type checking and auto-completion in IDEs like PyCharm?",
+    "ground_truth_chunk_ids": [
+      "0aea49f4ad5668bd035bb0fc40274f5867e6f7e3",
+      "b2957a7506f12b145180f5e30793f1e496678083",
+      "99959a59a7f707ce04754e17f77c19b99737bc78"
+    ],
+    "ground_truth_chunk_id": "0aea49f4ad5668bd035bb0fc40274f5867e6f7e3",
+    "ground_truth_text": "But you would get the same editor support with PyCharm and most of the other Python editors:\nIf you use PyCharm as your editor, you can use the Pydantic PyCharm Plugin .\nIt improves editor support for Pydantic models, with:\n- auto-completion\n- type checks\n- refactoring\n- searching\n- inspections\nInside of the function, you can access all the attributes of the model object directly:\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n app = FastAPI()\n \n \n @app.post(\"/items/\")\n async def create_item(item: Item):\n     item_dict = item.model_dump()\n     if item.tax is not None:\n         price_with_tax = item.price + item.tax\n         item_dict.update({\"price_with_tax\": price_with_tax})\n     return item_dict\n```\nYou can declare path parameters and request body at the same time.\nFastAPI will recognize that the function parameters that match path parameters should be taken from the path , and that function parameters that are declared to be Pydantic models should be taken from the request body .\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n app = FastAPI()\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item):\n     return {\"item_id\": item_id, **item.model_dump()}\n```\nYou can also declare body , path and query parameters, all at the same time.\nFastAPI will recognize each of them and take the data from the correct place.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n \n \n class Item(BaseModel):\n     name: str\n     description: str | None = None\n     price: float\n     tax: float | None = None\n \n \n app = FastAPI()\n \n \n @app.put(\"/items/{item_id}\")\n async def update_item(item_id: int, item: Item, q: str | None = None):\n     result = {\"item_id\": item_id, **item.model_dump()}\n     if q:\n         result.update({\"q\": q})\n     return result\n```\nThe function parameters will be recognized as follows:\n- If the parameter is also declared in the path , it will be used as a path parameter.\n- If the parameter is of a singular type (like int , float , str , bool , etc) it will be interpreted as a query parameter.\n- If the parameter is declared to be of the type of a Pydantic model , it will be interpreted as a request body .\nFastAPI will know that the value of `q` is not required because of the default value `= None` .\nThe `str | None` is not used by FastAPI to determine that the value is not required, it will know it's not required because it has a default value of `= None` .\nBut adding the type annotations will allow your editor to give you better support and detect errors.\nIf you don't want to use Pydantic models, you can also use Body parameters.\nSee the docs for Body - Multiple Parameters: Singular values in body ."
+  },
+  {
+    "question": "Can I include an APIRouter in another APIRouter in FastAPI, and will path operations added to the nested router after inclusion still be visible in the final app's routing and OpenAPI schema?",
+    "ground_truth_chunk_ids": [
+      "488f83625e40b02e6a3ef34472ec1a36deef93de",
+      "46e9d14fc0258a6d38d096d0199d3c308e95c0c4",
+      "0733aeb84d7b254e9b4f2728533af3ca35207253"
+    ],
+    "ground_truth_chunk_id": "488f83625e40b02e6a3ef34472ec1a36deef93de",
+    "ground_truth_text": "This is an advanced usage that you might not really need, but it's there in case you do.\nThe same way you can include an `APIRouter` in a `FastAPI` application, you can include an `APIRouter` in another `APIRouter` using:\n```Python\nrouter.include_router(other_router)\n```\nYou can do this before or after including `router` in the `FastAPI` app.\nFastAPI will still include the path operations from `other_router` in routing and OpenAPI.\nThe same applies to path operations added later to the routers.\nThey will be visible through the earlier inclusion too."
+  },
+  {
+    "question": "How does FastAPI handle fields submitted in a form, query, header, or cookie that are not declared in the Pydantic model when using `extra=\"forbid\"`, `extra=\"allow\"`, or the default `extra=\"ignore\"` configuration?",
+    "ground_truth_chunk_ids": [
+      "b8a4b09ebcef25ee6bc830b24f4e3ff7af6040ff",
+      "34c722a780dc8658ab176d222d3bcba8d15550e1",
+      "b3c1f596e1ca24955e93e7112ea18dc17282fa4d"
+    ],
+    "ground_truth_chunk_id": "b8a4b09ebcef25ee6bc830b24f4e3ff7af6040ff",
+    "ground_truth_text": "If either is sent, FastAPI validates the model and requires both fields.\nThe same rules for defaults, extra fields, and OpenAPI apply as for optional query parameter models .\nYou can use Pydantic models to declare cookies in FastAPI . 😎"
+  },
+  {
+    "question": "How do I confirm that FastAPI version 0.61.0 supports Starlette 0.12.7 and fixes the issue with parsing body types declared with Union?",
+    "ground_truth_chunk_ids": [
+      "f550c569c6580f09c61379ebcda6594bbf410f57",
+      "3b9646f4480eaca1d724dc792920672e63b58569",
+      "358b55de96e29d2a968349e5c845dbadb11267ca"
+    ],
+    "ground_truth_chunk_id": "f550c569c6580f09c61379ebcda6594bbf410f57",
+    "ground_truth_text": "PR #415 by @vitalik .\n- Fix mypy error after merging PR #415.\nPR #462 .\n- Fix typo in routing assert .\nPR #419 by @pablogamboa .\n- Fix typo in docs.\nPR #411 by @bronsen .\n- Fix parsing a body type declared with Union .\nPR #400 by @koxudaxi .\n- Upgrade Starlette supported range to include the latest 0.12.7 .\nThe new range is 0.11.1,<=0.12.7 .\nPR #367 by @dedsm .\n- Add test for OpenAPI schema with duplicate models from PR #333 by @dmontagu .\nPR #385 ."
+  },
+  {
+    "question": "How do I serve static files from a specific directory in FastAPI, and what is the difference between using `app.mount` with `StaticFiles` and the `app.frontend()` method?",
+    "ground_truth_chunk_ids": [
+      "3621016500ba30b9427c5428bb842489d056cdf0",
+      "5814928297933fb084bd09d90a63119a60df4f0f",
+      "37aa7f01365963a5b36eeb537e10bb890118fdd6"
+    ],
+    "ground_truth_chunk_id": "3621016500ba30b9427c5428bb842489d056cdf0",
+    "ground_truth_text": "You can serve static files automatically from a directory using `StaticFiles` .\nIf you need to host a frontend, use `app.frontend()` instead, read about it in Frontend .\n`app.frontend()` uses `StaticFiles` underneath, with several additional advantages for frontends, like handling client-side routing.\n- Import StaticFiles .\n- \"Mount\" a StaticFiles() instance in a specific path.\n```python\n from fastapi import FastAPI\n from fastapi.staticfiles import StaticFiles\n \n app = FastAPI()\n \n app.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n```\nTechnical Details:\nYou could also use `from starlette.staticfiles import StaticFiles` .\nFastAPI provides the same `starlette.staticfiles` as `fastapi.staticfiles` just as a convenience for you, the developer.\nBut it actually comes directly from Starlette."
+  },
+  {
+    "question": "Can I mix `async def` and standard `def` for path operations and their dependencies in FastAPI, or do I need to maintain consistency between them?",
+    "ground_truth_chunk_ids": [
+      "96fa20283b7246591a8ea32d47d17bd58f4fd8fb",
+      "252fdfcbfc1a7f51c690458006a2ab7279067a48",
+      "f2599dca3e2c0766560b944fd65c3f72e5424c1b"
+    ],
+    "ground_truth_chunk_id": "96fa20283b7246591a8ea32d47d17bd58f4fd8fb",
+    "ground_truth_text": "These are very technical details of how FastAPI works underneath.\nIf you have quite some technical knowledge (coroutines, threads, blocking, etc.) and are curious about how FastAPI handles `async def` vs normal `def` , go ahead.\nWhen you declare a path operation function with normal `def` instead of `async def` , it is run in an external threadpool that is then awaited, instead of being called directly (as it would block the server).\nIf you are coming from another async framework that does not work in the way described above and you are used to defining trivial compute-only path operation functions with plain `def` for a tiny performance gain (about 100 nanoseconds), please note that in FastAPI the effect would be quite opposite.\nIn these cases, it's better to use `async def` unless your path operation functions use code that performs blocking I/O .\nStill, in both situations, chances are that FastAPI will still be faster than (or at least comparable to) your previous framework.\nThe same applies for dependencies .\nIf a dependency is a standard `def` function instead of `async def` , it is run in the external threadpool.\nYou can have multiple dependencies and sub-dependencies requiring each other (as parameters of the function definitions), some of them might be created with `async def` and some with normal `def` .\nIt would still work, and the ones created with normal `def` would be called on an external thread (from the threadpool) instead of being \"awaited\".\nAny other utility function that you call directly can be created with normal `def` or `async def` and FastAPI won't affect the way you call it.\nThis is in contrast to the functions that FastAPI calls for you: path operation functions and dependencies.\nIf your utility function is a normal function with `def` , it will be called directly (as you write it in your code), not in a threadpool, if the function is created with `async def` then you should `await` that function when you call it in your code.\n---\nAgain, these are very technical details that would probably be useful if you came searching for them.\nOtherwise, you should be good with the guidelines from the section above: In a hurry? ."
+  },
+  {
+    "question": "I'm building a basic WebSocket chat application in FastAPI. What is the complete code structure required to serve an HTML page via a GET route and implement a WebSocket endpoint at `/ws` that accepts connections, receives text messages from the client, and echoes them back, while noting that the `WebSocket` class is provided by FastAPI but ultimately originates from Starlette?",
+    "ground_truth_chunk_ids": [
+      "d4a266cab2c67202d9f0674e0c4fd17f698a7bd4",
+      "cd23e96ed05889d7061c13813c18ab38764542b7",
+      "005e6df1ac5b4b750acd438373958d99cf2ac720"
+    ],
+    "ground_truth_chunk_id": "d4a266cab2c67202d9f0674e0c4fd17f698a7bd4",
+    "ground_truth_text": "When defining WebSockets, you normally declare a parameter of type `WebSocket` and with it you can read data from the client and send data to it.\nRead more about it in the FastAPI docs for WebSockets\nIt is provided directly by Starlette, but you can import it from `fastapi` :\n```python\nfrom fastapi import WebSocket\n```\nWhen you want to define dependencies that should be compatible with both HTTP and WebSockets, you can define a parameter that takes an `HTTPConnection` instead of a `Request` or a `WebSocket` .\n::: fastapi.WebSocket\noptions:\nmembers:\n- scope\n- app\n- url\n- base_url\n- headers\n- query_params\n- path_params\n- cookies\n- client\n- state\n- url_for\n- client_state\n- application_state\n- receive\n- send\n- accept\n- receive_text\n- receive_bytes\n- receive_json\n- iter_text\n- iter_bytes\n- iter_json\n- send_text\n- send_bytes\n- send_json\n- close\nAdditional classes for handling WebSockets."
+  },
+  {
+    "question": "How do I configure a Pydantic model in FastAPI to automatically decode base64-encoded strings into `bytes` fields during validation, and what is the expected JSON request format when using the `val_json_bytes` setting in the model config?",
+    "ground_truth_chunk_ids": [
+      "09c274e6dd30d910e97ca4de88dab37ac5483582",
+      "d9d09d739f98d87876bd468f78cf8fd307d06227",
+      "87be9204d13ce130d0b2c4c62af9beb3ff38fc29"
+    ],
+    "ground_truth_chunk_id": "09c274e6dd30d910e97ca4de88dab37ac5483582",
+    "ground_truth_text": "```json\n{\n  \"description\": \"Some data\",\n  \"content\": \"hello\"\n}\n```\nYou can also use `bytes` fields with `ser_json_bytes` in the model config for output data, and Pydantic will serialize the bytes as base64 when generating the JSON response.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n class DataOutput(BaseModel):\n     description: str\n     data: bytes\n \n     model_config = {\"ser_json_bytes\": \"base64\"}\n app = FastAPI()\n @app.get(\"/data\")\n def get_data() -> DataOutput:\n     data = \"hello\".encode(\"utf-8\")\n     return DataOutput(description=\"A plumbus\", data=data)\n```\nAnd of course, you can use the same model configured to use base64 to handle both input ( validate ) with `val_json_bytes` and output ( serialize ) with `ser_json_bytes` when receiving and sending JSON data.\n```python\n from fastapi import FastAPI\n from pydantic import BaseModel\n class DataInputOutput(BaseModel):\n     description: str\n     data: bytes\n \n     model_config = {\n         \"val_json_bytes\": \"base64\",\n         \"ser_json_bytes\": \"base64\",\n     }\n app = FastAPI()\n @app.post(\"/data-in-out\")\n def post_data_in_out(body: DataInputOutput) -> DataInputOutput:\n     return body\n```"
+  },
+  {
+    "question": "When implementing JWT authentication, how should I structure the `sub` claim to prevent ID collisions if my application uses the same identifier for multiple entity types, such as users, cars, and blog posts?",
+    "ground_truth_chunk_ids": [
+      "aa6e9642e9be7d5366430872ea8b3865f48def5b",
+      "63746d869e19638fc0b887a0ab76087eb2523bb7",
+      "1a0f3c7ecc6c7feb36350f239dccf5433a5a85b8"
+    ],
+    "ground_truth_chunk_id": "aa6e9642e9be7d5366430872ea8b3865f48def5b",
+    "ground_truth_text": "In those cases, several of those entities could have the same ID, let's say `foo` (a user `foo` , a car `foo` , and a blog post `foo` ).\nSo, to avoid ID collisions, when creating the JWT token for the user, you could prefix the value of the `sub` key, e.g. with `username:` .\nSo, in this example, the value of `sub` could have been: `username:johndoe` .\nThe important thing to keep in mind is that the `sub` key should have a unique identifier across the entire application, and it should be a string."
+  },
+  {
+    "question": "How do you define a SQLModel table class that inherits from a base class, adding an `id` primary key and a `secret_name` field, while automatically including the `name` and `age` fields from the base class?",
+    "ground_truth_chunk_ids": [
+      "6e31e3faeac3abdc70c54de42ff1cfff7a92a5e4",
+      "2a85b63138288b6bd1197db5b91ab5ae461acad9",
+      "d320cae77703cfd3a3b26b59389bed4dff5e5a7d"
+    ],
+    "ground_truth_chunk_id": "6e31e3faeac3abdc70c54de42ff1cfff7a92a5e4",
+    "ground_truth_text": "Here's where SQLModel will shine. ✨\nIn SQLModel , any model class that has `table=True` is a table model .\nAnd any model class that doesn't have `table=True` is a data model , these ones are actually just Pydantic models (with a couple of small extra features). 🤓\nWith SQLModel, we can use inheritance to avoid duplicating all the fields in all the cases.\nLet's start with a `HeroBase` model that has all the fields that are shared by all the models:\n- name\n- age\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n```\nThen let's create `Hero` , the actual table model , with the extra fields that are not always in the other models:\n- id\n- secret_name\nBecause `Hero` inherits from `HeroBase` , it also has the fields declared in `HeroBase` , so all the fields for `Hero` are:\n- id\n- name\n- age\n- secret_name\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n \n \n class Hero(HeroBase, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     secret_name: str\n```\nNext, we create a `HeroPublic` model, this is the one that will be returned to the clients of the API.\nIt has the same fields as `HeroBase` , so it won't include `secret_name` .\nFinally, the identity of our heroes is protected! 🥷\nIt also re-declares `id: int` .\nBy doing this, we are making a contract with the API clients, so that they can always expect the `id` to be there and to be an `int` (it will never be `None` ).\nHaving the return model ensure that a value is always available and always `int` (not `None` ) is very useful for the API clients, they can write much simpler code having this certainty.\nAlso, automatically generated clients will have simpler interfaces, so that the developers communicating with your API can have a much better time working with your API. 😎\nAll the fields in `HeroPublic` are the same as in `HeroBase` , with `id` declared as `int` (not `None` ):\n- id\n- name\n- age\n```python\n class HeroBase(SQLModel):\n     name: str = Field(index=True)\n     age: int | None = Field(default=None, index=True)\n \n \n class Hero(HeroBase, table=True):\n     id: int | None = Field(default=None, primary_key=True)\n     secret_name: str\n \n \n class HeroPublic(HeroBase):\n     id: int\n```\nNow we create a `HeroCreate` model, this is the one that will validate the data from the clients.\nIt has the same fields as `HeroBase` , and it also has `secret_name` .\nNow, when the clients create a new hero , they will send the `secret_name` , it will be stored in the database, but those secret names won't be returned in the API to the clients."
+  },
+  {
+    "question": "What changes were made to the internal build system and documentation tooling in the FastAPI repository between PR #11465 and PR #11499, specifically regarding the migration from Hatch and the update of mkdocstrings?",
+    "ground_truth_chunk_ids": [
+      "3dac7089cf1deda9d33a9f0cb59c1749189bf215",
+      "d5024f7486c57ed9834f6d71f3dde538c619c7d4",
+      "d8e805584e1a09ecb253fc238350bcebca59e10a"
+    ],
+    "ground_truth_chunk_id": "3dac7089cf1deda9d33a9f0cb59c1749189bf215",
+    "ground_truth_text": "PR #14026 by @tiangolo .\n- 🛠️ Update mkdocs_hooks to handle headers with permalinks when building docs.\nPR #14025 by @tiangolo .\n- ⬆ [pre-commit.ci] pre-commit autoupdate.\nPR #14016 by @pre-commit-ci[bot] .\n- ⬆ Bump mkdocs-macros-plugin from 1.3.7 to 1.3.9.\nPR #14003 by @YuriiMotov .\n- ⬆ [pre-commit.ci] pre-commit autoupdate.\nPR #13999 by @pre-commit-ci[bot] .\n- ⬆ [pre-commit.ci] pre-commit autoupdate.\nPR #13983 by @pre-commit-ci[bot] .\n- ⬆ Bump actions/checkout from 4 to 5.\nPR #13986 by @dependabot[bot] .\n- 🔧 Update Speakeasy sponsor graphic.\nPR #13971 by @chailandau .\n- ⬆ [pre-commit.ci] pre-commit autoupdate.\nPR #13969 by @pre-commit-ci[bot] .\n- ⬆ Bump actions/download-artifact from 4 to 5.\nPR #13975 by @dependabot[bot] .\n- 👥 Update FastAPI People - Experts.\nPR #13963 by @tiangolo .\n- ⬆ Bump ruff from 0.11.2 to 0.12.7.\nPR #13957 by @dependabot[bot] .\n- ⬆ Bump cairosvg from 2.7.1 to 2.8.2.\nPR #13959 by @dependabot[bot] .\n- ⬆ Bump pydantic-ai from 0.0.30 to 0.4.10.\nPR #13958 by @dependabot[bot] .\n- 👥 Update FastAPI GitHub topic repositories."
+  },
+  {
+    "question": "How does the OAuth2 password flow handle authentication in a FastAPI application where the same server handles both the API and the user authentication, specifically regarding the exchange of username and password for a Bearer token",
+    "ground_truth_chunk_ids": [
+      "591d63cbaf85c8eacda6b7d344c7a12d1de19424",
+      "26435ea2ff385f67913db07a90586069188259dc",
+      "908a255218df08eee557a445d2d90f81e04e62fc"
+    ],
+    "ground_truth_chunk_id": "591d63cbaf85c8eacda6b7d344c7a12d1de19424",
+    "ground_truth_text": "This is of course not the frontend for the final users, but it's a great automatic tool to document interactively all your API.\nIt can be used by the frontend team (that can also be yourself).\nIt can be used by third party applications and systems.\nAnd it can also be used by yourself, to debug, check and test the same application.\nNow let's go back a bit and understand what all that is.\nThe `password` \"flow\" is one of the ways (\"flows\") defined in OAuth2, to handle security and authentication.\nOAuth2 was designed so that the backend or API could be independent of the server that authenticates the user.\nBut in this case, the same FastAPI application will handle the API and the authentication.\nSo, let's review it from that simplified point of view:\n- The user types the username and password in the frontend, and hits Enter .\n- The frontend (running in the user's browser) sends that username and password to a specific URL in our API (declared with tokenUrl=\"token\" ).\n- The API checks that username and password , and responds with a \"token\" (we haven't implemented any of this yet).\nA \"token\" is just a string with some content that we can use later to verify this user.\nNormally, a token is set to expire after some time.\nSo, the user will have to log in again at some point later.\nAnd if the token is stolen, the risk is less.\nIt is not like a permanent key that will work forever (in most of the cases).\n- The frontend stores that token temporarily somewhere.\n- The user clicks in the frontend to go to another section of the frontend web app.\n- The frontend needs to fetch some more data from the API.\nBut it needs authentication for that specific endpoint.\nSo, to authenticate with our API, it sends a header Authorization with a value of Bearer plus the token.\nIf the token contains foobar , the content of the Authorization header would be: Bearer foobar .\nFastAPI provides several tools, at different levels of abstraction, to implement these security features.\nIn this example we are going to use OAuth2 , with the Password flow, using a Bearer token.\nWe do that using the `OAuth2PasswordBearer` class.\nA \"bearer\" token is not the only option.\nBut it's the best one for our use case.\nAnd it might be the best for most use cases, unless you are an OAuth2 expert and know exactly why there's another option that better suits your needs.\nIn that case, FastAPI also provides you with the tools to build it."
+  },
+  {
+    "question": "How should I modify my Dockerfile to run a FastAPI application that consists of a single main.py file without a directory structure?",
+    "ground_truth_chunk_ids": [
+      "2deefa3b0c4fa36297e2e97d27fd4a61dea88619",
+      "8705a4c8d96025291d6fb4088efcf1e4e6e474c4",
+      "0179a828933ce96aa4ff29cd8b4087602b81ca37"
+    ],
+    "ground_truth_chunk_id": "2deefa3b0c4fa36297e2e97d27fd4a61dea88619",
+    "ground_truth_text": "If you need to have two independent FastAPI applications, with their own independent OpenAPI and their own docs UIs, you can have a main app and \"mount\" one (or more) sub-application(s).\n\"Mounting\" means adding a completely \"independent\" application in a specific path, that then takes care of handling everything under that path, with the path operations declared in that sub-application.\nFirst, create the main, top-level, FastAPI application, and its path operations :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/app\")\n def read_main():\n     return {\"message\": \"Hello World from main app\"}\n \n \n subapi = FastAPI()\n \n \n @subapi.get(\"/sub\")\n def read_sub():\n     return {\"message\": \"Hello World from sub API\"}\n \n \n app.mount(\"/subapi\", subapi)\n```\nThen, create your sub-application, and its path operations .\nThis sub-application is just another standard FastAPI application, but this is the one that will be \"mounted\":\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/app\")\n def read_main():\n     return {\"message\": \"Hello World from main app\"}\n \n \n subapi = FastAPI()\n \n \n @subapi.get(\"/sub\")\n def read_sub():\n     return {\"message\": \"Hello World from sub API\"}\n \n \n app.mount(\"/subapi\", subapi)\n```\nIn your top-level application, `app` , mount the sub-application, `subapi` .\nIn this case, it will be mounted at the path `/subapi` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n \n @app.get(\"/app\")\n def read_main():\n     return {\"message\": \"Hello World from main app\"}\n \n \n subapi = FastAPI()\n \n \n @subapi.get(\"/sub\")\n def read_sub():\n     return {\"message\": \"Hello World from sub API\"}\n \n \n app.mount(\"/subapi\", subapi)\n```\nNow, run the `fastapi` command:\n```console\n$ uv run fastapi dev\n\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n```"
+  },
+  {
+    "question": "How should I manage version pinning for FastAPI, Starlette, and Pydantic in my project, and what is the recommended workflow for upgrading FastAPI to a newer version?",
+    "ground_truth_chunk_ids": [
+      "358b55de96e29d2a968349e5c845dbadb11267ca",
+      "45fe83caf9094ac04e107c924840db1f0278577d",
+      "5717a2ebfbd33e4ce0948ce585db5c34e8c47118"
+    ],
+    "ground_truth_chunk_id": "358b55de96e29d2a968349e5c845dbadb11267ca",
+    "ground_truth_text": "You shouldn't pin the version of `starlette` .\nDifferent versions of FastAPI will use a specific newer version of Starlette.\nSo, you can just let FastAPI use the correct Starlette version.\nPydantic includes the tests for FastAPI with its own tests, so new versions of Pydantic (above `1.0.0` ) are always compatible with FastAPI.\nYou can pin Pydantic to any version above `1.0.0` that works for you.\nFor example:\n```txt\npydantic>=2.7.0,<3.0.0\n```"
+  },
+  {
+    "question": "Why is Django not recommended for creating REST APIs for modern frontend frameworks like React or Vue.js?",
+    "ground_truth_chunk_ids": [
+      "5814928297933fb084bd09d90a63119a60df4f0f",
+      "161603bdcd70ff27f3392843db84b291a03062dd",
+      "ed008f5e45c0f63688780cd0c50a2e01525e8a9b"
+    ],
+    "ground_truth_chunk_id": "5814928297933fb084bd09d90a63119a60df4f0f",
+    "ground_truth_text": "You can serve static frontend apps with `app.frontend()` (or `router.frontend()` ).\nThis is useful for frontend tools that generate static files, like React with Vite, TanStack Router, Astro, Vue, Svelte, Angular, Solid, and others.\nWith these tools, you normally have a step that builds the frontend, with a command like:\n```bash\nnpm run build\n```\nThat would generate a directory like `./dist/` with your frontend files.\nYou can use `app.frontend()` to serve that directory following the conventions needed by these frontend frameworks.\nFastAPI checks path operations first.\nThe frontend files are checked only if no normal route matched, so your API won't be affected.\nAfter building your frontend, for example with `npm run build` , put the generated files in a directory, for example, `dist` .\nYour project structure could look like this:\n```text\n.\n├── pyproject.toml\n├── app\n│   ├── __init__.py\n│   └── main.py\n└── dist\n    ├── index.html\n    └── assets\n        └── app.js\n```\nThen serve it with `app.frontend()` :\n```python\n from fastapi import FastAPI\n \n app = FastAPI()\n \n app.frontend(\"/\", directory=\"dist\")\n```\nWith this, a request for `/assets/app.js` can serve `dist/assets/app.js` ."
+  },
+  {
+    "question": "How can I configure FastAPI to override the `operationId` for all path operations so that they are automatically generated based on their function names?",
+    "ground_truth_chunk_ids": [
+      "3b2aed532c0015fb2216a2883d6ed50529b45ea8",
+      "f78d30aa8e366ab0437adf1620b4b6fa9bba2eab",
+      "f7df0c0478b84cb3e4093b6abab3d33c78f02549"
+    ],
+    "ground_truth_chunk_id": "3b2aed532c0015fb2216a2883d6ed50529b45ea8",
+    "ground_truth_text": "You can modify the way these operation IDs are generated to make them simpler and have simpler method names in the clients.\nIn this case, you will have to ensure that each operation ID is unique in some other way.\nFor example, you could make sure that each path operation has a tag, and then generate the operation ID based on the tag and the path operation name (the function name).\nFastAPI uses a unique ID for each path operation , which is used for the operation ID and also for the names of any needed custom models, for requests or responses.\nYou can customize that function."
+  },
+  {
+    "question": "How can I intercept FastAPI's default exception handlers to perform logging or additional processing while still returning the standard response format?",
+    "ground_truth_chunk_ids": [
+      "ee3afc39158930cbb0e7c3d0b72ec128900591d1",
+      "b84af3d9b3762dded60a63df2a2b5d687ee976ba",
+      "2e8aa5ee950bc89adb4488ef368280ae74e1522a"
+    ],
+    "ground_truth_chunk_id": "ee3afc39158930cbb0e7c3d0b72ec128900591d1",
+    "ground_truth_text": "The same with `Request` .\nFastAPI has some default exception handlers.\nThese handlers are in charge of returning the default JSON responses when you `raise` an `HTTPException` and when the request has invalid data.\nYou can override these exception handlers with your own.\nWhen a request contains invalid data, FastAPI internally raises a `RequestValidationError` ."
+  },
+  {
+    "question": "How can I use Starlette's StreamingResponse with iterators like file-like objects returned by open(), and what is the minimum compatible version of Starlette required to support this feature?",
+    "ground_truth_chunk_ids": [
+      "29f7ba268e59a08b5b1ad17587d0ec3893780496",
+      "029bb6980f8ab35a242e077370f16a6a2cdb8e83",
+      "c44e63d639e7210a8eb5c3c8e3194a33d35452d8"
+    ],
+    "ground_truth_chunk_id": "29f7ba268e59a08b5b1ad17587d0ec3893780496",
+    "ground_truth_text": "- Upgrade the compatible version of Starlette to 0.12.0 .\nThis includes support for ASGI 3 (the latest version of the standard).\nIt's now possible to use Starlette's StreamingResponse with iterators, like file-like objects (as those returned by open() ).\nIt's now possible to use the low level utility iterate_in_threadpool from starlette.concurrency (for advanced scenarios)."
+  },
+  {
+    "question": "After authenticating with the credentials `johndoe` and `secret` in the interactive docs at `http://127.0.0.1:8000/docs`, what specific JSON response is returned when executing the `GET` request to `/users/me`, and what HTTP error and detail message are received if the same operation is performed after logging out?",
+    "ground_truth_chunk_ids": [
+      "cad6020bb394ec053f241fe2e33453d44e74734c",
+      "af3803a68fe8f38a48e6f3cde3d9693f4ac3ee08",
+      "2c7bee84deb5e052ad9b371e0de36216ff73c561"
+    ],
+    "ground_truth_chunk_id": "cad6020bb394ec053f241fe2e33453d44e74734c",
+    "ground_truth_text": "Open the interactive docs: http://127.0.0.1:8000/docs .\nClick the \"Authorize\" button.\nUse the credentials:\nUser: `johndoe`\nPassword: `secret`\nAfter authenticating in the system, you will see it like:\nNow use the operation `GET` with the path `/users/me` .\nYou will get your user's data, like:\n```JSON\n{\n  \"username\": \"johndoe\",\n  \"email\": \"johndoe@example.com\",\n  \"full_name\": \"John Doe\",\n  \"disabled\": false,\n  \"hashed_password\": \"fakehashedsecret\"\n}\n```\nIf you click the lock icon and logout, and then try the same operation again, you will get an HTTP 401 error of:\n```JSON\n{\n  \"detail\": \"Not authenticated\"\n}\n```\nNow try with an inactive user, authenticate with:\nUser: `alice`\nPassword: `secret2`\nAnd try to use the operation `GET` with the path `/users/me` .\nYou will get an \"Inactive user\" error, like:\n```JSON\n{\n  \"detail\": \"Inactive user\"\n}\n```\nYou now have the tools to implement a complete security system based on `username` and `password` for your API.\nUsing these tools, you can make the security system compatible with any database and with any user or data model.\nThe only detail missing is that it is not actually \"secure\" yet.\nIn the next chapter you'll see how to use a secure password hashing library and JWT tokens."
+  },
+  {
+    "question": "Why do environment variables always return string values in Python, and what tool does Pydantic offer to handle the necessary type conversion and validation?",
+    "ground_truth_chunk_ids": [
+      "8171c0d96ecbc66131a74e2e054e6bcf6fc48e4e",
+      "a53cce2e698a39b37b56e454ddf6282c893d7e29",
+      "353340ed63d969e18b289423735edd05c065bc0d"
+    ],
+    "ground_truth_chunk_id": "8171c0d96ecbc66131a74e2e054e6bcf6fc48e4e",
+    "ground_truth_text": "In many cases your application could need some external settings or configurations, for example secret keys, database credentials, credentials for email services, etc.\nMost of these settings are variable (can change), like database URLs.\nAnd many could be sensitive, like secrets.\nFor this reason it's common to provide them in environment variables that are read by the application.\nAn environment variable (also known as an env var ) is a value that lives outside of the Python code, in the operating system, and can be read by your application and other programs.\nYou can create an environment variable for a command when you run it.\nYou will see the platform-specific commands below.\nRead the Environment Variables guide for a detailed explanation of how environment variables work.\nThese environment variables can only handle text strings, as they are external to Python and have to be compatible with other programs and the rest of the system (and even with different operating systems, such as Linux, Windows, and macOS).\nThat means that any value read in Python from an environment variable will be a `str` , and any conversion to a different type or any validation has to be done in code.\nFortunately, Pydantic provides a great utility to handle these settings coming from environment variables with Pydantic: Settings management .\nAdd the `pydantic-settings` package to your project:\n```console\n$ uv add pydantic-settings\n---> 100%\n```\nIt also comes included when you install the `all` extras with:\n```console\n$ uv add \"fastapi[all]\"\n---> 100%\n```\nImport `BaseSettings` from Pydantic and create a sub-class, very much like with a Pydantic model.\nThe same way as with Pydantic models, you declare class attributes with type annotations, and possibly default values.\nYou can use all the same validation features and tools you use for Pydantic models, like different data types and additional validations with `Field()` .\n```python\n from fastapi import FastAPI\n from pydantic_settings import BaseSettings\n \n \n class Settings(BaseSettings):\n     app_name: str = \"Awesome API\"\n     admin_email: str\n     items_per_user: int = 50\n \n \n settings = Settings()\n app = FastAPI()\n \n \n @app.get(\"/info\")\n async def info():\n     return {\n         \"app_name\": settings.app_name,\n         \"admin_email\": settings.admin_email,\n         \"items_per_user\": settings.items_per_user,\n     }\n```\nIf you want something quick to copy and paste, don't use this example, use the last one below.\nThen, when you create an instance of that `Settings` class (in this case, in the `settings` object), Pydantic will read the environment variables in a case-insensitive way, so, an upper-case variable `APP_NAME` will still be read for the attribute `app_name` ."
+  },
+  {
+    "question": "Can I mix async and sync dependencies in FastAPI, and how are the synchronous ones handled during execution?",
+    "ground_truth_chunk_ids": [
+      "3cc5e06e45e907f1a1b658750a618c4948a29797",
+      "aacc0a593a430b78192c269e4a45d1ad30117bcd",
+      "d5760f155daab186bb36e5d52347e5bdb29c504e"
+    ],
+    "ground_truth_chunk_id": "3cc5e06e45e907f1a1b658750a618c4948a29797",
+    "ground_truth_text": "You have already seen how to test your FastAPI applications using the provided `TestClient` .\nUp to now, you have only seen how to write synchronous tests, without using `async` functions.\nBeing able to use asynchronous functions in your tests could be useful, for example, when you're querying your database asynchronously.\nImagine you want to test sending requests to your FastAPI application and then verify that your backend successfully wrote the correct data in the database, while using an async database library."
+  }
+]

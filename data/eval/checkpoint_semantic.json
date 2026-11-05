@@ -1,0 +1,182 @@
+{
+  "147f4c00fea8583a235891a56d74323abbd105979f81cfe1e6fa423cb0aa97d1": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "d838f4efd5cdfd47255b73cd0093dd4506a34c6b29ead9844d0331da31c2eb43": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "dc90fa5b1c9edf34ddea4b3772ee8deb948776080d0757799035d7fa42d6ea75": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "5b9a86059f1b6a42903a105b66445af07386f6e3b82ed00f1e98761d76366602": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 0,
+    "faithfulness": 0,
+    "citation_accuracy": 0
+  },
+  "2e24aa62681030789e41d38d08d0f580972ca1c5757f502a5719c69aa47eb7bf": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "692feb72399638b56b0c9f0ae36e832a18c19b4cc5a432fef486cf4462229f21": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "60693efeff175a26ecd97f64f88b6083abfdcb4555bc6695b6e79cda3d3312ab": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "c575d4df9721ef0664ae5e9809077a6539e5b2065a33ed1f60104ba7f77305f7": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "a8617bd6bc7ac2c555554913b4b86f55cb55d63961edb13bbffd3e38f5f59575": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 0,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "34bdab040122890713661e34ace87c2b14d76f0cd20249058ebbb445bd18c274": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "17ff1a5d97718ba02ecb1bfcffd2a6f27be0b5db2924f04b49c2ee89b0a26fac": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "b6f6ffaf020ca0d574d85c702cff799c25890649595b673c60571eeab5d71f0d": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 0,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "862f61a212abeebd4eaf37774f44da278549f547e9311a0b03bd5a5b1cc09083": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "3cb7b5253b0f69c0ddd57ab19180662744d5c97d50774fbc9f92da97ce807c6c": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "4ed5984edac747129ac9daaaab40b4f91ef859f8b80dcdb457480f364cc264c6": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "a7239a9b1fa394437708c7bfdb8bf6398eb84e7d211382cacd98f61f9813c92e": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "671642aa307346271361ca4feae0232b3f9fc1710ba9495be10eceb922f6f513": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "043194c5eaba1be58c620dd4dee867f91eeb191ca65b6fa7a66eee2bc6f5811b": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "5d8e2abda262e06fbb8b75cab8bad277fc9cd37576b863e3d65ce7fb52fc53ec": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "374b4a4b3ad6e5c6a5d32d28509e11fcf56ada27745234009df796469d6b2d5d": {
+    "retrieval_relevance": 0,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "2205d030025302ff2e65a05b6302a3301fb5e96193026237d57b91409c34a03f": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "623e40789935f7c0771ce31dadc9e236e24a2b23ccb2bc311860543ef9a82cec": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 0,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "ae2734d0a287bb86b64aa48eff74ad0072bb03936d9581d6c33ba0e714528410": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "68a83e84afaf2f26ef479db8be750bd39be36257926ce75b32e8ee31f53e19af": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 0,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "11c3ddfa9511547c20163fbbe865aafb483352b7af88859d0131e9505f797409": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "be456677f9644e50c7943cb0a4396583fe43631d87ca1bf9fa3cb19b081a678c": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 1,
+    "citation_accuracy": 1
+  },
+  "cba53fbe545d70e9519b1703b22d7fbdb2afacd67fab2e9eaaddc48759eb9e23": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "792bbdaf611804324024f16e7074823c10d3b0e154deeaa7b975633452cb05ad": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "f29cfca6c22a678b70e745cd08a3a951cbe660d71a978bf6fa713fdd58b3efa0": {
+    "retrieval_relevance": 1,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  },
+  "09cf8b13ad8788524ea5ba9f724f3a3824f108fc327aa718fca78076f6c5fd08": {
+    "retrieval_relevance": 0,
+    "answer_correctness": 1,
+    "faithfulness": 0,
+    "citation_accuracy": 1
+  }
+}

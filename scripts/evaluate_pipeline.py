@@ -22,8 +22,8 @@ if str(SRC) not in sys.path:
 from generator import generate
 from retriever import search
 
-DATASET_FILE = ROOT / "data/eval/golden_dataset.json"
-CHECKPOINT_FILE = ROOT / "data/eval/checkpoint.json"
+STRATEGIES = ("fixed", "structure", "semantic")
+
 PREFERRED_JUDGE_MODELS = [
     "openai/gpt-oss-20b",
     "qwen/qwen3.8-27b",
@@ -41,19 +41,27 @@ client: Optional[Groq] = None
 JUDGE_MODEL = ""
 
 
-def load_dataset() -> List[Dict[str, Any]]:
-    return json.loads(DATASET_FILE.read_text(encoding="utf-8"))
+def dataset_file_for_strategy(strategy: str) -> Path:
+    return ROOT / "data/eval" / f"golden_dataset_{strategy}.json"
+
+
+def checkpoint_file_for_strategy(strategy: str) -> Path:
+    return ROOT / "data/eval" / f"checkpoint_{strategy}.json"
+
+
+def load_dataset(strategy: str) -> List[Dict[str, Any]]:
+    return json.loads(dataset_file_for_strategy(strategy).read_text(encoding="utf-8"))
 
 
 def get_question_id(item: Dict[str, Any]) -> str:
     return item.get("id") or hashlib.sha256(item["question"].encode("utf-8")).hexdigest()
 
 
-def load_checkpoint() -> Dict[str, Dict[str, int]]:
-    if not CHECKPOINT_FILE.exists():
+def load_checkpoint(checkpoint_file: Path) -> Dict[str, Dict[str, int]]:
+    if not checkpoint_file.exists():
         return {}
     try:
-        data = json.loads(CHECKPOINT_FILE.read_text(encoding="utf-8"))
+        data = json.loads(checkpoint_file.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
     if not isinstance(data, dict):
@@ -67,14 +75,14 @@ def load_checkpoint() -> Dict[str, Dict[str, int]]:
     return checkpoint
 
 
-def save_checkpoint(checkpoint: Dict[str, Dict[str, int]]) -> None:
-    CHECKPOINT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    temp_file = CHECKPOINT_FILE.with_suffix(".tmp")
+def save_checkpoint(checkpoint: Dict[str, Dict[str, int]], checkpoint_file: Path) -> None:
+    checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
+    temp_file = checkpoint_file.with_suffix(".tmp")
     temp_file.write_text(
         json.dumps(checkpoint, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    temp_file.replace(CHECKPOINT_FILE)
+    temp_file.replace(checkpoint_file)
 
 
 def resolve_judge_model(groq_client: Groq) -> str:
@@ -85,31 +93,62 @@ def resolve_judge_model(groq_client: Groq) -> str:
     raise RuntimeError(f"No preferred judge model available. Available: {sorted(available)}")
 
 
-def ask_judge(prompt: str) -> int:
+def ask_judge(prompt: str) -> Dict[str, Any]:
+    """Single-pass judge: correctness, faithfulness, unsupported_citations.
+
+    Returns a dict with keys:
+      - correctness: 0 or 1
+      - faithfulness: 0 or 1
+      - unsupported_citations: list of citation strings
+    """
     if client is None:
         raise RuntimeError("Groq client is not initialized")
+    system_prompt = (
+        "You are a strict evaluator. Return ONLY a JSON object with exactly "
+        'these keys: "correctness" (0 or 1), "faithfulness" (0 or 1), '
+        '"unsupported_citations" (list of strings). '
+        'correctness=1 means the generated answer is factually correct based on the ground truth. '
+        'faithfulness=1 means the answer relies strictly on the retrieved context without hallucination. '
+        'unsupported_citations lists every citation number (e.g., "[2]") that is NOT supported by the retrieved chunk text. '
+        "Return only the JSON object, no markdown fences."
+    )
     last_content = ""
     for attempt in range(2):
         request_kwargs: Dict[str, Any] = {
             "model": JUDGE_MODEL,
             "messages": [
-                {"role": "system", "content": "You are a strict evaluator. Return only 1 or 0."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ],
             "temperature": 0,
-            "max_tokens": 1024 if JUDGE_MODEL.startswith("openai/gpt-oss") else 8,
+            "max_tokens": 1024 if JUDGE_MODEL.startswith("openai/gpt-oss") else 256,
         }
         if JUDGE_MODEL.startswith("openai/gpt-oss"):
             request_kwargs["reasoning_effort"] = "low"
         response = client.chat.completions.create(**request_kwargs)
         content = (response.choices[0].message.content or "").strip()
-        match = re.search(r"[01]", content)
-        if match is not None:
-            return int(match.group(0))
+        # Strip markdown fences if present
+        if content.startswith("```"):
+            lines = content.splitlines()
+            if lines and lines[0].strip().startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            content = "\n".join(lines).strip()
+        try:
+            data = json.loads(content)
+            if all(k in data for k in ("correctness", "faithfulness", "unsupported_citations")):
+                return {
+                    "correctness": int(data["correctness"]),
+                    "faithfulness": int(data["faithfulness"]),
+                    "unsupported_citations": list(data["unsupported_citations"]),
+                }
+        except (json.JSONDecodeError, ValueError, TypeError):
+            pass
         last_content = content
         if attempt == 0:
-            print("  judge returned no 1/0; retrying once ...", flush=True)
-    raise RuntimeError(f"Judge returned an invalid response: {last_content!r}")
+            print("  judge returned invalid JSON; retrying once ...", flush=True)
+    raise RuntimeError(f"Judge returned invalid JSON after 2 attempts: {last_content!r}")
 
 
 def average(scores: List[int]) -> float:
@@ -119,6 +158,13 @@ def average(scores: List[int]) -> float:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate the RAG pipeline with a Groq judge")
     parser.add_argument("--batch-size", type=int, default=10)
+    parser.add_argument(
+        "--strategy",
+        type=str,
+        default="structure",
+        choices=STRATEGIES,
+        help="Chunking strategy to evaluate",
+    )
     args = parser.parse_args(argv)
 
     if args.batch_size < 1:
@@ -134,12 +180,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     client = Groq(api_key=api_key)
     JUDGE_MODEL = resolve_judge_model(client)
     print(f"Judge model: {JUDGE_MODEL}", flush=True)
+    print(f"Strategy: {args.strategy}", flush=True)
 
-    dataset = load_dataset()
+    dataset = load_dataset(args.strategy)
     if not dataset:
         raise RuntimeError("dataset is empty")
 
-    checkpoint = load_checkpoint()
+    checkpoint_file = checkpoint_file_for_strategy(args.strategy)
+    checkpoint = load_checkpoint(checkpoint_file)
     new_evaluated = 0
     total = len(dataset)
 
@@ -155,7 +203,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             continue
 
         question = item["question"]
-        ground_truth_id = item["ground_truth_chunk_id"]
+        ground_truth_ids = item.get("ground_truth_chunk_ids", [item.get("ground_truth_chunk_id", "")])
         ground_truth_text = item["ground_truth_text"]
         question_started = time.perf_counter()
 
@@ -167,7 +215,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         retrieval_started = time.perf_counter()
         print("  retrieval: ...", end="", flush=True)
-        retrieval = search(question)
+        retrieval = search(question, strategy=args.strategy)
         retrieved_chunks = retrieval["results"]
         retrieved_ids = [chunk["chunk_id"] for chunk in retrieved_chunks]
         print(
@@ -186,13 +234,13 @@ def main(argv: Optional[List[str]] = None) -> int:
             flush=True,
         )
 
-        retrieval_score = 1 if ground_truth_id in retrieved_ids else 0
+        retrieval_score = 1 if any(gid in retrieved_ids for gid in ground_truth_ids) else 0
         print(
             "  judging: correctness/faithfulness/citations ...",
             flush=True,
         )
 
-        correctness_prompt = f"""Question: {question}
+        judge_prompt = f"""Question: {question}
 
 Ground truth:
 {ground_truth_text}
@@ -200,56 +248,24 @@ Ground truth:
 Generated answer:
 {generated_answer}
 
-Is the generated answer factually correct based on the ground truth? Return 1 for yes, 0 for no. Return only 1 or 0."""
-        correctness_score = ask_judge(correctness_prompt)
-
-        context = "\n\n".join(
-            f"[{chunk['chunk_id']}]\n{chunk['text']}" for chunk in retrieved_chunks
-        )
-        faithfulness_prompt = f"""Question: {question}
-
-Generated answer:
-{generated_answer}
-
 Retrieved context:
-{context}
+{chr(10).join(f'[{chunk["chunk_id"]}] {chunk["text"]}' for chunk in retrieved_chunks)}
 
-Does the generated answer rely strictly on the provided context without hallucinating? Return 1 for yes, 0 for no. Return only 1 or 0."""
-        faithfulness_score = ask_judge(faithfulness_prompt)
+Evaluate the generated answer. Return a JSON object with:
+- correctness: 1 if factually correct based on ground truth, else 0
+- faithfulness: 1 if strictly grounded in retrieved context, else 0
+- unsupported_citations: list of citation strings like "[2]" that are NOT supported by the retrieved context
+"""
+        judge_result = ask_judge(judge_prompt)
+        correctness_score = judge_result["correctness"]
+        faithfulness_score = judge_result["faithfulness"]
 
         citations = re.findall(r"\[([^\]]+)\]", generated_answer)
         if not citations:
             citation_score = 0
         else:
-            citation_results: List[int] = []
-            for citation in citations:
-                chunk = None
-                if citation.isdigit():
-                    position = int(citation) - 1
-                    if 0 <= position < len(retrieved_chunks):
-                        chunk = retrieved_chunks[position]
-                else:
-                    chunk = next(
-                        (
-                            candidate
-                            for candidate in retrieved_chunks
-                            if candidate["chunk_id"] == citation
-                        ),
-                        None,
-                    )
-                if chunk is None:
-                    citation_results.append(0)
-                    continue
-                citation_prompt = f"""Generated answer:
-{generated_answer}
-
-Citation: [{citation}]
-Retrieved chunk text:
-{chunk['text']}
-
-Does the specific retrieved chunk support the claims attached to this citation? Return 1 for yes, 0 for no. Return only 1 or 0."""
-                citation_results.append(ask_judge(citation_prompt))
-            citation_score = 1 if all(score == 1 for score in citation_results) else 0
+            unsupported = set(judge_result["unsupported_citations"])
+            citation_score = 1 if not (unsupported & set(citations)) else 0
 
         checkpoint[question_id] = {
             "retrieval_relevance": retrieval_score,
@@ -257,7 +273,7 @@ Does the specific retrieved chunk support the claims attached to this citation? 
             "faithfulness": faithfulness_score,
             "citation_accuracy": citation_score,
         }
-        save_checkpoint(checkpoint)
+        save_checkpoint(checkpoint, checkpoint_file)
         new_evaluated += 1
 
         print(
