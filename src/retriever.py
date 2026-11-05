@@ -44,6 +44,63 @@ def load_bm25(path: Path) -> Dict[str, Any]:
         return pickle.load(f)
 
 
+_embedders: Dict[str, TextEmbedding] = {}
+_rerankers: Dict[str, TextCrossEncoder] = {}
+_chroma_clients: Dict[str, Any] = {}
+_collections: Dict[str, Any] = {}
+_bm25_cache: Dict[str, Dict[str, Any]] = {}
+
+
+def get_embedder(model_name: str = EMBEDDING_MODEL) -> TextEmbedding:
+    embedder = _embedders.get(model_name)
+    if embedder is None:
+        logger.info("loading embedding model %s", model_name)
+        embedder = TextEmbedding(model_name=model_name)
+        _embedders[model_name] = embedder
+    return embedder
+
+
+def get_reranker(model_name: str = RERANK_MODEL) -> TextCrossEncoder:
+    reranker = _rerankers.get(model_name)
+    if reranker is None:
+        logger.info("loading cross-encoder model %s", model_name)
+        reranker = TextCrossEncoder(model_name=model_name)
+        _rerankers[model_name] = reranker
+    return reranker
+
+
+def get_chroma_client(chroma_dir: str | Path = "data/index/chroma"):
+    path = str(Path(chroma_dir).resolve())
+    chroma_client = _chroma_clients.get(path)
+    if chroma_client is None:
+        chroma_client = chromadb.PersistentClient(
+            path=path,
+            settings=Settings(anonymized_telemetry=False),
+        )
+        _chroma_clients[path] = chroma_client
+    return chroma_client
+
+
+def get_collection(chroma_dir: str | Path, strategy: str):
+    path = str(Path(chroma_dir).resolve())
+    key = f"{path}::{strategy}"
+    collection = _collections.get(key)
+    if collection is None:
+        collection = get_chroma_client(path).get_collection(strategy)
+        _collections[key] = collection
+    return collection
+
+
+def get_bm25(bm25_dir: str | Path, strategy: str) -> Dict[str, Any]:
+    path = (Path(bm25_dir) / f"{strategy}.pkl").resolve()
+    key = str(path)
+    bm25_data = _bm25_cache.get(key)
+    if bm25_data is None:
+        bm25_data = load_bm25(path)
+        _bm25_cache[key] = bm25_data
+    return bm25_data
+
+
 def dense_search(collection, embedder: TextEmbedding, query: str, k: int) -> List[Dict[str, Any]]:
     query_vector = next(embedder.query_embed(query)).tolist()
     count = collection.count()
@@ -197,18 +254,9 @@ def search(
     if rerank_top_k < 1:
         raise ValueError("rerank_top_k must be >= 1")
 
-    chroma_dir = Path(chroma_dir)
-    bm25_path = Path(bm25_dir) / f"{strategy}.pkl"
-
-    client = chromadb.PersistentClient(
-        path=str(chroma_dir),
-        settings=Settings(anonymized_telemetry=False),
-    )
-    collection = client.get_collection(strategy)
-    bm25_data = load_bm25(bm25_path)
-
-    logger.info("loading embedding model %s", model_name)
-    embedder = TextEmbedding(model_name=model_name)
+    collection = get_collection(chroma_dir, strategy)
+    bm25_data = get_bm25(bm25_dir, strategy)
+    embedder = get_embedder(model_name)
 
     dense_results = dense_search(collection, embedder, query, top_k)
     keyword_results = keyword_search(bm25_data, query, top_k)
@@ -225,8 +273,7 @@ def search(
         }
 
     if rerank:
-        logger.info("loading cross-encoder model %s", rerank_model)
-        reranker = TextCrossEncoder(model_name=rerank_model)
+        reranker = get_reranker(rerank_model)
         results = rerank_results(query, fused_results, reranker, rerank_top_k)
         rerank_model_used = rerank_model
     else:
