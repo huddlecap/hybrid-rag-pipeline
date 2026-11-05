@@ -16,8 +16,8 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 | Embeddings       | fastembed (BAAI/bge-small-en-v1.5) | $0, fully local, no API key      |
 | Vector Store     | ChromaDB or Qdrant            | File-based or containerized      |
 | Sparse Search    | BM25 via rank_bm25            | Keyword matching for exact terms |
-| LLM              | GPT-4o or Claude Sonnet       | Strong grounding and citation    |
-| Chunking         | LangChain text_splitters      | Configurable overlap and size    |
+| LLM              | Groq (openai/gpt-oss-120b generator, openai/gpt-oss-20b judge) | Free tier, local, no API key cost |
+| Chunking         | Custom (fixed-size, structure-aware, semantic) | In-house, no LangChain dependency |
 | API              | FastAPI                       | Async-native, production-grade   |
 | Containerization | Docker                        | Reproducible deployment          |
 
@@ -67,7 +67,7 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 
 2. **Implement automated eval metrics.** For each test case, measure: answer correctness (LLM-as-judge against golden answer), faithfulness (are all claims grounded in retrieved context?), retrieval relevance (were the right chunks retrieved?), and citation accuracy (do citations actually support claims?). Run the full suite on every pipeline change.
 
-3. **Build a chunking strategy comparison.** Run the same eval suite across your three chunking strategies. Generate a comparison report showing which strategy wins on which metrics. This data drives your architecture decisions and gives you concrete numbers for interviews.
+3. **Build a chunking strategy comparison.** ✅ COMPLETE. Ran the same eval suite across all three chunking strategies (fixed, structure, semantic). Generated comparison report showing which strategy wins on which metrics. Data drives architecture decisions and gives concrete numbers for interviews. See `comparison_report.md` and `scripts/compare_chunking.py`.
 
 #### Phase 5: Expose as an API and Dashboard
 
