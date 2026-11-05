@@ -13,7 +13,7 @@ if str(SRC) not in sys.path:
 
 from retriever import search, get_chroma_client, get_embedder
 from generator import generate, get_client
-from chunker import chunk_fixed, get_encoder, DEFAULT_CONFIG
+from chunker import chunk_structure, get_encoder, DEFAULT_CONFIG
 from indexer import tokenize
 from rank_bm25 import BM25Okapi
 
@@ -96,9 +96,9 @@ def ask_question(request: QueryRequest):
 
 @app.post("/v1/ingest", tags=["Data Management"])
 def ingest_document(request: IngestRequest):
-    """Chunks raw text using the fixed-size chunker and saves to ChromaDB + BM25."""
+    """Chunks raw text using the structure-aware chunker and saves to ChromaDB + BM25."""
     try:
-        # 1. Chunk the raw text using the fixed-size strategy
+        # 1. Chunk the raw text using the structure-aware strategy
         enc = get_encoder()
         doc = {
             "doc_id": "ingested",
@@ -111,8 +111,8 @@ def ingest_document(request: IngestRequest):
                 }
             ],
         }
-        cfg = DEFAULT_CONFIG["fixed"]
-        chunks, _, _ = chunk_fixed(doc, cfg, enc)
+        cfg = DEFAULT_CONFIG["structure"]
+        chunks, _, _ = chunk_structure(doc, cfg, enc)
 
         if not chunks:
             return {
@@ -136,12 +136,12 @@ def ingest_document(request: IngestRequest):
                 "chunk_index": c.get("chunk_index", 0),
                 "heading_path": c.get("heading_path", []),
                 "page_number": c.get("page_number"),
-                "strategy": c.get("strategy", "fixed"),
-                "char_count": c.get("char_count", 0),
-                "token_count": c.get("token_count", 0),
-            }
-            for c in chunks
-        ]
+                        "strategy": c.get("strategy", "structure"),
+                        "char_count": c.get("char_count", 0),
+                        "token_count": c.get("token_count", 0),
+                    }
+                    for c in chunks
+                ]
 
         collection.add(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
 
@@ -187,17 +187,17 @@ def ingest_document(request: IngestRequest):
             new_texts = [c["text"] for c in chunks]
             new_metadatas = [
                 {
-                    "chunk_id": c.get("chunk_id", ""),
-                    "source_file": c.get("source_file", ""),
-                    "chunk_index": c.get("chunk_index", 0),
-                    "heading_path": c.get("heading_path", []),
-                    "page_number": c.get("page_number"),
-                    "strategy": c.get("strategy", "fixed"),
-                    "char_count": c.get("char_count", 0),
-                    "token_count": c.get("token_count", 0),
-                }
-                for c in chunks
-            ]
+                        "chunk_id": c.get("chunk_id", ""),
+                        "source_file": c.get("source_file", ""),
+                        "chunk_index": c.get("chunk_index", 0),
+                        "heading_path": c.get("heading_path", []),
+                        "page_number": c.get("page_number"),
+                        "strategy": c.get("strategy", "structure"),
+                        "char_count": c.get("char_count", 0),
+                        "token_count": c.get("token_count", 0),
+                    }
+                    for c in chunks
+                ]
             tokenized = [tokenize(t) for t in new_texts]
             new_data = {
                 "strategy": "structure",
