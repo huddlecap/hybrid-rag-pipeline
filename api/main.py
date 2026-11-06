@@ -1,28 +1,24 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from groq import Groq
 from pydantic import BaseModel, Field
 
 SRC = Path(__file__).resolve().parents[1] / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-
 from retriever import search, get_chroma_client, get_embedder
 from generator import generate, get_client
 from chunker import chunk_structure, get_encoder, DEFAULT_CONFIG
 from indexer import tokenize
 from rank_bm25 import BM25Okapi
-from evaluate_pipeline import ask_judge
-
-from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 env_path = ROOT / ".env"
@@ -30,6 +26,81 @@ if env_path.exists():
     load_dotenv(env_path)
 
 from api.models import QueryRequest, QueryResponse, IngestRequest, Citation
+
+# Initialize Groq client for judge calls
+_judge_client: Optional[Groq] = None
+
+
+def get_judge_client() -> Groq:
+    global _judge_client
+    if _judge_client is None:
+        _judge_client = get_client()
+    return _judge_client
+
+
+JUDGE_MODEL = "qwen/qwen3.8-27b"
+
+
+def ask_judge(question: str, generated_answer: str, context_text: str) -> Dict[str, Any]:
+    """Single-pass Groq judge: correctness, faithfulness, unsupported_citations."""
+    client = get_judge_client()
+    system_prompt = (
+        "You are a strict evaluator. Return ONLY a JSON object with exactly "
+        'these keys: "correctness" (0 or 1), "faithfulness" (0 or 1), '
+        '"unsupported_citations" (list of strings). '
+        "correctness=1 means the generated answer is factually correct based on the ground truth. "
+        "faithfulness=1 means the answer relies strictly on the retrieved context without hallucination. "
+        'unsupported_citations lists every citation string like "[2]" that is NOT supported by the retrieved chunk text. '
+        "Return only the JSON object, no markdown fences."
+    )
+    user_prompt = f"""Question: {question}
+
+Generated answer:
+{generated_answer}
+
+Retrieved context:
+{context_text}
+
+Evaluate the generated answer. Return a JSON object with:
+- correctness: 1 if factually correct based on ground truth knowledge, else 0
+- faithfulness: 1 if strictly grounded in retrieved context without hallucination, else 0
+- unsupported_citations: list of citation strings like "[2]" that are NOT supported by the retrieved context
+
+Return only the JSON object.
+"""
+    last_content = ""
+    for attempt in range(2):
+        try:
+            response = client.chat.completions.create(
+                model=JUDGE_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0,
+                max_tokens=1024,
+            )
+            content = (response.choices[0].message.content or "").strip()
+            # Strip markdown fences if present
+            if content.startswith("```"):
+                lines = content.splitlines()
+                if lines and lines[0].strip().startswith("```"):
+                    lines = lines[1:]
+                if lines and lines[-1].strip().startswith("```"):
+                    lines = lines[:-1]
+                content = "\n".join(lines).strip()
+            data = json.loads(content)
+            if all(k in data for k in ("correctness", "faithfulness", "unsupported_citations")):
+                return {
+                    "correctness": int(data["correctness"]),
+                    "faithfulness": int(data["faithfulness"]),
+                    "unsupported_citations": list(data["unsupported_citations"]),
+                }
+        except (json.JSONDecodeError, ValueError, TypeError, KeyError):
+            pass
+        last_content = content
+    raise RuntimeError(f"Judge returned invalid JSON after 2 attempts: {last_content!r}")
+
 
 app = FastAPI(
     title="Hybrid RAG Pipeline API",
@@ -90,22 +161,7 @@ def ask_question(request: QueryRequest):
         context_text = "\n\n".join(
             f"[{i+1}] {chunk['text']}" for i, chunk in enumerate(retrieved_chunks)
         )
-        judge_prompt = f"""Question: {request.question}
-
-Generated answer:
-{parsed["answer"]}
-
-Retrieved context:
-{context_text}
-
-Evaluate the generated answer. Return a JSON object with:
-- correctness: 1 if factually correct based on ground truth knowledge, else 0
-- faithfulness: 1 if strictly grounded in retrieved context without hallucination, else 0
-- unsupported_citations: list of citation strings like "[2]" that are NOT supported by the retrieved context
-
-Return only the JSON object.
-"""
-        judge_result = ask_judge(judge_prompt)
+        judge_result = ask_judge(request.question, parsed["answer"], context_text)
 
         # 5. Build response
         return QueryResponse(
@@ -115,7 +171,6 @@ Return only the JSON object.
                 "correctness": judge_result.get("correctness", 0),
                 "faithfulness": judge_result.get("faithfulness", 0),
                 "retrieval_relevance": 1.0 if retrieved_ids else 0.0,
-                "model": generation.get("model", ""),
             },
         )
     except Exception as e:
