@@ -11,11 +11,16 @@ SRC = Path(__file__).resolve().parents[1] / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
 from retriever import search, get_chroma_client, get_embedder
 from generator import generate, get_client
 from chunker import chunk_structure, get_encoder, DEFAULT_CONFIG
 from indexer import tokenize
 from rank_bm25 import BM25Okapi
+from evaluate_pipeline import ask_judge
 
 from dotenv import load_dotenv
 
@@ -47,6 +52,7 @@ def ask_question(request: QueryRequest):
         retrieval = search(
             request.question,
             strategy="structure",
+            retrieval_mode=request.retrieval_mode,
             top_k=5,
             rerank=True,
             rerank_top_k=5,
@@ -80,12 +86,34 @@ def ask_question(request: QueryRequest):
                 )
             )
 
-        # 4. Build response
+        # 4. Judge evaluation for confidence scores
+        context_text = "\n\n".join(
+            f"[{i+1}] {chunk['text']}" for i, chunk in enumerate(retrieved_chunks)
+        )
+        judge_prompt = f"""Question: {request.question}
+
+Generated answer:
+{parsed["answer"]}
+
+Retrieved context:
+{context_text}
+
+Evaluate the generated answer. Return a JSON object with:
+- correctness: 1 if factually correct based on ground truth knowledge, else 0
+- faithfulness: 1 if strictly grounded in retrieved context without hallucination, else 0
+- unsupported_citations: list of citation strings like "[2]" that are NOT supported by the retrieved context
+
+Return only the JSON object.
+"""
+        judge_result = ask_judge(judge_prompt)
+
+        # 5. Build response
         return QueryResponse(
             answer=parsed["answer"],
             citations=citations,
             confidence_scores={
-                "confidence": float(parsed.get("confidence", 0.0)),
+                "correctness": judge_result.get("correctness", 0),
+                "faithfulness": judge_result.get("faithfulness", 0),
                 "retrieval_relevance": 1.0 if retrieved_ids else 0.0,
                 "model": generation.get("model", ""),
             },
@@ -136,12 +164,12 @@ def ingest_document(request: IngestRequest):
                 "chunk_index": c.get("chunk_index", 0),
                 "heading_path": c.get("heading_path", []),
                 "page_number": c.get("page_number"),
-                        "strategy": c.get("strategy", "structure"),
-                        "char_count": c.get("char_count", 0),
-                        "token_count": c.get("token_count", 0),
-                    }
-                    for c in chunks
-                ]
+                "strategy": c.get("strategy", "structure"),
+                "char_count": c.get("char_count", 0),
+                "token_count": c.get("token_count", 0),
+            }
+            for c in chunks
+        ]
 
         collection.add(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings)
 
@@ -187,17 +215,17 @@ def ingest_document(request: IngestRequest):
             new_texts = [c["text"] for c in chunks]
             new_metadatas = [
                 {
-                        "chunk_id": c.get("chunk_id", ""),
-                        "source_file": c.get("source_file", ""),
-                        "chunk_index": c.get("chunk_index", 0),
-                        "heading_path": c.get("heading_path", []),
-                        "page_number": c.get("page_number"),
-                        "strategy": c.get("strategy", "structure"),
-                        "char_count": c.get("char_count", 0),
-                        "token_count": c.get("token_count", 0),
-                    }
-                    for c in chunks
-                ]
+                    "chunk_id": c.get("chunk_id", ""),
+                    "source_file": c.get("source_file", ""),
+                    "chunk_index": c.get("chunk_index", 0),
+                    "heading_path": c.get("heading_path", []),
+                    "page_number": c.get("page_number"),
+                    "strategy": c.get("strategy", "structure"),
+                    "char_count": c.get("char_count", 0),
+                    "token_count": c.get("token_count", 0),
+                }
+                for c in chunks
+            ]
             tokenized = [tokenize(t) for t in new_texts]
             new_data = {
                 "strategy": "structure",
