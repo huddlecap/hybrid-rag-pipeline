@@ -11,6 +11,7 @@ function App() {
   const [rightResult, setRightResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [expandedDocs, setExpandedDocs] = useState(new Set())
 
   useEffect(() => {
     fetchDocuments()
@@ -100,7 +101,7 @@ function App() {
     return (
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
+          <h3 className="text-sm font-bold text-gray-900">{label}</h3>
           <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">
             {result.model || 'groq'}
           </span>
@@ -124,6 +125,25 @@ function App() {
     )
   }
 
+  // Group documents by source_file
+  const docsByFile = documents.reduce((acc, doc) => {
+    const key = doc.source_file || 'unknown'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(doc)
+    return acc
+  }, {})
+
+  function toggleDoc(sourceFile) {
+    setExpandedDocs((prev) => {
+      const next = new Set(prev)
+      if (next.has(sourceFile)) next.delete(sourceFile)
+      else next.add(sourceFile)
+      return next
+    })
+  }
+
+  const isExpanded = (sourceFile) => expandedDocs.has(sourceFile)
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -144,18 +164,45 @@ function App() {
       <div className="flex flex-col md:flex-row h-[calc(100vh-56px)]">
         {/* Sidebar */}
         <aside className="w-80 bg-white border-r border-gray-200 p-6">
-          <h2 className="text-sm font-bold text-gray-900 mb-4">Documents</h2>
+          <h2 className="text-sm font-bold text-gray-900 mb-4">Documents ({documents.length} chunks)</h2>
           {documents.length === 0 ? (
             <p className="text-xs text-gray-500">No documents indexed</p>
           ) : (
-            <ul className="space-y-2">
-              {documents.map((doc, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 px-3 py-2 rounded">
-                  <span className="text-gray-400">📄</span>
-                  <span className="truncate">{doc.source_file || doc.chunk_id}</span>
-                </div>
-              ))}
-            </ul>
+            <div className="space-y-1">
+              {Object.entries(documentsByFile).map(([sourceFile, docs]) => {
+                const isExpanded = expandedDocs.has(sourceFile)
+                return (
+                  <div key={sourceFile} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div
+                      onClick={() => toggleDoc(sourceFile)}
+                      className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer hover:bg-gray-100"
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <span className="text-gray-400">📄</span>
+                        <span className="truncate">{sourceFile}</span>
+                        <span className="text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                          {docs.length} chunk{docs.length > 1 ? 's' : ''}
+                        </span>
+                      </span>
+                      <span className={`text-xs ${isExpanded ? 'text-green-600' : 'text-gray-400'}`}>
+                        {isExpanded ? '▾' : '▸'}
+                      </span>
+                    </div>
+                    {isExpanded && (
+                      <div className="pl-4 space-y-1">
+                        {docs.map((doc, i) => (
+                          <div key={doc.chunk_id || i} className="px-3 py-1.5 text-xs bg-white hover:bg-gray-50 cursor-pointer hover:bg-gray-50/50 rounded-md transition-colors">
+                            <span className="text-gray-500">chunk #{doc.chunk_index ?? i}</span>
+                            <span className="text-gray-400"> • </span>
+                            <span className="text-gray-600 truncate max-w-[200px]">{chunkText(doc)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           )}
         </aside>
 
@@ -251,6 +298,12 @@ function App() {
       </div>
     </div>
   )
+}
+
+function chunkText(doc) {
+  if (!doc) return ''
+  const text = doc.text || doc.text_content || ''
+  return text.length > 60 ? text.slice(0, 60) + '…' : text
 }
 
 export default App
