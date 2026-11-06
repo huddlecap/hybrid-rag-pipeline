@@ -240,6 +240,7 @@ def search(
     rerank: bool = True,
     rerank_model: str = RERANK_MODEL,
     rerank_top_k: int = DEFAULT_RERANK_TOP_K,
+    retrieval_mode: str = "hybrid",
 ) -> Dict[str, Any]:
     if strategy not in STRATEGIES:
         raise ValueError(f"unknown strategy: {strategy}")
@@ -253,38 +254,56 @@ def search(
         raise ValueError("at least one weight must be > 0")
     if rerank_top_k < 1:
         raise ValueError("rerank_top_k must be >= 1")
+    if retrieval_mode not in ("hybrid", "dense"):
+        raise ValueError(f"unknown retrieval_mode: {retrieval_mode}")
 
     collection = get_collection(chroma_dir, strategy)
-    bm25_data = get_bm25(bm25_dir, strategy)
     embedder = get_embedder(model_name)
 
     dense_results = dense_search(collection, embedder, query, top_k)
-    keyword_results = keyword_search(bm25_data, query, top_k)
-    fused_results = fuse(
-        dense_results, keyword_results, vector_weight, keyword_weight, rrf_k
-    )
 
+    # Initialize variables used by both paths
+    fused_results = dense_results
+    keyword_results = []
     rrf_top = None
-    if fused_results:
-        rrf_top = {
-            "chunk_id": fused_results[0]["chunk_id"],
-            "source_file": fused_results[0]["source_file"],
-            "rrf_score": fused_results[0]["rrf_score"],
-        }
 
-    if rerank:
-        reranker = get_reranker(rerank_model)
-        results = rerank_results(query, fused_results, reranker, rerank_top_k)
-        rerank_model_used = rerank_model
-    else:
-        results = fused_results
+    if retrieval_mode == "dense":
+        # Dense-only path: skip BM25 and RRF fusion entirely
+        results = dense_results
         rerank_model_used = None
+        logger.info(
+            "query=%r strategy=%s retrieval_mode=dense dense=%d returned=%d",
+            query, strategy, len(dense_results), len(results),
+        )
+    else:
+        # Hybrid path: dense + BM25 + RRF + rerank
+        bm25_data = get_bm25(bm25_dir, strategy)
+        keyword_results = keyword_search(bm25_data, query, top_k)
+        fused_results = fuse(
+            dense_results, keyword_results, vector_weight, keyword_weight, rrf_k
+        )
 
-    logger.info(
-        "query=%r strategy=%s dense=%d keyword=%d fused=%d returned=%d rerank=%s",
-        query, strategy, len(dense_results), len(keyword_results),
-        len(fused_results), len(results), rerank_model_used,
-    )
+        rrf_top = None
+        if fused_results:
+            rrf_top = {
+                "chunk_id": fused_results[0]["chunk_id"],
+                "source_file": fused_results[0]["source_file"],
+                "rrf_score": fused_results[0]["rrf_score"],
+            }
+
+        if rerank:
+            reranker = get_reranker(rerank_model)
+            results = rerank_results(query, fused_results, reranker, rerank_top_k)
+            rerank_model_used = rerank_model
+        else:
+            results = fused_results
+            rerank_model_used = None
+
+        logger.info(
+            "query=%r strategy=%s retrieval_mode=hybrid dense=%d keyword=%d fused=%d returned=%d rerank=%s",
+            query, strategy, len(dense_results), len(keyword_results),
+            len(fused_results), len(results), rerank_model_used,
+        )
 
     return {
         "query": query,
