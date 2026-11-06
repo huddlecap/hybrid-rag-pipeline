@@ -75,18 +75,20 @@ function App() {
     return Math.round(score * 100)
   }
 
-  function renderChunkList(chunks) {
-    if (!chunks || chunks.length === 0) return null
+  function renderChunkList(results) {
+    if (!results || results.length === 0) return null
     return (
       <div className="mt-4 border-t pt-4">
         <h3 className="text-sm font-semibold text-gray-900 mb-3">Retrieved Chunks</h3>
-        {chunks.map((chunk, i) => (
+        {results.map((chunk, i) => (
           <div key={chunk.chunk_id || i} className="p-3 border-b border-gray-200 bg-gray-50">
             <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>#{i + 1}</span>
               <span>{chunk.metadata?.source_file || 'unknown'}</span>
             </div>
-            <p className="text-sm text-gray-700">{chunk.text.slice(0, 200)}{chunk.text.length > 200 ? '…' : ''}</p>
+            <p className="text-sm text-gray-700">
+              {chunk.text.slice(0, 200)}{chunk.text.length > 200 ? '…' : ''}
+            </p>
           </div>
         ))}
       </div>
@@ -99,14 +101,16 @@ function App() {
       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <div className="flex justify-between items-start mb-3">
           <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
-          <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">{result.model || 'groq'}</span>
+          <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">
+            {result.model || 'groq'}
+          </span>
         </div>
         <div className="prose prose-sm max-w-none text-gray-800 mb-4 whitespace-pre-wrap">
           {result.answer || '(no answer)'}
         </div>
         <div className="flex gap-3 mb-3">
           <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-            Answer Correctness: {formatConfidence(result.confidence_scores?.correctness)}%
+            Correctness: {formatConfidence(result.confidence_scores?.correctness)}%
           </span>
           <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
             Faithfulness: {formatConfidence(result.confidence_scores?.faithfulness)}%
@@ -115,14 +119,9 @@ function App() {
             Retrieval: {formatConfidence(result.confidence_scores?.retrieval_relevance)}%
           </span>
         </div>
-        {renderChunkList(retrieval_results_from_state(result))}
+        {renderChunkList(result.results)}
       </div>
     )
-  }
-
-  // Helper: stored results contain results array
-  function retrieval_results_from_state(result) {
-    return result.results || []
   }
 
   return (
@@ -165,7 +164,7 @@ function App() {
           {/* Mode Toggle */}
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">RAG Comparison</h2>
+              <h2 className="text-lg font-bold text-gray-900">RAG Evaluation</h2>
               <p className="text-sm text-gray-600">Compare retrieval strategies side by side</p>
             </div>
             <label className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
@@ -222,12 +221,11 @@ function App() {
                 <div className="border-l-2 border-blue-500 pl-4 mb-4">
                   <h3 className="text-sm font-bold text-blue-700">Hybrid Retrieval</h3>
                 </div>
-                {leftResult && (
+                {leftResult ? (
                   <div className="space-y-4">
                     {renderResult(leftResult, 'Hybrid')}
                   </div>
-                )}
-                {!leftResult && (
+                ) : (
                   <div className="h-48 flex items-center justify-center bg-gray-50 rounded border border-gray-200">
                     <span className="text-gray-500 text-sm">Ask a question to see hybrid results</span>
                   </div>
@@ -237,12 +235,11 @@ function App() {
                 <div className="border-l-2 border-green-500 pl-4 mb-4">
                   <h3 className="text-sm font-bold text-green-700">Dense Retrieval</h3>
                 </div>
-                {rightResult && (
+                {rightResult ? (
                   <div className="space-y-4">
                     {renderResult(rightResult, 'Dense')}
                   </div>
-                )}
-                {!rightResult && (
+                ) : (
                   <div className="h-48 flex items-center justify-center bg-gray-50 rounded border border-gray-200">
                     <span className="text-gray-500 text-sm">Ask a question to see dense results</span>
                   </div>
