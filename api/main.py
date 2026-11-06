@@ -47,11 +47,16 @@ def ask_judge(question: str, generated_answer: str, context_text: str) -> Dict[s
     client = get_judge_client()
     system_prompt = (
         "You are a strict evaluator. Return ONLY a JSON object with exactly "
-        'these keys: "correctness" (0 or 1), "faithfulness" (0 or 1), '
+        'these keys: "correctness" (0.0 to 1.0), "faithfulness" (0.0 to 1.0), '
         '"unsupported_citations" (list of strings). '
-        "correctness=1 means the generated answer is factually correct based on the ground truth. "
-        "faithfulness=1 means the answer relies strictly on the retrieved context without hallucination. "
-        'unsupported_citations lists every citation string like "[2]" that is NOT supported by the retrieved chunk text. '
+        "correctness: a float from 0.0 to 1.0 representing how factually correct "
+        "the generated answer is based on the ground truth (0.0 = completely wrong, "
+        "1.0 = completely correct). "
+        "faithfulness: a float from 0.0 to 1.0 representing how strictly the answer "
+        "relies on the retrieved context without hallucination (0.0 = pure hallucination, "
+        "1.0 = fully grounded in context). "
+        'unsupported_citations: list of citation strings like "[2]" that are NOT supported '
+        "by the retrieved chunk text. "
         "Return only the JSON object, no markdown fences."
     )
     user_prompt = f"""Question: {question}
@@ -63,8 +68,8 @@ Retrieved context:
 {context_text}
 
 Evaluate the generated answer. Return a JSON object with:
-- correctness: 1 if factually correct based on ground truth knowledge, else 0
-- faithfulness: 1 if strictly grounded in retrieved context without hallucination, else 0
+- correctness: float from 0.0 to 1.0 representing factual correctness
+- faithfulness: float from 0.0 to 1.0 representing groundedness in retrieved context
 - unsupported_citations: list of citation strings like "[2]" that are NOT supported by the retrieved context
 
 Return only the JSON object.
@@ -93,8 +98,8 @@ Return only the JSON object.
             data = json.loads(content)
             if all(k in data for k in ("correctness", "faithfulness", "unsupported_citations")):
                 return {
-                    "correctness": int(data["correctness"]),
-                    "faithfulness": int(data["faithfulness"]),
+                    "correctness": float(data["correctness"]),
+                    "faithfulness": float(data["faithfulness"]),
                     "unsupported_citations": list(data["unsupported_citations"]),
                 }
         except (json.JSONDecodeError, ValueError, TypeError, KeyError):
