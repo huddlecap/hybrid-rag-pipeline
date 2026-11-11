@@ -93,25 +93,46 @@ def resolve_judge_model(groq_client: Groq) -> str:
     raise RuntimeError(f"No preferred judge model available. Available: {sorted(available)}")
 
 
-def ask_judge(prompt: str) -> Dict[str, Any]:
-    """Single-pass judge: correctness, faithfulness, unsupported_citations.
+def ask_judge(question: str, generated_answer: str, context_text: str) -> Dict[str, Any]:
+    """RAGAS-style claim-extraction judge.
 
-    Returns a dict with keys:
-      - correctness: 0 or 1
-      - faithfulness: 0 or 1
-      - unsupported_citations: list of citation strings
+    The LLM extracts atomic claims and returns integer counts; Python performs
+    safe division to produce granular 0.0-1.0 floats.
     """
     if client is None:
         raise RuntimeError("Groq client is not initialized")
     system_prompt = (
-        "You are a strict evaluator. Return ONLY a JSON object with exactly "
-        'these keys: "correctness" (0 or 1), "faithfulness" (0 or 1), '
+        "You are a mathematical evaluator. Return ONLY a JSON object with exactly "
+        'these keys: "atomic_claims" (list of strings), "total_claims" (integer), '
+        '"supported_claims" (integer), "correct_claims" (integer), '
         '"unsupported_citations" (list of strings). '
-        'correctness=1 means the generated answer is factually correct based on the ground truth. '
-        'faithfulness=1 means the answer relies strictly on the retrieved context without hallucination. '
-        'unsupported_citations lists every citation number (e.g., "[2]") that is NOT supported by the retrieved chunk text. '
+        "Break the generated answer down into a list of discrete, atomic factual claims. "
+        "1. atomic_claims: each distinct factual claim as a separate string. "
+        "   total_claims must exactly equal len(atomic_claims). "
+        "   If the answer is 'I don't know', output atomic_claims as [] and total_claims as 0. "
+        "2. supported_claims: integer count of claims fully backed by the retrieved context. "
+        "3. correct_claims: integer count of claims that correctly answer the user's prompt. "
+        '4. unsupported_citations: list of citation strings like "[2]" NOT supported by the retrieved context. '
+        "Output strictly as integers for counts and lists of strings for atomic_claims and unsupported_citations. "
         "Return only the JSON object, no markdown fences."
     )
+    user_prompt = f"""Question: {question}
+
+Generated answer:
+{generated_answer}
+
+Retrieved context:
+{context_text}
+
+Evaluate the generated answer. Return a JSON object with:
+- atomic_claims: list of strings, each a discrete factual claim
+- total_claims: integer count of claims (must equal len(atomic_claims); 0 if "I don't know")
+- supported_claims: integer count of claims backed by retrieved context
+- correct_claims: integer count of claims that correctly answer the user's prompt
+- unsupported_citations: list of citation strings like "[2]" NOT supported by retrieved context
+
+Return only the JSON object.
+"""
     last_content = ""
     for attempt in range(2):
         request_kwargs: Dict[str, Any] = {
@@ -240,23 +261,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             flush=True,
         )
 
-        judge_prompt = f"""Question: {question}
-
-Ground truth:
-{ground_truth_text}
-
-Generated answer:
-{generated_answer}
-
-Retrieved context:
-{chr(10).join(f'[{chunk["chunk_id"]}] {chunk["text"]}' for chunk in retrieved_chunks)}
-
-Evaluate the generated answer. Return a JSON object with:
-- correctness: 1 if factually correct based on ground truth, else 0
-- faithfulness: 1 if strictly grounded in retrieved context, else 0
-- unsupported_citations: list of citation strings like "[2]" that are NOT supported by the retrieved context
-"""
-        judge_result = ask_judge(judge_prompt)
+        context_text = "\n\n".join(
+            f"[{i+1}] {chunk['text']}" for i, chunk in enumerate(retrieved_chunks)
+        )
+        judge_result = ask_judge(question, generated_answer, context_text)
         correctness_score = judge_result["correctness"]
         faithfulness_score = judge_result["faithfulness"]
 
