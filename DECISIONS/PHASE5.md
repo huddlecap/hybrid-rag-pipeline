@@ -18,8 +18,20 @@ Why: By updating the core `src/retriever.py` to accept a `retrieval_mode` argume
 
 ### 5. Dedicated Evaluator for Confidence Scores
 
-Why: Instead of relying on the generator to self-grade or using raw vector distance heuristics, the `/v1/ask` route makes a secondary call to the existing Phase 4 Groq judge. This provides rigorous, dimension-based confidence metrics (e.g., faithfulness, correctness) while keeping the system architecture DRY (Don't Repeat Yourself).
+Why: Instead of relying on the generator to self-grade or using raw vector distance heuristics, the `/v1/ask` route makes a secondary judge call. The judge is Cohere `command-r-plus-08-2024` (`api/main.py:56`), not the Phase 4 Groq judge, because the Groq-hosted Qwen model defaulted to binary verdicts. The Cohere judge extracts atomic claims and lets Python compute fractional scores for faithfulness, answer relevance, and retrieval relevance.
 
 ### 6. React Frontend with True Split-Screen Comparison
 
 Why: Chose React (Vite/Tailwind) over Streamlit to support complex UI requirements like inline clickable citations. To satisfy the "side-by-side" comparison requirement, the UI implements a "Compare Mode" that splits the screen and fires two concurrent API requests (`hybrid` and `dense`), allowing real-time visual comparison of chunk relevance and answer quality.
+
+### 7. Chain-of-Thought Judge Schema
+
+Why: The judge returns a required `citation_analysis` field (enforced by `JudgeResponse` in `api/models.py:57`) before the final scores, and the prompt includes a few-shot out-of-bounds citation example. This makes the reasoning auditable instead of merely claimed.
+
+### 8. Graded Retrieval Relevance
+
+Why: A binary "found / not found" signal hides the difference between a strong and a marginal rerank hit. Hybrid retrieval maps `sigmoid(max_rerank_score / 3.0)` to a 0–1 score, keeping a binary fallback for dense-only mode where no rerank logit exists.
+
+### 9. Explicit Chunk and Document Contracts
+
+Why: `/v1/ask` returns `all_retrieved_chunks` with `display_score` and `is_percentage`, and `/v1/documents` returns nested `DocumentFile`/`DocumentChunk` models grouped by source file. Typed contracts let the dashboard render scores, chunk indices, and expansion state without guessing from metadata.

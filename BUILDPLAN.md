@@ -16,7 +16,7 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 | Embeddings       | fastembed (BAAI/bge-small-en-v1.5) | $0, fully local, no API key      |
 | Vector Store     | ChromaDB or Qdrant            | File-based or containerized      |
 | Sparse Search    | BM25 via rank_bm25            | Keyword matching for exact terms |
-| LLM              | Groq (openai/gpt-oss-120b generator, openai/gpt-oss-20b judge) | Free tier, local, no API key cost |
+| LLM              | Groq (llama-3.3-70b-versatile / openai/gpt-oss-120b generator) + Cohere (command-r-plus-08-2024 judge) | Hosted, low-cost generation and auditing |
 | Chunking         | Custom (fixed-size, structure-aware, semantic) | In-house, no LangChain dependency |
 | API              | FastAPI                       | Async-native, production-grade   |
 | Containerization | Docker                        | Reproducible deployment          |
@@ -73,11 +73,13 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 
 **Day 11-13**
 
-1. **Build the FastAPI service.** POST /v1/ask accepts a question and returns the answer with citations, confidence scores, and source metadata. GET /v1/documents lists indexed documents. POST /v1/ingest accepts new documents for indexing. Include OpenAPI documentation.
+1. **Build the FastAPI service.** ✅ COMPLETE. POST /v1/ask accepts a question and returns the answer with citations, confidence scores, and source metadata. GET /v1/documents lists indexed documents grouped by source file. POST /v1/ingest accepts new documents for indexing. Include OpenAPI documentation.
 
-2. **Build a simple query dashboard.** A Streamlit or React frontend where you can ask questions and see: the generated answer with clickable citations, the retrieved chunks ranked by relevance, confidence scores broken down by dimension, and a toggle to compare hybrid vs. dense-only retrieval side by side.
+2. **Build a simple query dashboard.** ✅ COMPLETE. React (Vite/Tailwind) frontend where you can ask questions and see: the generated answer with clickable citations, the retrieved chunks ranked by relevance, confidence scores broken down by dimension, and a Standard/Compare mode that runs hybrid vs. dense-only retrieval side by side.
 
-3. **Containerize everything.** Docker-compose with the API service, ChromaDB, and the frontend. Include a seed script that indexes a sample documentation corpus so reviewers can spin it up and test immediately.
+3. **Containerize everything.** ⬜ PENDING (Phase 5 Part 3). Docker-compose with the API service, ChromaDB, and the frontend. Include a seed script that indexes a sample documentation corpus so reviewers can spin it up and test immediately.
+
+See `PHASE5_POSTMORTEM.md` for the Part 2 update and failure report, and `DECISIONS/PHASE5.md` for the rationale behind each backend/UI decision.
 
 #### Phase 6: Polish for Portfolio
 
