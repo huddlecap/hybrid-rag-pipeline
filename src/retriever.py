@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import pickle
 import sys
 from pathlib import Path
@@ -70,6 +71,19 @@ def get_reranker(model_name: str = RERANK_MODEL) -> TextCrossEncoder:
 
 
 def get_chroma_client(chroma_dir: str | Path = "data/index/chroma"):
+    chroma_host = os.environ.get("CHROMA_HOST")
+    chroma_port = os.environ.get("CHROMA_PORT")
+    if chroma_host and chroma_port:
+        key = f"http://{chroma_host}:{chroma_port}"
+        chroma_client = _chroma_clients.get(key)
+        if chroma_client is None:
+            chroma_client = chromadb.HttpClient(
+                host=chroma_host,
+                port=int(chroma_port),
+            )
+            _chroma_clients[key] = chroma_client
+        return chroma_client
+
     path = str(Path(chroma_dir).resolve())
     chroma_client = _chroma_clients.get(path)
     if chroma_client is None:

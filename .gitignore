@@ -2,5 +2,8 @@
 __pycache__/
 *.pyc
 data/logs/
+data/index/
+data/processed/
+data/chunks/
 .DS_Store
 .env

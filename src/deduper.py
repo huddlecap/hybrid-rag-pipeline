@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import pickle
 import random
 import sys
@@ -286,10 +287,15 @@ def run(
     bm25_dir = Path(bm25_dir)
 
     logger.info("opening chroma at %s", chroma_dir)
-    client = chromadb.PersistentClient(
-        path=str(chroma_dir),
-        settings=Settings(anonymized_telemetry=False),
-    )
+    chroma_host = os.environ.get("CHROMA_HOST")
+    chroma_port = os.environ.get("CHROMA_PORT")
+    if chroma_host and chroma_port:
+        client = chromadb.HttpClient(host=chroma_host, port=int(chroma_port))
+    else:
+        client = chromadb.PersistentClient(
+            path=str(chroma_dir),
+            settings=Settings(anonymized_telemetry=False),
+        )
 
     results: List[Dict[str, Any]] = []
     verifications: List[Dict[str, Any]] = []

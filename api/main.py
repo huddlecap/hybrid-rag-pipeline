@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from groq import Groq
 import cohere
 from pydantic import BaseModel, Field
 
@@ -19,7 +18,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from retriever import search, get_chroma_client, get_embedder
-from generator import generate, get_client
+from generator import generate
 from chunker import chunk_structure, get_encoder, DEFAULT_CONFIG
 from indexer import tokenize
 from rank_bm25 import BM25Okapi
@@ -30,17 +29,6 @@ if env_path.exists():
     load_dotenv(env_path)
 
 from api.models import QueryRequest, QueryResponse, IngestRequest, Citation, RetrievedChunk, DocumentFile, DocumentChunk
-
-# Initialize Groq client for judge calls
-_judge_client: Optional[Groq] = None
-
-
-def get_judge_client() -> Groq:
-    global _judge_client
-    if _judge_client is None:
-        _judge_client = get_client()
-    return _judge_client
-
 
 # Initialize Cohere client for judge calls
 _cohere_client: Optional[cohere.ClientV2] = None
@@ -182,7 +170,7 @@ Return only the JSON object.
 
 app = FastAPI(
     title="Hybrid RAG Pipeline API",
-    description="API for questioning documents using structure-aware chunking and Groq 120B.",
+    description="API for questioning documents using structure-aware chunking, Groq generation, and Cohere judging.",
     version="1.0.0",
 )
 

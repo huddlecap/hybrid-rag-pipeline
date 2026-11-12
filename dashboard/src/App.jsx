@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = ''
 
 function RetrievedChunkItem({ chunk, isPercentage, isCited }) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -82,7 +82,7 @@ function App() {
 
   async function checkHealth() {
     try {
-      await fetch(`${API_BASE}/`)
+      await fetch(`${API_BASE}/health`)
       setServerStatus('online')
     } catch (e) {
       setServerStatus('offline')

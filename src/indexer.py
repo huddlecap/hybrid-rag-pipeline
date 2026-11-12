@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import pickle
 import random
 import re
@@ -241,10 +242,15 @@ def run(
     chroma_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("opening chroma at %s", chroma_dir)
-    client = chromadb.PersistentClient(
-        path=str(chroma_dir),
-        settings=Settings(anonymized_telemetry=False),
-    )
+    chroma_host = os.environ.get("CHROMA_HOST")
+    chroma_port = os.environ.get("CHROMA_PORT")
+    if chroma_host and chroma_port:
+        client = chromadb.HttpClient(host=chroma_host, port=int(chroma_port))
+    else:
+        client = chromadb.PersistentClient(
+            path=str(chroma_dir),
+            settings=Settings(anonymized_telemetry=False),
+        )
     logger.info("loading embedding model %s", EMBEDDING_MODEL)
     embedder = TextEmbedding(model_name=EMBEDDING_MODEL)
     logger.info("embedding model ready")
