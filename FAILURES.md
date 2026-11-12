@@ -17,3 +17,15 @@
 - **Chain-of-Thought Claimed but Absent:** The judge prompt claimed to reason step by step, but the schema never required a reasoning field. Fixed with a required `citation_analysis` on the `JudgeResponse` model (`api/models.py:57`) plus a few-shot out-of-bounds citation example.
 
 - **Eval Script / API Judge Divergence:** The `/v1/ask` judge was upgraded to fractional Cohere scoring, but `scripts/evaluate_pipeline.py` still parses legacy `correctness`/`faithfulness` keys (`:161`) and references an undefined `prompt` instead of `user_prompt` (`:142` vs `:119`), so the evaluation cannot currently run. Tracked in `DO_IT_LATER.md`.
+
+- **Cold-Start 504s:** The first `/v1/ask` request downloaded the embedding and reranker weights on demand, which took long enough to trip a proxy timeout. Fixed by baking both BAAI models into the API image at build time (`api/Dockerfile:8`).
+
+- **Healthcheck Tooling Missing:** The Chroma slim image lacks `curl`/`wget` and hides Python from the healthcheck shell, so the first healthcheck attempt never became healthy and blocked `api`/`seeder` startup. Replaced with a Bash `/dev/tcp/localhost:8000` check (`docker-compose.yml:8-12`).
+
+- **Oversized Build Context:** The first Docker context included `.venv`, `node_modules`, generated indexes, and raw data, making builds slow and risking stale artifacts leaking into images. Fixed with root and `dashboard/` `.dockerignore` files.
+
+- **Local Dev Proxy Mismatch:** After `API_BASE` moved to a relative `''` for Nginx, the Vite dev server still proxied only `/api`, so `npm run dev` sent `/v1` and `/health` to the Vite server instead of FastAPI. Fixed by proxying `/v1` and `/health` to `localhost:8000`.
+
+- **Seeder/API Startup Race:** `api` waits for Chroma but not for the one-shot `seeder`, so an early query fails on a missing BM25 index. Mitigated by the seeder's idempotent design and documented as remaining debt (gate `api` on `service_completed_successfully` if needed).
+
+- **Chroma Client/Server Version Risk:** The client currently resolves to 1.5.9 while the server image is `chromadb/chroma:latest`; a future `latest` can outrun the client. Pin the server image to the client version.

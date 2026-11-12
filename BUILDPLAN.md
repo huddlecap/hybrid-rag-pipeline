@@ -77,9 +77,9 @@ RAG is the single most requested skill in AI engineering job descriptions. But m
 
 2. **Build a simple query dashboard.** ✅ COMPLETE. React (Vite/Tailwind) frontend where you can ask questions and see: the generated answer with clickable citations, the retrieved chunks ranked by relevance, confidence scores broken down by dimension, and a Standard/Compare mode that runs hybrid vs. dense-only retrieval side by side.
 
-3. **Containerize everything.** ⬜ PENDING (Phase 5 Part 3). Docker-compose with the API service, ChromaDB, and the frontend. Include a seed script that indexes a sample documentation corpus so reviewers can spin it up and test immediately.
+3. **Containerize everything.** ✅ COMPLETE. Docker Compose runs `chromadb`, `api`, a one-shot `seeder`, and the Nginx-served dashboard. The API image bakes both BAAI models at build time, and the seeder indexes the sample corpus idempotently on first boot. See `PHASE5_POSTMORTEM.md` §5 and `DECISIONS/PHASE5.md` #10–15.
 
-See `PHASE5_POSTMORTEM.md` for the Part 2 update and failure report, and `DECISIONS/PHASE5.md` for the rationale behind each backend/UI decision.
+See `PHASE5_POSTMORTEM.md` for the Parts 1–3 update and failure report, and `DECISIONS/PHASE5.md` for the rationale behind each backend, UI, and container decision.
 
 #### Phase 6: Polish for Portfolio
 

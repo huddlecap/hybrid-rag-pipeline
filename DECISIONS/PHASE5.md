@@ -35,3 +35,31 @@ Why: A binary "found / not found" signal hides the difference between a strong a
 ### 9. Explicit Chunk and Document Contracts
 
 Why: `/v1/ask` returns `all_retrieved_chunks` with `display_score` and `is_percentage`, and `/v1/documents` returns nested `DocumentFile`/`DocumentChunk` models grouped by source file. Typed contracts let the dashboard render scores, chunk indices, and expansion state without guessing from metadata.
+
+### 10. Four-Service Compose Topology
+
+Why: `chromadb`, `api`, `seeder`, and `dashboard` are separate services with explicit dependencies instead of one monolith. Chroma keeps a named volume (`chroma_data`), while the API and seeder share `shared_data` for chunks and BM25 indexes. This lets the vector store persist across rebuilds and lets the seeder run to completion without becoming a long-lived process.
+
+### 11. Build-Time Model Baking
+
+Why: Downloading embedding and reranker weights on the first request caused cold-start latency and 504s behind a proxy. The API image downloads `BAAI/bge-small-en-v1.5` and `BAAI/bge-reranker-base` during `docker build` (`api/Dockerfile:8`), trading image size for deterministic first-query latency and no runtime dependency on Hugging Face.
+
+### 12. Environment-Driven Chroma Client
+
+Why: The same Python code must run against a local persisted store and a containerized server. `src/retriever.py`, `src/indexer.py`, and `src/deduper.py` choose `chromadb.HttpClient` when `CHROMA_HOST`/`CHROMA_PORT` are present and `PersistentClient` otherwise, avoiding a Docker-only code fork.
+
+### 13. Idempotent One-Shot Seeder
+
+Why: Reviewers should be able to run `docker compose up` and immediately query a populated store, but restarting the stack must not duplicate data. `scripts/seed.py` runs once, checks the collections, and skips when they are already populated. It is safe to re-run after a partial failure.
+
+### 14. Nginx Same-Origin Reverse Proxy
+
+Why: Serving the built SPA and proxying `/v1/` plus `/health` from the same Nginx origin removes CORS from the production path and matches the relative `API_BASE = ''` used by the dashboard. The API remains directly reachable on port 8000 for Swagger and debugging.
+
+### 15. TCP-Socket Healthcheck
+
+Why: The official Chroma image lacks `curl`/`wget` and hides Python from the healthcheck shell, so conventional checks fail or hang orchestration. A Bash `/dev/tcp/localhost/8000` check needs no external binary and gives Compose a reliable readiness signal (`docker-compose.yml:8-12`).
+
+### 16. Track Inputs, Not Generated Artifacts
+
+Why: `data/raw/` and `data/eval/` are inputs worth versioning, while `data/index/`, `data/processed/`, and `data/chunks/` are reproducible from the raw corpus and the seed script. Untracking the generated trees keeps the repository small and prevents environment-specific Chroma/BM25 state from leaking into commits.
